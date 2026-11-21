@@ -208,7 +208,12 @@ namespace Hawkeye.App.ViewModels
         {
             try
             {
-                Process.Start(new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = true, Verb = "runas" });
+                Process.Start(new ProcessStartInfo(Environment.ProcessPath!)
+                {
+                    UseShellExecute = true,
+                    Verb = "runas",
+                    WorkingDirectory = AppContext.BaseDirectory, // else an elevated start lands in System32
+                });
                 Close();
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)

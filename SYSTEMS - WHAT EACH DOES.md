@@ -13,7 +13,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   bytes, picks the adapter and port where they appear (prefers loopback, so VPNs and ping reducers
   work), then captures only server-to-you TCP on that port. Re-detects if the heartbeat stops for
   60 s.
-- **Settings:** none in the UI. `RecordPackets` (file only) also saves the raw stream to `PacketLogs/`.
+- **Settings:** none in the UI. `RecordPackets` (file only) also saves the raw stream to `%AppData%\Hawkeye\PacketLogs\`.
 - **Files:** `Hawkeye.Engine/PacketCapture/CaptureDevice.cs`, `TcpStreamBuffer.cs`,
   `PacketAccumulator.cs`, `FilePacketWriter.cs`; replay: `FilePacketCaptureDevice.cs`.
 - **Known weakness (inherited):** heavy fights log many `[TCP GAP]` warnings (missed segments),

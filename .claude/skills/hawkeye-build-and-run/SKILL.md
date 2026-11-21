@@ -46,7 +46,7 @@ Hawkeye.App\bin\Debug\net10.0-windows10.0.20348.0\Hawkeye.exe
 | Settings | `%AppData%\Hawkeye\settings.json` |
 | Logs | `%AppData%\Hawkeye\logs\hawkeye-YYYYMMDD.txt` (7 kept) |
 | Skill icon cache | `IconCache\Skills\` next to the exe |
-| Packet recordings | `PacketLogs\` (only when `RecordPackets` is true) |
+| Packet recordings | `%AppData%\Hawkeye\PacketLogs\` (only when `RecordPackets` is true) |
 
 ## 4. Packaging a zip to share (proven 2026-11-21, v0.1.2)
 

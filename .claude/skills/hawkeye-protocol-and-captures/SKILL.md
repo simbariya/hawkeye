@@ -79,7 +79,7 @@ maps them to the base id the picker shows (`14010000` Deadshot). Ranger ids star
 ## 5. Record a fight, replay it, test a decoder
 
 1. Set `"RecordPackets": true` in `%AppData%\Hawkeye\settings.json`, start Hawkeye, fight.
-   Raw stream lands in `PacketLogs\` next to the exe. Turn it off after. Captures NEVER go in git.
+   Raw stream (TCP payloads as received, LZ4 bundles still packed) lands in `%AppData%\Hawkeye\PacketLogs\` (since 2026-11-21; was next to the exe). Turn it off after. Captures NEVER go in git.
 2. Write down what the game showed (damage numbers, cooldown seconds, buff durations).
 3. Replay without the game: register `FilePacketCaptureDevice` (pointed at the file) instead of
    `CaptureDevice` in a harness or test.

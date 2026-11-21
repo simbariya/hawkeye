@@ -8,7 +8,11 @@ namespace Hawkeye.Engine.PacketCapture
 {
     public class FilePacketWriter
     {
-        private const string PacketLogDirectory = "PacketLogs";
+        /// <summary>
+        /// %AppData%\Hawkeye\PacketLogs: never next to the exe (a restart as administrator starts in
+        /// C:\Windows\System32) and never inside the repo. Captures are private: they never go in git.
+        /// </summary>
+        public static string PacketLogDirectory => Path.Combine(SettingsService.DataDirectory, "PacketLogs");
         private StreamWriter? packetLogWriter;
         private string? currentLogFilePath;
         private readonly Lock logLock = new();
