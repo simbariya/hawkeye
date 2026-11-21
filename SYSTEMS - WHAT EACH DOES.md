@@ -144,8 +144,11 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   `innerWidth / screen.width`, so the Browser Source must be the screen's aspect (resolution).
 - **Look:** `stream.css` copies the meter CSS and the icon colours; keep it in step with
   `MeterPage.razor.css` and `TrackerIconWindow.cs`.
+- **Combat analysis:** while the details window is open, `/state` carries it (position, size,
+  the selected player's numbers, ready-formatted) and the page draws it; styles copied from
+  `DetailsPage.razor.css`.
 - **Settings:** `StreamerMode` (off), `StreamerPort` (7777, file only), `StreamShowMeter`,
-  `StreamShowIcons`.
+  `StreamShowIcons`, `StreamShowDetails` (all on).
 
 ## 7. Settings window
 

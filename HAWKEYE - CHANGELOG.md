@@ -13,6 +13,9 @@ Added:
   window, and no black corners. Settings shows the link (Copy button), whether it is running, the
   three OBS steps, and switches for meter / icons on stream. Port in settings.json
   (`StreamerPort`) if 7777 is taken.
+- **Combat analysis on stream** (v0.1.6, owner request): while the breakdown window is open on your
+  screen, the stream shows it too, same place and look, live; it goes when you close it. Switch
+  "Breakdown on stream" (on).
 - The stream page was checked in a headless browser against test data (transparent background,
   meter, cooldown sweep, buff up/down, ending colours). Not yet seen inside OBS.
 

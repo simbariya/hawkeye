@@ -78,6 +78,8 @@ namespace Hawkeye.Engine.Settings
         public int StreamerPort { get; set; } = 7777;
         public bool StreamShowMeter { get; set; } = true;
         public bool StreamShowIcons { get; set; } = true;
+        /// <summary>Mirror the combat analysis window on stream while it is open.</summary>
+        public bool StreamShowDetails { get; set; } = true;
 
         // ---- engine behaviour (no UI; edit the file if you ever need to) ----
         /// <summary>Only open a fight for bosses / training dummies, not trash mobs.</summary>

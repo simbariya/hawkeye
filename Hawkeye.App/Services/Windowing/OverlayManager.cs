@@ -141,6 +141,9 @@ namespace Hawkeye.App.Services.Windowing
 
         public void DragPage(Type page) => TryDragMove(pageWindows.GetValueOrDefault(page));
 
+        /// <summary>The open details or history window, if any (streamer mode mirrors it). UI thread only.</summary>
+        public Window? GetPageWindow(Type page) => pageWindows.GetValueOrDefault(page);
+
         private void OpenPage(Type page, double width, double height)
         {
             if (pageWindows.TryGetValue(page, out var existing))
