@@ -26,7 +26,8 @@ description: >
 | I11 | Some Marking Shot recasts brought no buff message | WORKED AROUND v0.1.3, cause OPEN |
 | I12 | Closed windows kept running; History/Extras missing on stream | FIXED v0.1.9 |
 | I13 | Update script copied without waiting (plain `find` was Git's) | FIXED before v0.2.7 shipped |
-| I14 | Updated copy restarted with no window (WebView2 helpers still closing) | FIXED in v0.2.10 |
+| I14 | Misread I15 as a WebView2 timing race; shipped a fix for the wrong cause | WRONG DIAGNOSIS, see I15 |
+| I15 | 0.2.9 and 0.2.10 never showed a window: PvpTracker had two constructors DI could fill | FIXED in v0.2.11 |
 
 ## The incidents in full
 
@@ -181,19 +182,29 @@ description: >
 - **Lesson:** scripts that ship to users name system tools by absolute path; test install steps by
   running them, not by reading them.
 
-### I14 - The updated copy restarted with no window (fixed in v0.2.10)
+### I14 - A wrong diagnosis shipped as a fix (v0.2.10)
 
-- **Symptom:** 0.2.8 to 0.2.9 update installed fine (exe was 0.2.9), but the restarted Hawkeye had no
-  window. Log: one "Unhandled UI error (kept running)", WebView2 `CreateCoreWebView2CompositionController`
-  failed with 0x8007139F ("not in the correct state").
-- **Cause:** the install script waited only for Hawkeye's own process. WebView2's helper processes outlive
-  it by a moment and still held the WebView2 data folder next to the exe when the new copy started. The
-  0.2.7 to 0.2.8 restart had simply been lucky with the timing.
-- **Fix:** the script waits 3 more seconds after Hawkeye exits, and starts the new copy from its own
-  folder (`start /D`). The test still runs the real script.
-- **Lesson:** "the process exited" is not "everything it owned is released" when it hosts a browser.
+- **What happened:** 0.2.9 came up with no window after the auto-update. The log was read with each line cut
+  to a fixed width; the WebView2 error 0x8007139F stack (from EARLIER sessions in the same day's log) looked
+  like the 19:28 failure, so "WebView2 helpers still closing" was diagnosed and v0.2.10 shipped a 3 s wait.
+  The real error was the next line: I15.
+- **Lesson:** match the error to its timestamp line before diagnosing (`grep -n` the ERR line and read the
+  lines right after it, uncut). A day's log holds many sessions. The 3 s waits are harmless and stay.
 
-Next free number: **I15**.
+### I15 - 0.2.9 and 0.2.10 never showed a window (fixed in v0.2.11)
+
+- **Symptom:** every start: no meter window; log "Unhandled UI error (kept running)" then
+  `Unable to activate type 'PvpTracker'. The following constructors are ambiguous`.
+- **Cause:** `PvpTracker` had two public constructors the service setup could both fill (the second had only
+  optional extras). Tests built it with `new`, never through the service setup, so 57 tests passed.
+  `OdyleTracker` has the same pattern but its second constructor needs a path string, so no tie.
+- **Fix:** one public constructor; tests set `Clock`. New test `AppServiceSetup_CanBuildIt` builds it
+  through a ServiceCollection. Release gate added: start the packaged exe and check its log for
+  "Unhandled UI error" before publishing.
+- **Lesson:** a new service is not tested until something builds it the way the app does; and a release
+  is not checked until the packaged exe has been started once.
+
+Next free number: **I16**.
 
 ## CHANGES
 

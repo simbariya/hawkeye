@@ -22,6 +22,18 @@ public sealed class PvpTests
 
     private static byte[] Hex(string h) => Convert.FromHexString(h);
 
+    /// <summary>The app builds it through its service setup; two fillable constructors broke 0.2.9 (I15).</summary>
+    [Fact]
+    public void AppServiceSetup_CanBuildIt()
+    {
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton(services, typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger<>));
+        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<EntityTracker>(services);
+        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<PvpTracker>(services);
+        using var provider = Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services);
+        Assert.NotNull(provider.GetService(typeof(PvpTracker)));
+    }
+
     [Fact]
     public void Messages_AreRead()
     {
@@ -39,7 +51,7 @@ public sealed class PvpTests
         entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
         var t = new DateTime(2026, 11, 21, 19, 20, 0);
         var clock = () => t;
-        var pvp = new PvpTracker(entities, null, () => t);
+        var pvp = new PvpTracker(entities) { Clock = () => t };
         return (entities, pvp, clock, s => t = t.AddSeconds(s));
     }
 

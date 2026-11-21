@@ -18,7 +18,6 @@ namespace Hawkeye.Engine.Services.Pvp
 
         private readonly EntityTracker entities;
         private readonly ILogger logger;
-        private readonly Func<DateTime> now;
         private readonly Lock gate = new();
         private long? lastAp, lastRank;
         private DateTime lastOwnKill = DateTime.MinValue;
@@ -34,13 +33,16 @@ namespace Hawkeye.Engine.Services.Pvp
 
         public event EventHandler? Changed;
 
-        public PvpTracker(EntityTracker entities, ILogger<PvpTracker> logger) : this(entities, logger, null) { }
+        /// <summary>The time source; tests set their own.</summary>
+        public Func<DateTime> Clock { get; init; } = () => DateTime.Now;
+        private DateTime now() => Clock();
 
-        public PvpTracker(EntityTracker entities, ILogger? logger = null, Func<DateTime>? clock = null)
+        // ONE public constructor on purpose: with two that the app's service setup could both fill, it cannot pick
+        // and the meter window fails to build (0.2.9 and 0.2.10 shipped like that, I15).
+        public PvpTracker(EntityTracker entities, ILogger<PvpTracker>? logger = null)
         {
             this.entities = entities;
-            this.logger = logger ?? NullLogger.Instance;
-            now = clock ?? (() => DateTime.Now);
+            this.logger = (ILogger?)logger ?? NullLogger.Instance;
         }
 
         /// <summary>Switch PvP mode on or off. The numbers start from zero the first time and on <see cref="Reset"/>.</summary>

@@ -3,14 +3,17 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.10 (2026-11-21)
+## v0.2.11 (2026-11-21)
 
 Fixed:
-- After an auto-update, the restarted Hawkeye could come up with no window (I14): it started while
-  the old copy's WebView2 helpers were still closing. The installer now waits 3 more seconds and
-  starts Hawkeye from its own folder.
-- 0.2.10 also waits 3 seconds at startup when it has just been installed by the updater, so the
-  hop from 0.2.9 (whose install script does not wait) is covered too.
+- 0.2.9 and 0.2.10 started with no meter window, every time (I15): the new PvP tracker had two
+  constructors and the app could not pick one. Now one, with a test that builds it the way the app
+  does. Checked by starting the packaged exe before release.
+
+## v0.2.10 (2026-11-21)
+
+- Added a 3 s wait before an updated copy restarts, against a suspected WebView2 timing race. That
+  diagnosis was wrong (I14); the real fault was I15. The wait is harmless and stays.
 
 ## v0.2.9 (2026-11-21)
 

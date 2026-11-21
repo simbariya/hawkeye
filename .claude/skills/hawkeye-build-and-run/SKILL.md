@@ -61,7 +61,10 @@ Then, in `<release>\Hawkeye`:
 2. Copy the repo `LICENSE` in as `LICENSE.txt` (GPL: every copy handed out carries it).
 3. Keep `READ ME FIRST.txt` (setup for a non-technical friend: Npcap, SmartScreen, admin for FPS,
    borderless mode, where the logs are). Update its version line.
-4. If you test-launched it, delete the `IconCache` folder it created.
+4. **Start the packaged `Hawkeye.exe` once before publishing (mandatory since I15).** Wait about 10 s,
+   then check its new log file: no "Unhandled UI error" lines. 0.2.9 and 0.2.10 shipped without a
+   window because nobody started the built exe; all tests were green. Then delete the `IconCache`
+   folder it created and the `Hawkeye.exe.WebView2` folder.
 5. Zip the `Hawkeye` folder as `Hawkeye-<version>-win-x64.zip` (about 70 MB; 172 MB unzipped,
    because .NET is bundled so the friend installs nothing but Npcap).
 
