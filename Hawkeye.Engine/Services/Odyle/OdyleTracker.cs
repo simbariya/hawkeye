@@ -109,6 +109,7 @@ namespace Hawkeye.Engine.Services.Odyle
         /// <summary>A reading with no character switch after it belongs to the character you are on.</summary>
         public void Settle()
         {
+            FillInClass();
             lock (gate)
             {
                 if (pending is not { } r || now() - r.At <= MatchWindow) return;
@@ -116,6 +117,25 @@ namespace Hawkeye.Engine.Services.Odyle
                 if (!string.IsNullOrEmpty(name) && !name.StartsWith("Player_")) Store(name, r.Current, r.Pool, r.At);
                 pending = null;
             }
+        }
+
+        /// <summary>
+        /// The class is often unknown at the moment of the reading (it is learned a little later), which left
+        /// every saved character without its class icon. Fill it in as soon as it is known.
+        /// </summary>
+        private void FillInClass()
+        {
+            var name = entities.CurrentUserName;
+            int classId = entities.CurrentUserClassId;
+            if (classId == 0 || string.IsNullOrEmpty(name)) return;
+            lock (gate)
+            {
+                var c = characters.FirstOrDefault(x => x.Name == name);
+                if (c is null || c.ClassId == classId) return;
+                c.ClassId = classId;
+            }
+            _ = Task.Run(Save);
+            ThreadPool.QueueUserWorkItem(_ => Changed?.Invoke(this, EventArgs.Empty));
         }
 
         private void Store(string name, int current, int pool, DateTime at)
