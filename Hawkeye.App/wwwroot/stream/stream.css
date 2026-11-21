@@ -68,8 +68,10 @@ html, body {
 }
 
 .meter-version {
-    align-self: flex-end;
-    margin: 0 2px 3px -4px;
+    position: absolute;
+    left: 3px;
+    top: 38px;
+    z-index: 2;
     font-size: 9px;
     font-weight: 600;
     color: #6A6E7C;
@@ -78,10 +80,11 @@ html, body {
 .meter-target {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.1;
-    color: var(--header-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
+    color: #B0141E;
     text-shadow: var(--outline);
     overflow: hidden;
     white-space: nowrap;
@@ -102,7 +105,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding-left: 14px;
+    padding-left: 20px;
 }
 
 .meter-row {
@@ -149,7 +152,16 @@ html, body {
 }
 
 .meter-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.meter-dps { color: var(--dps); font-variant-numeric: tabular-nums; }
+.meter-dps {
+    margin-right: -4px;
+    padding: 0 4px;
+    background: rgba(8, 10, 16, 0.55);
+    color: var(--dps);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000,
+                 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+}
 
 .meter-deaths {
     display: inline-flex;
@@ -164,6 +176,7 @@ html, body {
     .meter-deaths svg { width: 11px; height: 11px; fill: var(--death); }
 
 .meter-total {
+    margin-right: 8px;
     font-size: 11px;
     font-weight: 600;
     color: var(--total);
@@ -176,7 +189,7 @@ html, body {
     justify-content: space-between;
     align-items: baseline;
     gap: 8px;
-    margin: 6px 0 0 14px;
+    margin: 6px 0 0 20px;
     padding: 2px 8px;
     background: rgba(0, 0, 0, 0.22);
     border-top: 1px solid rgba(155, 129, 114, 0.25);

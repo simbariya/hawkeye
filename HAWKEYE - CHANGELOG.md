@@ -3,6 +3,17 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.10 (2026-11-21)
+
+Changed (owner: "buttons a bit cramped at the heading"):
+- **History and Extras** moved out of the header into a slim vertical strip down the left side,
+  under the logo; the version label sits just under the logo. Header: boss name, timer, Settings,
+  Close (and START/STOP in dummy Start/Stop mode).
+- **Boss name** bigger (15 px, bold) in blood red, one line ("..." if too long; full name on hover).
+- **Total damage** set apart from the DPS.
+- **DPS** on a dark backing with a heavy black outline, readable on the green "you" bar.
+- Same look on the stream page.
+
 ## v0.1.9 (2026-11-21)
 
 Fixed:

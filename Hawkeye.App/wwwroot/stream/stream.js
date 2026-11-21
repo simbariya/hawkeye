@@ -40,9 +40,9 @@
         var shell = el('div', 'shell', stage);
         var logo = el('img', 'meter-logo', shell);
         logo.src = '/images/hawkeye-emblem.png';
+        shell._version = el('span', 'meter-version', shell);
         var meter = el('div', 'meter', shell);
         var head = el('div', 'meter-header', meter);
-        shell._version = el('span', 'meter-version', head);
         shell._target = el('span', 'meter-target', head);
         shell._timer = el('span', 'meter-timer', head);
         shell._rows = el('div', 'meter-rows', meter);

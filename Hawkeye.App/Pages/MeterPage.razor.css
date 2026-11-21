@@ -18,6 +18,8 @@
     --ping-ok: #FFD84D;      /* 30 to 100 ms */
     --ping-bad: #FF5A5A;     /* over 100 ms */
     --death: #FF6B6B;
+    --boss: #B0141E;          /* blood red boss name */
+    --side: 20px;             /* left strip for History / Extras */
     --run-start: #3FB292;
     --run-stop: #D9534F;
     --logo-size: 40px;
@@ -71,9 +73,10 @@
 
 /* tiny version label tucked beside the logo */
 .meter-version {
-    flex: 0 0 auto;
-    align-self: flex-end;
-    margin: 0 2px 3px -4px;
+    position: absolute;
+    left: 3px;
+    top: calc(var(--logo-size) - 2px);
+    z-index: 2;
     font-size: 9px;
     font-weight: 600;
     color: #6A6E7C;
@@ -83,15 +86,15 @@
 .meter-target {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.1;
-    color: var(--header-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
+    color: var(--boss);
     text-shadow: var(--outline);
+    white-space: nowrap;          /* one line; long names end in "..." (full name on hover) */
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
 }
 
 .meter-timer {
@@ -117,10 +120,29 @@
 }
 
 .meter-btn--settings { color: var(--gear); }
-.meter-btn--history { color: var(--gear); }
-.meter-btn--extras { color: var(--gear); }
-.meter-btn--extras svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; vertical-align: -1px; }
-.meter-btn--history svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: square; vertical-align: -2px; }
+/* ---------- History / Extras: slim vertical strip on the left, under the logo ---------- */
+.meter-side {
+    position: absolute;
+    left: calc(var(--logo-overhang) + 5px);
+    top: calc(var(--logo-size) + 12px);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.side-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #8C7A5A;
+    cursor: pointer;
+}
+
+    .side-btn:hover { color: var(--gear); background: rgba(255, 255, 255, 0.08); }
+    .side-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: square; }
 
 /* the meter is showing your last fight from history, not a running one */
 .meter-timer.is-last { color: #5A5E6B; font-style: italic; }
@@ -157,7 +179,7 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 8px;
-    margin: 6px 0 0 14px;
+    margin: 6px 0 0 var(--side);
     padding: 2px 8px;
     background: rgba(0, 0, 0, 0.22);
     border-top: 1px solid rgba(155, 129, 114, 0.25);
@@ -194,7 +216,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding-left: 14px;
+    padding-left: var(--side);
     overflow-y: auto;
     min-height: 0;
     cursor: move;
@@ -284,6 +306,7 @@
 
 .meter-total {
     flex: 0 0 auto;
+    margin-right: 8px;        /* keep it clearly apart from the DPS */
     font-size: 11px;
     font-weight: 600;
     color: var(--total);
@@ -291,10 +314,17 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* DPS on a dark backing with a heavy outline: readable on the green "you" bar and the orange ones. */
 .meter-dps {
     flex: 0 0 auto;
+    margin-right: -4px;
+    padding: 0 4px;
+    background: rgba(8, 10, 16, 0.55);
     color: var(--dps);
+    font-weight: 800;
     font-variant-numeric: tabular-nums;
+    text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000,
+                 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
 }
 
 /* ---------- "fit height to group": the page takes its natural height and the window follows ---------- */
