@@ -5,6 +5,7 @@ using System.Windows;
 using Hawkeye.App.Services;
 using Hawkeye.App.Services.Windowing;
 using Hawkeye.Engine.Services.History;
+using Hawkeye.Engine.Services.Pvp;
 using Hawkeye.Engine.Services.Session;
 using Hawkeye.Engine.Settings;
 using Serilog;
@@ -42,6 +43,7 @@ namespace Hawkeye.App.ViewModels
         private readonly OverlayManager overlays;
         private readonly MeterSource source;
         private readonly UpdateService updates;
+        private readonly PvpTracker pvp;
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
@@ -68,6 +70,21 @@ namespace Hawkeye.App.ViewModels
             }
         }
 
+        // ---- PvP mode: kills / deaths / assists / AP / rank points since switched on or cleared ----
+        public bool PvpMode => pvp.Active;
+        public int Kills => pvp.Kills;
+        public int Deaths => pvp.Deaths;
+        public int Assists => pvp.Assists;
+        public string ApGained => Signed(pvp.ApGained);
+        public string RankGained => Signed(pvp.RankGained);
+        private static string Signed(long v) => (v > 0 ? "+" : "") + v.ToString("N0", CultureInfo.InvariantCulture);
+
+        public void TogglePvp()
+        {
+            pvp.SetActive(!pvp.Active);
+            stateKey = string.Empty;
+        }
+
         /// <summary>CSS class for the chosen look.</summary>
         public string LookClass => Looks.ClassFor(settings.Current.Look);
 
@@ -89,7 +106,7 @@ namespace Hawkeye.App.ViewModels
         private EncounterSnapshot? shown;
 
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
-            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, Func<Task> redraw)
+            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, PvpTracker pvp, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
@@ -97,6 +114,7 @@ namespace Hawkeye.App.ViewModels
             this.overlays = overlays;
             this.source = source;
             this.updates = updates;
+            this.pvp = pvp;
             this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();
@@ -129,11 +147,17 @@ namespace Hawkeye.App.ViewModels
             shown = data.Shown;
             string duration = data.Duration.ToString(@"mm\:ss");
             string target = data.Target;
+            if (pvp.Active)
+            {
+                var elapsed = DateTime.Now - pvp.StartedAt;
+                duration = elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss") : elapsed.ToString(@"mm\:ss");
+                target = "PvP";
+            }
             var current = data.Rows;
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}";
             if (key != stateKey)
             {
                 Duration = duration;
@@ -283,6 +307,12 @@ namespace Hawkeye.App.ViewModels
         /// <summary>Clear button: blank the meter until your next fight (fights are saved to History first).</summary>
         public void Clear()
         {
+            if (pvp.Active)
+            {
+                pvp.Reset();   // in PvP mode the bin starts the PvP count again
+                stateKey = string.Empty;
+                return;
+            }
             source.Clear();
             rows.Clear();
             stateKey = string.Empty;

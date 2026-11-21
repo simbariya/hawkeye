@@ -13,6 +13,7 @@
 @inject MeterSource Source
 @inject DetailsState Details
 @inject UpdateService Updates
+@inject Hawkeye.Engine.Services.Pvp.PvpTracker Pvp
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
@@ -34,7 +35,11 @@
                 @onclick="() => vm!.OpenExtras()" @onmousedown:stopPropagation="true">
             <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" /><rect x="9" y="2.5" width="4.5" height="4.5" /><rect x="2.5" y="9" width="4.5" height="4.5" /><rect x="9" y="9" width="4.5" height="4.5" /></svg>
         </button>
-        <button type="button" class="side-btn" title="Clear: blank the meter until your next fight (fights are kept in History)"
+        <button type="button" class="side-btn @(vm!.PvpMode ? "is-on" : "")" title="@(vm.PvpMode ? "Back to the DPS meter" : "PvP mode: kills, deaths, assists, AP and rank points")"
+                @onclick="() => vm.TogglePvp()" @onmousedown:stopPropagation="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5l8 8M13.5 2.5l-8 8M9.5 12.5l3 -3M3.5 9.5l3 3M11 11l2.5 2.5M5 11l-2.5 2.5" /></svg>
+        </button>
+        <button type="button" class="side-btn" title="@(vm.PvpMode ? "Start the PvP count again" : "Clear: blank the meter until your next fight (fights are kept in History)")"
                 @onclick="() => vm!.Clear()" @onmousedown:stopPropagation="true">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6.2 4.5V3h3.6v1.5M4.6 4.5l.7 8.5h5.4l.7-8.5" /></svg>
         </button>
@@ -56,6 +61,20 @@
                     @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
         </div>
 
+        @if (vm.PvpMode)
+        {
+            <div class="meter-pvp" @onmousedown="() => vm.BeginDrag()">
+                <div class="pvp-kda">
+                    <div><b>@vm.Kills</b><span>Kills</span></div>
+                    <div><b>@vm.Deaths</b><span>Deaths</span></div>
+                    <div><b>@vm.Assists</b><span>Assists</span></div>
+                </div>
+                <div class="pvp-gain"><span>AP</span><b>@vm.ApGained</b></div>
+                <div class="pvp-gain"><span>Rank points</span><b>@vm.RankGained</b></div>
+            </div>
+        }
+        else
+        {
         <div class="meter-rows" style="@(vm.AutoHeight ? $"height:{vm.RowsHeightPx}px" : "")" @onmousedown="() => vm.BeginDrag()">
             @foreach (var p in vm.Players)
             {
@@ -79,6 +98,7 @@
                 </div>
             }
         </div>
+        }
 
         @* Status line at the bottom, with the version at its end so it always sits inside the frame. *@
             <div class="meter-status" @onmousedown="() => vm.BeginDrag()">
@@ -111,7 +131,7 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, () => InvokeAsync(StateHasChanged));
 
     // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
     private double downX, downY;
@@ -138,7 +158,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (vm is null || !vm.AutoHeight) { measuredKey = string.Empty; return; }
-        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}";
+        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}|{vm.PvpMode}";
         if (key == measuredKey) return;
         measuredKey = key;
         try

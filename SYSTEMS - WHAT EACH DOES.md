@@ -199,6 +199,18 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   restarts. Needs a writable install folder (not Program Files). Works only while the repo is public.
 - **Settings:** `AutoUpdate` (on).
 
+## 6f. PvP mode (v0.2.9)
+
+- **Does:** `Engine/Services/Pvp/` (`PvpParser`, `PvpTracker`). Kills: a death (0x8D04) whose
+  killer is you (entity or name); deaths: you are the victim; AP gained: rises of the AP item count
+  (0x561B, item id 0x1AC7C1, count at offset 18); rank points gained: changes of the 0xE273 total
+  (offset 4), negative on death. Assists: someone else's kill followed within 3 s by an AP rise for
+  you (inferred). AP and rank totals are followed all the time so the first change after switching
+  on counts. The bin button resets the count in PvP mode.
+- **Shows:** meter panel instead of the rows (`MeterPage.razor`, `.meter-pvp` in `meter.css`); the
+  stream page draws the same panel from `/state.meter.pvp`.
+- **Messages:** layouts in the protocol skill and `PvpParser`.
+
 ## 7. Settings window
 
 - **Does:** opacity, the four status switches, the tracker. Opens beside the meter, square, drag

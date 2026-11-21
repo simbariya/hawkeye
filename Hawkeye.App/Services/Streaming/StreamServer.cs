@@ -35,6 +35,7 @@ namespace Hawkeye.App.Services.Streaming
         private readonly ITimedEventTracker cooldowns;
         private readonly ITimedEventTracker buffs;
         private readonly ILogger<StreamServer> logger;
+        private readonly Hawkeye.Engine.Services.Pvp.PvpTracker pvp;
         private readonly DispatcherTimer timer;
         private readonly DispatcherTimer captureTimer;
 
@@ -56,8 +57,10 @@ namespace Hawkeye.App.Services.Streaming
         public StreamServer(ISettingsService settings, MeterSource meter, SystemStatsService stats, OverlayManager overlays,
             [FromKeyedServices(TimerKeys.Cooldowns)] ITimedEventTracker cooldowns,
             [FromKeyedServices(TimerKeys.Buffs)] ITimedEventTracker buffs,
+            Hawkeye.Engine.Services.Pvp.PvpTracker pvp,
             ILogger<StreamServer> logger)
         {
+            this.pvp = pvp;
             this.settings = settings;
             this.meter = meter;
             this.stats = stats;
@@ -225,6 +228,15 @@ namespace Hawkeye.App.Services.Streaming
                         width = main.ActualWidth,
                         opacity = s.Opacity,
                         look = Looks.ClassFor(s.Look),
+                        pvp = !pvp.Active ? null : new
+                        {
+                            kills = pvp.Kills,
+                            deaths = pvp.Deaths,
+                            assists = pvp.Assists,
+                            ap = (pvp.ApGained > 0 ? "+" : "") + pvp.ApGained.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
+                            rank = (pvp.RankGained > 0 ? "+" : "") + pvp.RankGained.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
+                            time = (DateTime.Now - pvp.StartedAt).ToString(@"mm\:ss"),
+                        },
                         target = data.Target,
                         duration = data.Duration.ToString(@"mm\:ss"),
                         fromHistory = data.Shown is not null,

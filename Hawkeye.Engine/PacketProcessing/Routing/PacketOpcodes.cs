@@ -20,4 +20,6 @@ public static class PacketOpcodes
     public const ushort SkillCast = 0x3802;           // 02 38
     public const ushort Counters = 0x610B;            // 0B 61  (Odyle is entry 1; see Services/Odyle)
     public const ushort CounterUpdate = 0x610C;       // 0C 61  (one counter changed, e.g. Odyle spent)
+    public const ushort ItemCount = 0x561B;           // 1B 56  (an item's count changed; AP is an item)
+    public const ushort RankPoints = 0xE273;          // 73 E2  (your rank points total)
 }

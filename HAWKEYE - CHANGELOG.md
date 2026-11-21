@@ -3,6 +3,19 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.9 (2026-11-21)
+
+Added:
+- **PvP mode** (crossed swords on the left strip): kills, deaths and assists, AP gained and rank points
+  gained since you switched it on; the bin starts the count again. Shows on stream too.
+  Found live with the owner in PvP calling out his numbers, and every number matched to the point:
+  kills and deaths come from the death message (0x8D04 carries victim and killer), AP is an item
+  count (0x561B, item 0x1AC7C1), rank points a total (0xE273). Two kills (+5600/+2200 RP,
+  +3780/+2100 AP), three deaths (-280 RP each) and a +8800 RP / +5250 AP kill all replayed exactly.
+- Assists are inferred: an enemy killed by someone else and your AP rising within 3 s. Not yet
+  confirmed against a called-out assist.
+- 4 new tests (57 total), built from the session's real messages with names replaced.
+
 ## v0.2.8 (2026-11-21)
 
 - After the updater installs a new version, the bottom line says "Updated to x.y.z" for a minute.

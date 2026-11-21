@@ -97,6 +97,14 @@ How it was found: a side recorder saved raw TCP from the first byte of each conn
 own reader only starts at the first heartbeat, so it misses logins), then the owner read out each
 character's numbers and the stream was searched for them.
 
+### PvP messages (found 2026-11-21, owner in live PvP calling out numbers)
+
+- **Death 0x8D04:** `[victim varint][u32 ?][killer varint][u16][killer name: len + UTF-8][legion: len + UTF-8]...`;
+  killer 0 and no names for non-player kills. Names can be non-ASCII (UTF-8).
+- **Item count 0x561B** (44 bytes): item id u32 at 6, new count u32 at 18. AP = item 0x1AC7C1. The
+  same message counts arrows going down while a Ranger shoots.
+- **Rank points 0xE273** (12 bytes): total u32 at 4.
+
 ## 5. Record a fight, replay it, test a decoder
 
 1. Set `"RecordPackets": true` in `%AppData%\Hawkeye\settings.json`, start Hawkeye, fight.

@@ -45,6 +45,10 @@
         shell._target = el('span', 'meter-target', head);
         shell._timer = el('span', 'meter-timer', head);
         shell._rows = el('div', 'meter-rows', meter);
+        shell._pvp = el('div', 'meter-pvp', meter);
+        shell._pvp.innerHTML = '<div class="pvp-kda"><div><b class="k"></b><span>Kills</span></div><div><b class="d"></b><span>Deaths</span></div><div><b class="a"></b><span>Assists</span></div></div>' +
+            '<div class="pvp-gain"><span>AP</span><b class="ap"></b></div><div class="pvp-gain"><span>Rank points</span><b class="rp"></b></div>';
+        meter.insertBefore(shell._pvp, shell._rows);
         shell._status = el('div', 'meter-status', meter);
         return shell;
     }
@@ -61,8 +65,17 @@
         meterEl.style.opacity = m.opacity;
         var shellClass = 'shell ' + (m.look || 'theme-monolith');
         if (meterEl.className !== shellClass) meterEl.className = shellClass;
-        setText(meterEl._target, m.target);
-        setText(meterEl._timer, m.duration);
+        setText(meterEl._target, m.pvp ? 'PvP' : m.target);
+        setText(meterEl._timer, m.pvp ? m.pvp.time : m.duration);
+        meterEl._pvp.style.display = m.pvp ? '' : 'none';
+        meterEl._rows.style.display = m.pvp ? 'none' : '';
+        if (m.pvp) {
+            setText(meterEl._pvp.querySelector('.k'), String(m.pvp.kills));
+            setText(meterEl._pvp.querySelector('.d'), String(m.pvp.deaths));
+            setText(meterEl._pvp.querySelector('.a'), String(m.pvp.assists));
+            setText(meterEl._pvp.querySelector('.ap'), m.pvp.ap);
+            setText(meterEl._pvp.querySelector('.rp'), m.pvp.rank);
+        }
         meterEl._timer.className = 'meter-timer' + (m.fromHistory ? ' is-last' : '');
 
         var seen = {};

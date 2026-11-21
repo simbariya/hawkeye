@@ -159,6 +159,17 @@
 .status-ping.is-ok { color: var(--ping-ok); }
 .status-ping.is-bad { color: var(--ping-bad); }
 .status-version { opacity: 0.45; }
+
+/* PvP mode panel (replaces the rows) */
+.side-btn.is-on { color: var(--accent, #8CCFDF) !important; }
+.meter-pvp { margin-left: var(--side); padding: 4px 6px 2px; cursor: move; }
+.pvp-kda { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; }
+.pvp-kda div { display: flex; flex-direction: column; align-items: center; padding: 4px 0; background: rgba(0, 0, 0, 0.18); }
+.pvp-kda b { font-size: 22px; font-weight: 300; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pvp-kda span { font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.6; }
+.pvp-gain { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 2px; font-size: 12px; }
+.pvp-gain span { opacity: 0.65; }
+.pvp-gain b { font-size: 14px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--accent, #8CCFDF); }
 .status-update { color: var(--accent, #8CCFDF); font-weight: 600; }
 .is-clickable { cursor: pointer; text-decoration: underline dotted; }
 
