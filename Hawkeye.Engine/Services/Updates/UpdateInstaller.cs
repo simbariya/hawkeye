@@ -20,8 +20,12 @@ namespace Hawkeye.Engine.Services.Updates
                 ":wait",
                 $"{sys}tasklist.exe /FI \"PID eq {waitForPid}\" /NH 2>nul | {sys}find.exe \" {waitForPid} \" >nul",
                 $"if not errorlevel 1 ({sys}PING.EXE -n 2 127.0.0.1 >nul & goto wait)",
+                // Hawkeye's window runs on WebView2, whose helper processes outlive Hawkeye by a moment and hold
+                // the WebView2 data folder next to the exe. Restarting while they still did left the new copy
+                // without a window (0x8007139F, 0.2.8 to 0.2.9 on 2026-11-21, I14). Give them 3 seconds.
+                $"{sys}PING.EXE -n 4 127.0.0.1 >nul",
                 $"{sys}Robocopy.exe \"{source}\" \"{install}\" /E /R:10 /W:1 /NFL /NDL /NJH /NJS /NP >nul",
-                restart ? $"start \"\" \"{Path.Combine(install, "Hawkeye.exe")}\"" : "rem no restart",
+                restart ? $"start \"\" /D \"{install}\" \"{Path.Combine(install, "Hawkeye.exe")}\"" : "rem no restart",
                 "del \"%~f0\"",
             ];
         }

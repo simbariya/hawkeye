@@ -27,7 +27,7 @@ namespace Hawkeye.App.Services
 
         private readonly ISettingsService settings;
         private readonly ILogger<UpdateService> logger;
-        private readonly string updatesDir = Path.Combine(
+        private static readonly string updatesDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Hawkeye", "updates");
         private Timer? timer;
         private int busy;
@@ -55,9 +55,12 @@ namespace Hawkeye.App.Services
 
         public static Version CurrentVersion => ReleaseInfo.ParseVersion(Branding.Version) ?? new Version(0, 0, 0);
 
+        /// <summary>True right after the updater installed this version (its download folder is still there).</summary>
+        public static bool JustInstalled => Directory.Exists(Path.Combine(updatesDir, CurrentVersion.ToString(3)));
+
         public void Start()
         {
-            if (Directory.Exists(Path.Combine(updatesDir, CurrentVersion.ToString(3))))
+            if (JustInstalled)
             {
                 justUpdatedUntil = DateTime.UtcNow.AddMinutes(1);
                 logger.LogInformation("[UPDATE] running {Version}, just installed by the updater", CurrentVersion);

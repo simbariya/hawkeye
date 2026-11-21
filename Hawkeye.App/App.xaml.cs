@@ -90,6 +90,9 @@ namespace Hawkeye.App
             };
 
             base.OnStartup(e);
+            // Just restarted by the updater: the old copy's WebView2 helpers may still hold the WebView2 data
+            // folder for a moment, and a window made now comes up empty (I14). Older install scripts did not wait.
+            if (UpdateService.JustInstalled) await Task.Delay(TimeSpan.FromSeconds(3));
             await AppHost.StartAsync();
 
             var services = AppHost.Services;

@@ -26,6 +26,7 @@ description: >
 | I11 | Some Marking Shot recasts brought no buff message | WORKED AROUND v0.1.3, cause OPEN |
 | I12 | Closed windows kept running; History/Extras missing on stream | FIXED v0.1.9 |
 | I13 | Update script copied without waiting (plain `find` was Git's) | FIXED before v0.2.7 shipped |
+| I14 | Updated copy restarted with no window (WebView2 helpers still closing) | FIXED in v0.2.10 |
 
 ## The incidents in full
 
@@ -180,7 +181,19 @@ description: >
 - **Lesson:** scripts that ship to users name system tools by absolute path; test install steps by
   running them, not by reading them.
 
-Next free number: **I14**.
+### I14 - The updated copy restarted with no window (fixed in v0.2.10)
+
+- **Symptom:** 0.2.8 to 0.2.9 update installed fine (exe was 0.2.9), but the restarted Hawkeye had no
+  window. Log: one "Unhandled UI error (kept running)", WebView2 `CreateCoreWebView2CompositionController`
+  failed with 0x8007139F ("not in the correct state").
+- **Cause:** the install script waited only for Hawkeye's own process. WebView2's helper processes outlive
+  it by a moment and still held the WebView2 data folder next to the exe when the new copy started. The
+  0.2.7 to 0.2.8 restart had simply been lucky with the timing.
+- **Fix:** the script waits 3 more seconds after Hawkeye exits, and starts the new copy from its own
+  folder (`start /D`). The test still runs the real script.
+- **Lesson:** "the process exited" is not "everything it owned is released" when it hosts a browser.
+
+Next free number: **I15**.
 
 ## CHANGES
 
