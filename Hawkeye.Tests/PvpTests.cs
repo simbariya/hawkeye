@@ -49,6 +49,7 @@ public sealed class PvpTests
     {
         var entities = new EntityTracker();
         entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
+        foreach (var enemy in new[] { 13200, 7999 }) entities.SetSessionPlayerName(enemy, "Enemy" + enemy, 0);
         var t = new DateTime(2026, 11, 21, 19, 20, 0);
         var clock = () => t;
         var pvp = new PvpTracker(entities) { Clock = () => t };
@@ -91,6 +92,60 @@ public sealed class PvpTests
         pvp.OnApTotal(101005);              // passive AP with no kill nearby: not an assist
         Assert.Equal(1, pvp.Assists);
         Assert.Equal(1005, pvp.ApGained);
+    }
+
+    /// <summary>Owner's session 19:44:07: your kill (+877 AP), you die, someone else's kill, +1346 AP 0.1 s later.</summary>
+    [Fact]
+    public void AssistRightAfterYourOwnKill_StillCounts()
+    {
+        var (_, pvp, _, wait) = Setup();
+        pvp.OnApTotal(225284);
+        pvp.SetActive(true);
+
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourKill))!.Value);
+        pvp.OnApTotal(226161);
+        wait(0.4);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourDeath))!.Value);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(OthersKill))!.Value);
+        wait(0.1);
+        pvp.OnApTotal(227507);
+
+        Assert.Equal((1, 1, 1), (pvp.Kills, pvp.Deaths, pvp.Assists));
+        Assert.Equal(2223, pvp.ApGained);
+    }
+
+    /// <summary>Someone else's kill 0.6 s before yours, then your AP: that AP is your kill's, not an assist.</summary>
+    [Fact]
+    public void ApAfterYourKill_IsNotAnAssist_EvenWithAnotherKillJustBefore()
+    {
+        var (_, pvp, _, wait) = Setup();
+        pvp.OnApTotal(218684);
+        pvp.SetActive(true);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(OthersKill))!.Value);
+        wait(0.6);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourKill))!.Value);
+        pvp.OnApTotal(222003);
+        Assert.Equal((1, 0), (pvp.Kills, pvp.Assists));
+    }
+
+    /// <summary>Owner's session 19:46: a pull of Abyss mobs, each death naming him as killer. Not kills.</summary>
+    [Fact]
+    public void MobKills_DoNotCount_NorTheirApAsAssists()
+    {
+        var (_, pvp, _, wait) = Setup();
+        pvp.OnApTotal(230000);
+        pvp.SetActive(true);
+        // Mob 41030 (never announced as a player), killed by you; then a mob killed by someone else.
+        const string YourMobKill = "29048DC6C00287D4E100EE611805" + "05" + "416C706861" + "08" + "4775696C646F6E65" + "010000000000000100";
+        const string OthersMobKill = "22048DC7C00287D4E100E7071805" + "05" + "4F74686572" + "02" + "5859" + "010000000000000100";
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourMobKill))!.Value);
+        pvp.OnApTotal(230044);
+        wait(0.3);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(OthersMobKill))!.Value);
+        pvp.OnApTotal(230050);
+
+        Assert.Equal((0, 0), (pvp.Kills, pvp.Assists));
+        Assert.Equal(50, pvp.ApGained);   // AP is AP, whatever paid it
     }
 
     [Fact]

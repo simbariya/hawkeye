@@ -103,7 +103,12 @@ character's numbers and the stream was searched for them.
   killer 0 and no names for non-player kills. Names can be non-ASCII (UTF-8).
 - **Item count 0x561B** (44 bytes): item id u32 at 6, new count u32 at 18. AP = item 0x1AC7C1. The
   same message counts arrows going down while a Ranger shoots.
-- **Rank points 0xE273** (12 bytes): total u32 at 4.
+- **Rank points 0xE273** (12 bytes): total u32 at 4. Sent only on change.
+- **Rank total in 0x3633** (candidate, one character only): u32 right after the 4 bytes `26 F4 CB 1F`,
+  about 170 bytes from the end; resent at every respawn and zone change. Check on an alt before use.
+- **Mob or player:** Abyss mobs killed by you carry your name as killer and give AP. Tell them apart by
+  whether the victim was announced by 0x3645 (39 players / 35 mobs in the 2026-11-21 session, no overlap).
+- **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder
 

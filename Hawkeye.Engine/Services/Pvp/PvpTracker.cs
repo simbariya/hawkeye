@@ -9,19 +9,26 @@ namespace Hawkeye.Engine.Services.Pvp
     /// on (or last cleared it). The AP and rank totals are followed all the time, so the first change after
     /// switching on already counts.
     ///
-    /// Assists are inferred, not read: an enemy dies to someone else's hand and your AP goes up within
-    /// <see cref="AssistWindow"/> (you got a share). Kills and deaths are read straight from the death message.
+    /// Assists are inferred, not read. The game sends your new AP total right after the death that earned it
+    /// (within about 0.1 s in the owner's session), so each AP rise belongs to the latest player kill just before
+    /// it: yours means it is that kill's AP; someone else's means you got a share, an assist. Most kills near you
+    /// give you nothing and are not assists. Kills and deaths are read straight from the death message.
+    /// (v0.2.11 tied any AP within 3 s of your own kill to that kill and missed an assist 0.4 s later.)
+    ///
+    /// Only players count. Abyss mobs carry the killer's name too and also give AP, so the victim must be a
+    /// player the game announced (0x3645, kept in <see cref="EntityTracker"/>). In the owner's session this split
+    /// 74 of his kills cleanly: 39 announced players (every kill he called out) and 35 never-announced mobs.
     /// </summary>
     public sealed class PvpTracker
     {
-        public static readonly TimeSpan AssistWindow = TimeSpan.FromSeconds(3);
+        public static readonly TimeSpan AssistWindow = TimeSpan.FromSeconds(1.5);
 
         private readonly EntityTracker entities;
         private readonly ILogger logger;
         private readonly Lock gate = new();
         private long? lastAp, lastRank;
-        private DateTime lastOwnKill = DateTime.MinValue;
-        private readonly List<DateTime> othersKills = new();
+        private sealed record KillEvent(DateTime At, bool Yours, bool VictimIsPlayer);
+        private readonly List<KillEvent> recentKills = new();   // waiting for the AP they may bring
 
         public bool Active { get; private set; }
         public DateTime StartedAt { get; private set; }
@@ -63,7 +70,7 @@ namespace Hawkeye.Engine.Services.Pvp
                 Kills = Deaths = Assists = 0;
                 ApGained = RankGained = 0;
                 StartedAt = now();
-                othersKills.Clear();
+                recentKills.Clear();
             }
             Changed?.Invoke(this, EventArgs.Empty);
         }
@@ -83,16 +90,17 @@ namespace Hawkeye.Engine.Services.Pvp
                     if (Active) { Deaths++; changed = true; }
                     logger.LogInformation("[PVP] you died (killer {Killer})", death.KillerName);
                 }
-                else if (death.Killer != 0 && IsMe(death.Killer, death.KillerName))
-                {
-                    lastOwnKill = t;
-                    if (Active) { Kills++; changed = true; }
-                    logger.LogInformation("[PVP] kill (victim entity {Victim})", death.Victim);
-                }
                 else if (death.Killer != 0)
                 {
-                    othersKills.Add(t);                // an assist if your AP rises right after
-                    othersKills.RemoveAll(x => t - x > AssistWindow);
+                    bool yours = IsMe(death.Killer, death.KillerName);
+                    bool player = entities.IsIdentifiedPlayer(death.Victim);
+                    if (yours && player)
+                    {
+                        if (Active) { Kills++; changed = true; }
+                        logger.LogInformation("[PVP] kill (victim entity {Victim})", death.Victim);
+                    }
+                    recentKills.RemoveAll(k => t - k.At > AssistWindow);
+                    recentKills.Add(new KillEvent(t, yours, player));
                 }
             }
             if (changed) Changed?.Invoke(this, EventArgs.Empty);
@@ -110,13 +118,16 @@ namespace Hawkeye.Engine.Services.Pvp
                     {
                         ApGained += total - before;
                         changed = true;
-                        // Not your kill, but someone else's kill a moment ago: you helped.
-                        bool ownKillJustNow = t - lastOwnKill <= AssistWindow;
-                        int idx = othersKills.FindIndex(x => t - x <= AssistWindow);
-                        if (!ownKillJustNow && idx >= 0)
+                    }
+                    // The latest kill just before this AP is the one that paid it.
+                    int idx = recentKills.FindLastIndex(k => t - k.At <= AssistWindow);
+                    if (idx >= 0)
+                    {
+                        var cause = recentKills[idx];
+                        recentKills.RemoveAt(idx);
+                        if (!cause.Yours && cause.VictimIsPlayer)
                         {
-                            othersKills.RemoveAt(idx);
-                            Assists++;
+                            if (Active) Assists++;
                             logger.LogInformation("[PVP] assist (+{Ap} AP)", total - before);
                         }
                     }

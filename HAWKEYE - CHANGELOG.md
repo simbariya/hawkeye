@@ -3,6 +3,19 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.12 (2026-11-21)
+
+Fixed (PvP mode, from the owner's live session):
+- Mob kills no longer count as kills. Abyss mobs name you as killer and give AP too; a kill now needs
+  a victim the game announced as a player. In the session: 39 player kills, 35 mobs, cleanly split.
+- Assists: an AP rise now belongs to the latest kill just before it (the game sends AP about 0.1 s
+  after the death). The old rule hid an assist that came 0.4 s after the owner's own kill.
+- Replay of 19:41 to 19:49: 13 kills, 4 deaths, 2 assists, 19 mob kills ignored.
+
+Known gap: the first AP and rank change after starting Hawkeye mid-session is not counted (the game
+sends totals only when they change). Your rank total is also in the 0x3633 "you" message, sent at every
+respawn; not used yet until checked on another character.
+
 ## v0.2.11 (2026-11-21)
 
 Fixed:

@@ -205,8 +205,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   killer is you (entity or name); deaths: you are the victim; AP gained: rises of the AP item count
   (0x561B, item id 0x1AC7C1, count at offset 18); rank points gained: changes of the 0xE273 total
   (offset 4), negative on death. Assists: someone else's kill followed within 3 s by an AP rise for
-  you (inferred). AP and rank totals are followed all the time so the first change after switching
-  on counts. The bin button resets the count in PvP mode.
+  you (inferred: each AP rise belongs to the latest kill within 1.5 s before it). Kills need a victim
+  announced as a player (0x3645, `EntityTracker.IsIdentifiedPlayer`): Abyss mobs name the killer and
+  give AP too. AP and rank totals are followed all the time; the first change after Hawkeye starts
+  only sets the starting point (known gap). The bin button resets the count in PvP mode.
 - **Shows:** meter panel instead of the rows (`MeterPage.razor`, `.meter-pvp` in `meter.css`); the
   stream page draws the same panel from `/state.meter.pvp`.
 - **Messages:** layouts in the protocol skill and `PvpParser`.
