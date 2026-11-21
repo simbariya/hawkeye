@@ -116,6 +116,41 @@ namespace Hawkeye.App.Services.Windowing
 
         public void DragSettings() => TryDragMove(settingsWindow);
 
+        // ------------------------------------------------------------------ details and history windows
+
+        private readonly Dictionary<Type, Window> pageWindows = new();
+
+        /// <summary>Combat analysis for whatever <see cref="DetailsState"/> holds (set it first).</summary>
+        public void OpenDetails() => OpenPage(typeof(DetailsPage), 900, 640);
+
+        /// <summary>The last 50 fights and the ones kept forever.</summary>
+        public void OpenHistory() => OpenPage(typeof(HistoryPage), 520, 600);
+
+        public void ClosePage(Type page)
+        {
+            // Deferred for the same reason as CloseSettings (I8).
+            if (pageWindows.TryGetValue(page, out var window))
+                window.Dispatcher.BeginInvoke(DispatcherPriority.Background, () => window.Close());
+        }
+
+        public void DragPage(Type page) => TryDragMove(pageWindows.GetValueOrDefault(page));
+
+        private void OpenPage(Type page, double width, double height)
+        {
+            if (pageWindows.TryGetValue(page, out var existing))
+            {
+                existing.Activate();
+                return;
+            }
+
+            var window = new BlazorWindow(services, page) { Width = width, Height = height };
+            var main = Application.Current.MainWindow;
+            if (main is not null) PlaceBeside(window, main);
+            window.Closed += (_, _) => pageWindows.Remove(page);
+            pageWindows[page] = window;
+            window.Show();
+        }
+
         // ------------------------------------------------------------------ tracker icons
 
         /// <summary>Fakes a timer on every tracked skill (4s, 7s, 10s, ...) to check the look without fighting.</summary>

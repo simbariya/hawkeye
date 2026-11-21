@@ -108,3 +108,14 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   Share zip: `..\release\Hawkeye-0.1.4-small.zip` (built from `..\release\0.1.4-share`, has the
   version label and the new source link).
 - Pushing again: only on the owner's word each time (CLAUDE.md rule 5).
+
+## CHECKPOINT (2026-11-21, v0.1.5) - supersedes the ones above
+
+- Built on request: combat analysis window (click a meter row; layout from the game's own window),
+  history of the last 50 fights + kept-forever folder, and "someone else's fight never replaces
+  yours" (meter shows your last fight from history between fights). 31/31 tests; analysis window
+  checked in a render preview. NOT yet seen in game.
+- Odyle tracking is designed but waits on a recording session with the owner (steps in the chat:
+  close Hawkeye, set RecordPackets, relog/zone, search the unpacked stream for 360 and 2000).
+- Local commits after the last push: not pushed. Push only on the owner's word.
+- Packages: `..\release\Hawkeye-0.1.5-small.zip`. Owner runs `..\release\0.1.4\Hawkeye\Hawkeye.exe`.

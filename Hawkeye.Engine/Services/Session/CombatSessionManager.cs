@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using Hawkeye.Engine.Services.Timed;
 using Microsoft.Extensions.DependencyInjection;
+using Hawkeye.Engine.Services.History;
 
 namespace Hawkeye.Engine.Services.Session
 {
@@ -23,6 +24,7 @@ namespace Hawkeye.Engine.Services.Session
         private readonly List<BuffEvent> activeBuffBacklog = new();
         private readonly ITimedEventTracker buffEventTracker;
         private readonly ITimedEventTracker skillCdEventTracker;
+        private readonly IEncounterHistory? history;
 
 
         public CombatSessionManager(
@@ -30,8 +32,10 @@ namespace Hawkeye.Engine.Services.Session
             ILoggerFactory loggerFactory,
             ISettingsService settingsService,
             [FromKeyedServices(TimerKeys.Buffs)] ITimedEventTracker buffEventTracker,
-            [FromKeyedServices(TimerKeys.Cooldowns)] ITimedEventTracker skillCdEventTracker)
+            [FromKeyedServices(TimerKeys.Cooldowns)] ITimedEventTracker skillCdEventTracker,
+            IEncounterHistory? history = null)
         {
+            this.history = history;
             this.entityTracker = entityTracker;
             this.settingsService = settingsService;
             this.buffEventTracker = buffEventTracker;
@@ -95,6 +99,45 @@ namespace Hawkeye.Engine.Services.Session
                 latestPlayerStatSnapshot = PlayerStatSnapshot.Create(stats, capturedAt);
             }
         }
+
+        // ---- Fight history ------------------------------------------------------------------------------
+        /// <summary>
+        /// Saves a finished fight to history if YOU took part (or Hawkeye does not know who you are yet).
+        /// Called under the lock when a fight ends: idle, a new pull, STOP on a dummy run, or Hawkeye closing.
+        /// </summary>
+        private void RecordEncounter(TargetCombatSession session)
+        {
+            if (history is null || session.Recorded) return;
+            try
+            {
+                var stats = session.GetPlayerStats();
+                if (stats.Count == 0) return;
+                if (entityTracker.HasCurrentUser && !stats.Any(p => p.IsUser)) return; // someone else's fight
+                session.Recorded = true;
+                var snapshot = EncounterBuilder.Build(session, DeathsFor(session.TargetInfo));
+                history.Add(snapshot);
+                logger.LogInformation("[HISTORY] Saved {Target}, {Seconds:0} s, {Players} players", snapshot.TargetName, snapshot.DurationSeconds, snapshot.Players.Count);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Could not save the fight to history");
+            }
+        }
+
+        /// <summary>The fight on the meter right now, frozen for the details window; null when there is none.</summary>
+        public EncounterSnapshot? BuildLiveSnapshot()
+        {
+            lock (lockObject)
+            {
+                var session = GetActiveTargetSession();
+                return session is null ? null : EncounterBuilder.Build(session, DeathsFor(session.TargetInfo));
+            }
+        }
+
+        private IReadOnlyDictionary<int, int> DeathsFor(Mob mob) =>
+            !mob.IsDummy && deathsByBoss.TryGetValue(mob.MobCode, out var tally)
+                ? new Dictionary<int, int>(tally.Deaths)
+                : new Dictionary<int, int>();
 
         // ---- Deaths on a boss, across pulls ---------------------------------------------------------
         // Kept per boss TYPE (mob code), not per entity, so a wipe and re-pull (even if the boss
@@ -200,8 +243,12 @@ namespace Hawkeye.Engine.Services.Session
         {
             lock (lockObject)
             {
-                if (DummyRun == DummyRunState.Running && dummyRunTargetId is { } id && targetEntries.TryGetValue(id, out var entry))
-                    entry.CurrentSession?.Freeze();
+                if (DummyRun == DummyRunState.Running && dummyRunTargetId is { } id && targetEntries.TryGetValue(id, out var entry)
+                    && entry.CurrentSession is { } run)
+                {
+                    run.Freeze();
+                    RecordEncounter(run);   // a stopped run is finished: into history now
+                }
                 DummyRun = DummyRun == DummyRunState.Armed ? DummyRunState.Idle : DummyRunState.Stopped;
                 logger.LogInformation("[DUMMY] Stop pressed");
             }
@@ -514,7 +561,7 @@ namespace Hawkeye.Engine.Services.Session
         {
             var entry = targetEntries.GetOrAdd(
                 damageEvent.TargetEntity.Id,
-                id => new TargetEntry(id, entityTracker, settingsService));
+                id => new TargetEntry(id, entityTracker, settingsService, RecordEncounter));
 
             var previousSession = entry.CurrentSession;
             entry.AddDamage(damageEvent);

@@ -40,6 +40,14 @@ namespace Hawkeye.Engine.Services.Session
                 return;
             }
 
+            // Once Hawkeye knows who you are, someone else's fight never takes the meter (owner, 2026-11-21:
+            // "not overwrite until I am involved"). The meter then shows your last fight from history.
+            if (entityTracker.HasCurrentUser)
+            {
+                ActiveTargetId = null;
+                return;
+            }
+
             var best = activeEntries
                 .Select(e => (entry: e, count: e.CountRecentHits(cutoff)))
                 .Where(x => x.count > 0)

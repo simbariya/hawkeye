@@ -7,8 +7,7 @@ from this list unless the owner asks for that item by name. As of 2026-11-20.
 
 | Feature | What it was | Where to find the old code |
 |---|---|---|
-| Combat history | Every boss fight saved to SQLite, a history browser with search and paging | RATmeter `Services/Session/Persistence/`, `Views/HistoryWindow*` (git history before the rename) |
-| Player details | Click a row: per-skill table (hits, crit, back, perfect, double, min/avg/max), DPS graph, combat log, buff uptime | RATmeter `Views/PlayerDetailsWindow*`, `GraphDataCalculator.cs`, `BuffStatisticsCalculator.cs` |
+| Player details extras | DPS graph, combat log, buff uptime (the per-skill table itself was rebuilt in v0.1.5) | RATmeter `Views/PlayerDetailsWindow*`, `GraphDataCalculator.cs`, `BuffStatisticsCalculator.cs` |
 | Stat efficiency calculator | Estimates which stat gives the most DPS | RATmeter `Services/StatEfficiency/` |
 | Auto-updater | Checked upstream GitHub releases and replaced the exe | RATmeter `AionDpsMeter.Updater/`, `UpdateCheckerService.cs` |
 | Buff overlay bar | A row of active buff timers | Replaced by Buff mode in the skill tracker |

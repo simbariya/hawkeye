@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Windows;
 using Hawkeye.App.Services;
 using Hawkeye.App.Services.Windowing;
+using Hawkeye.Engine.Services.History;
 using Hawkeye.Engine.Services.Session;
 using Hawkeye.Engine.Settings;
 using Serilog;
@@ -27,6 +28,9 @@ namespace Hawkeye.App.ViewModels
         public double BarPercent { get; set; }
     }
 
+    /// <summary>What one meter row is built from: a live player or a player in a saved fight.</summary>
+    internal readonly record struct RowSource(long PlayerId, bool IsUser, int ClassId, string Name, long TotalDamage, double Dps, double Share, int Deaths);
+
     /// <summary>One piece of the status line. Css picks its colour; Clickable items run an action.</summary>
     public sealed record StatusItem(string Text, string Css, string Title = "", bool Clickable = false);
 
@@ -39,6 +43,8 @@ namespace Hawkeye.App.ViewModels
         private readonly SystemStatsService stats;
         private readonly ISettingsService settings;
         private readonly OverlayManager overlays;
+        private readonly IEncounterHistory history;
+        private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
         private readonly CancellationTokenSource cts = new();
@@ -66,13 +72,22 @@ namespace Hawkeye.App.ViewModels
 
         private string stateKey = string.Empty;
 
+        /// <summary>
+        /// True when no fight of yours is running and the meter shows your last fight from history instead
+        /// (someone else's fight never replaces it; owner 2026-11-21).
+        /// </summary>
+        public bool ShowingHistory => shown is not null;
+        private EncounterSnapshot? shown;
+
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
-            OverlayManager overlays, Func<Task> redraw)
+            OverlayManager overlays, IEncounterHistory history, DetailsState details, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
             this.settings = settings;
             this.overlays = overlays;
+            this.history = history;
+            this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();
         }
@@ -94,15 +109,29 @@ namespace Hawkeye.App.ViewModels
         {
             bool changed = false;
 
-            var duration = sessions.GetCombatDuration().ToString(@"mm\:ss");
-            var target = sessions.GetActiveTargetInfo()?.Name ?? string.Empty;
             var status = BuildStatusItems();
-            var deaths = ShowDeaths ? sessions.GetActiveBossDeaths() : new Dictionary<int, int>();
+            var live = sessions.PlayerStats.Where(p => p.IsIdentified || p.DamagePercentage > 1).ToList();
+            shown = live.Count == 0 ? history.LastOwn : null;
 
-            var current = sessions.PlayerStats.Where(p => p.IsIdentified || p.DamagePercentage > 1).ToList();
+            string duration, target;
+            List<RowSource> current;
+            if (shown is not null)
+            {
+                duration = TimeSpan.FromSeconds(shown.DurationSeconds).ToString(@"mm\:ss");
+                target = shown.TargetName;
+                current = shown.Players.Select(p => new RowSource(p.PlayerId, p.IsUser, p.ClassId, p.Name, p.TotalDamage, p.Dps, p.SharePercent, p.Deaths)).ToList();
+            }
+            else
+            {
+                duration = sessions.GetCombatDuration().ToString(@"mm\:ss");
+                target = sessions.GetActiveTargetInfo()?.Name ?? string.Empty;
+                var deaths = ShowDeaths ? sessions.GetActiveBossDeaths() : new Dictionary<int, int>();
+                current = live.Select(p => new RowSource(p.PlayerId, p.IsUser, p.ClassId, p.PlayerName, p.TotalDamage, p.DamagePerSecond, p.DamagePercentage, deaths.GetValueOrDefault((int)p.PlayerId))).ToList();
+            }
+
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}";
             if (key != stateKey)
             {
                 Duration = duration;
@@ -127,13 +156,14 @@ namespace Hawkeye.App.ViewModels
 
                 row.IsUser = p.IsUser;
                 row.ClassId = p.ClassId;
-                row.Name = p.PlayerName;
+                row.Name = p.Name;
                 row.TotalDamage = p.TotalDamage;
                 row.Total = Compact(p.TotalDamage);
-                row.Dps = Compact((long)Math.Round(p.DamagePerSecond), shortThousands: true);
-                row.Deaths = deaths.GetValueOrDefault((int)p.PlayerId);
-                row.Detail = $"{p.TotalDamage.ToString("N0", CultureInfo.InvariantCulture)} damage ({p.DamagePercentage:F1}%)"
-                             + (row.Deaths > 0 ? $", died {row.Deaths}x on this boss" : string.Empty);
+                row.Dps = Compact((long)Math.Round(p.Dps), shortThousands: true);
+                row.Deaths = ShowDeaths ? p.Deaths : 0;
+                row.Detail = $"{p.TotalDamage.ToString("N0", CultureInfo.InvariantCulture)} damage ({p.Share:F1}%)"
+                             + (row.Deaths > 0 ? $", died {row.Deaths}x on this boss" : string.Empty)
+                             + ". Click for the skill breakdown";
 
                 double targetPercent = top > 0 ? 100.0 * p.TotalDamage / top : 0;
                 double diff = targetPercent - row.BarPercent;
@@ -231,6 +261,16 @@ namespace Hawkeye.App.ViewModels
             if (DummyRunning) sessions.StopDummyRun();
             else sessions.StartDummyRun();
         }
+
+        /// <summary>Opens the combat analysis for this player: live if the fight is running, else the shown fight.</summary>
+        public void OpenDetails(long playerId)
+        {
+            if (shown is not null) details.ShowSaved(shown, playerId);
+            else details.ShowLive(sessions.BuildLiveSnapshot(), playerId);
+            overlays.OpenDetails();
+        }
+
+        public void OpenHistory() => overlays.OpenHistory();
 
         public void BeginDrag() => OverlayManager.TryDragMove(Application.Current.MainWindow);
         public void BeginResize(string edge) => OverlayManager.TryResize(Application.Current.MainWindow, edge);

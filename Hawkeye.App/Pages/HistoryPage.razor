@@ -1,0 +1,93 @@
+@page "/history"
+@using System.Globalization
+@using Hawkeye.App.Services
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.Engine.Services.History
+@implements IDisposable
+@inject IEncounterHistory History
+@inject DetailsState Details
+@inject OverlayManager Overlays
+
+@*
+    Fight history: kept-forever fights first, then the last 50 fights you took part in (oldest drop off).
+    Click a fight for its combat analysis.
+*@
+<div class="hh">
+    <header class="hh-header" @onmousedown="() => Overlays.DragPage(typeof(HistoryPage))">
+        <span class="hh-title">HISTORY</span>
+        <span class="hh-sub">your last @EncounterHistory.MaxRecent fights</span>
+        <span class="hh-spacer"></span>
+        <button type="button" class="hh-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(HistoryPage))" @onmousedown:stopPropagation="true">✕</button>
+    </header>
+
+    <div class="hh-body">
+        @if (saved.Count > 0)
+        {
+            <div class="hh-section">KEPT FOREVER</div>
+            @foreach (var e in saved)
+            {
+                <div class="hh-row" @onclick="() => Open(e)" title="Open the combat analysis">
+                    <span class="hh-star is-on">★</span>
+                    @Line(e)
+                    <button type="button" class="hh-del" title="Remove from kept-forever"
+                            @onclick="() => History.DeleteSaved(e.Id)" @onclick:stopPropagation="true">✕</button>
+                </div>
+            }
+        }
+
+        <div class="hh-section">RECENT</div>
+        @if (recent.Count == 0)
+        {
+            <div class="hh-empty">No fights yet. Every boss or dummy fight you take part in lands here when it ends.</div>
+        }
+        @foreach (var e in recent)
+        {
+            bool kept = e.IsSaved || saved.Any(s => s.Id == e.Id);
+            <div class="hh-row" @onclick="() => Open(e)" title="Open the combat analysis">
+                <button type="button" class="hh-star @(kept ? "is-on" : "")" title="@(kept ? "Kept forever" : "Keep this fight forever")"
+                        @onclick="() => History.KeepForever(e.Id)" @onclick:stopPropagation="true">@(kept ? "★" : "☆")</button>
+                @Line(e)
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<EncounterSnapshot> recent = new();
+    private List<EncounterSnapshot> saved = new();
+
+    protected override void OnInitialized()
+    {
+        Load();
+        History.Changed += OnChanged;
+    }
+
+    private void Load()
+    {
+        recent = History.Recent.ToList();
+        saved = History.Saved.ToList();
+    }
+
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(() => { Load(); StateHasChanged(); });
+
+    private void Open(EncounterSnapshot e)
+    {
+        Details.ShowSaved(e);
+        Overlays.OpenDetails();
+    }
+
+    private RenderFragment Line(EncounterSnapshot e) => __builder =>
+    {
+        var you = e.You;
+        var top = e.Players.FirstOrDefault();
+        <span class="hh-when">@e.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)</span>
+        <span class="hh-target" title="@e.TargetName">@e.TargetName</span>
+        <span class="hh-dur">@TimeSpan.FromSeconds(e.DurationSeconds).ToString(@"mm\:ss")</span>
+        <span class="hh-dps" title="@(you is not null ? "Your DPS" : "Top DPS")">@Short(you?.Dps ?? top?.Dps ?? 0)/s</span>
+        <span class="hh-count" title="Players">@e.Players.Count</span>
+    };
+
+    private static string Short(double v) => Hawkeye.App.ViewModels.MeterViewModel.Compact((long)Math.Round(v), shortThousands: true);
+
+    public void Dispose() => History.Changed -= OnChanged;
+}

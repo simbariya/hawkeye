@@ -115,6 +115,22 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   `Services/Windowing/ClickThrough.cs`, `Hawkeye.Engine/Services/Timed/`.
 - **Proven in game (2026-11-21):** Deadshot cooldown and the Marking Shot buff (id 14090000). Not yet: every other Ranger skill.
 
+## 6b. History and combat analysis (v0.1.5)
+
+- **History:** `Hawkeye.Engine/Services/History/` (`EncounterSnapshot`, `EncounterBuilder`,
+  `EncounterHistory`). A fight is saved when it ends if you took part (or you are not known yet):
+  `CombatSessionManager.RecordEncounter`, called by `TargetEntry` on completion, by `StopDummyRun`,
+  and by `CompleteActiveSessions` on exit (`TargetCombatSession.Recorded` stops doubles). Files:
+  `%AppData%\Hawkeye\history\*.json` (newest 50; older files deleted) and `history\saved\*.json`
+  (kept forever). They hold other players' names: never in git.
+- **Which fight the meter shows:** your open fight; else, once you are known, your last fight from
+  history (`IEncounterHistory.LastOwn`); someone else's fight never. Only before Hawkeye knows you
+  does it fall back to the busiest fight.
+- **Combat analysis:** `Pages/DetailsPage.razor` (+ `.css`), fed by `Services/DetailsState.cs`
+  (live fight via `CombatSessionManager.BuildLiveSnapshot`, refreshed each second, or a history
+  fight). Opened by clicking a meter row or a history entry. `Pages/HistoryPage.razor` lists kept
+  and recent fights. Windows: `OverlayManager.OpenDetails/OpenHistory`.
+
 ## 7. Settings window
 
 - **Does:** opacity, the four status switches, the tracker. Opens beside the meter, square, drag

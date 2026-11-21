@@ -1,0 +1,163 @@
+@page "/details"
+@using System.Globalization
+@using Hawkeye.App.Services
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.Engine.Services.History
+@using Hawkeye.Engine.Services.Session
+@implements IDisposable
+@inject DetailsState Details
+@inject CombatSessionManager Sessions
+@inject IEncounterHistory History
+@inject OverlayManager Overlays
+
+@*
+    Combat analysis: one player's fight, laid out like the game's own Combat Analysis window
+    (owner's reference screenshot 2026-11-21, kept outside the repo). Columns the game shows that Hawkeye
+    cannot read yet (accuracy, block, invincible, endurance, regeneration, heal) are left out, not faked.
+*@
+<div class="hd">
+    <header class="hd-header" @onmousedown="() => Overlays.DragPage(typeof(DetailsPage))">
+        <span class="hd-title">COMBAT ANALYSIS</span>
+        @if (enc is not null)
+        {
+            <span class="hd-sub">@enc.TargetName · @enc.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)@(Details.Live ? " · live" : "")</span>
+        }
+        <span class="hd-spacer"></span>
+        @if (enc is not null && !Details.Live)
+        {
+            @if (enc.IsSaved || History.Saved.Any(s => s.Id == enc.Id))
+            {
+                <span class="hd-kept" title="This fight is in your saved folder and is never deleted">★ Kept forever</span>
+            }
+            else if (History.Recent.Any(s => s.Id == enc.Id))
+            {
+                <button type="button" class="hd-keep" title="Copy this fight to the saved folder; it is never deleted"
+                        @onclick="Keep" @onmousedown:stopPropagation="true">☆ Keep forever</button>
+            }
+        }
+        <button type="button" class="hd-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(DetailsPage))" @onmousedown:stopPropagation="true">✕</button>
+    </header>
+
+    @if (enc is null || player is null)
+    {
+        <div class="hd-empty">No fight to show yet. Click a player on the meter during or after a fight.</div>
+    }
+    else
+    {
+        <div class="hd-players">
+            @foreach (var p in enc.Players)
+            {
+                <button type="button" class="hd-player @(p.PlayerId == player.PlayerId ? "is-on" : "") @(p.IsUser ? "is-me" : "")"
+                        @onclick="() => Details.SelectPlayer(p.PlayerId)">
+                    <span class="hd-class" style="background-image:url('images/classes/@(p.ClassId).png')"></span>
+                    @p.Name
+                    <small>@Short(p.Dps)/s</small>
+                </button>
+            }
+        </div>
+
+        <div class="hd-top">
+            <span>Total Battle Time</span><b>@TimeSpan.FromSeconds(enc.DurationSeconds).ToString(@"mm\:ss")</b>
+            <i></i>
+            <span>DPS</span><b>@N(player.Dps)</b>
+            <i></i>
+            <span>Total Damage Given</span><b>@N(player.TotalDamage)</b>
+        </div>
+
+        <div class="hd-summary">
+            <div><span>Total Hits</span><b>@N(player.Hits)</b></div>
+            <div><span>Share of the fight</span><b>@player.SharePercent.ToString("0.#", CultureInfo.InvariantCulture)%</b></div>
+            <div><span>Critical Hits (Proportion)</span><b>@Prop(player.Critical, player.Hits)</b></div>
+            <div><span>Perfect Hits (Proportion)</span><b>@Prop(player.Perfect, player.Hits)</b></div>
+            <div><span>Double Hits (Proportion)</span><b>@Prop(player.Double, player.Hits)</b></div>
+            <div><span>Multi-Hit (Proportion)</span><b>@Prop(player.Multi, player.Hits)</b></div>
+            <div><span>Front Attack Hits (Proportion)</span><b>@Prop(player.Front, player.Hits)</b></div>
+            <div><span>Back Attack Hits (Proportion)</span><b>@Prop(player.Back, player.Hits)</b></div>
+            <div><span>Parry (Proportion)</span><b>@Prop(player.Parry, player.Hits)</b></div>
+            <div><span>Deaths</span><b>@player.Deaths</b></div>
+        </div>
+
+        <div class="hd-table">
+            <div class="hd-row hd-head">
+                <span class="c-skill"></span>
+                <span>HIT</span><span>CRI</span><span>PERF</span><span>DOUB</span><span>FRNT</span><span>BACK</span><span>MULT</span><span>PARR</span>
+                <span class="c-num">DPS</span><span class="c-num">AVG</span><span class="c-num">MAX</span>
+                <span class="c-total">Total Damage</span>
+            </div>
+            @{ long topSkill = player.Skills.Count > 0 ? player.Skills.Max(s => s.TotalDamage) : 1; }
+            @foreach (var s in player.Skills)
+            {
+                <div class="hd-row">
+                    <span class="c-skill">
+                        <i class="hd-bar" style="width:@Pct(s.TotalDamage, topSkill)%"></i>
+                        @if (!string.IsNullOrEmpty(s.Icon)) { <img src="@s.Icon" alt="" /> } else { <em></em> }
+                        <span class="hd-skill-name" title="@s.Name">@s.Name@(s.IsDot ? " (DoT)" : "")</span>
+                    </span>
+                    <span>@s.Hits</span>
+                    <span>@Rate(s.Critical, s.Hits)</span>
+                    <span>@Rate(s.Perfect, s.Hits)</span>
+                    <span>@Rate(s.Double, s.Hits)</span>
+                    <span>@Rate(s.Front, s.Hits)</span>
+                    <span>@Rate(s.Back, s.Hits)</span>
+                    <span>@Rate(s.Multi, s.Hits)</span>
+                    <span>@Rate(s.Parry, s.Hits)</span>
+                    <span class="c-num">@Short(s.Dps)</span>
+                    <span class="c-num">@Short(s.Average)</span>
+                    <span class="c-num">@Short(s.MaxHit)</span>
+                    <span class="c-total">@N(s.TotalDamage) (@s.SharePercent.ToString("0", CultureInfo.InvariantCulture)%)</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private EncounterSnapshot? enc => Details.Snapshot;
+    private EncounterPlayer? player => enc?.Players.FirstOrDefault(p => p.PlayerId == Details.PlayerId) ?? enc?.Players.FirstOrDefault();
+    private CancellationTokenSource cts = new();
+
+    protected override void OnInitialized()
+    {
+        Details.Changed += OnChanged;
+        History.Changed += OnHistoryChanged;
+        _ = LiveLoop();
+    }
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+    private void OnHistoryChanged(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+
+    /// <summary>While showing the running fight, refresh once a second; stop when that fight is no longer on the meter.</summary>
+    private async Task LiveLoop()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cts.Token))
+            {
+                if (!Details.Live || Details.Snapshot is not { } current) continue;
+                var fresh = Sessions.BuildLiveSnapshot();
+                if (fresh is not null && fresh.MobCode == current.MobCode && fresh.StartedAt == current.StartedAt)
+                    await InvokeAsync(() => Details.Refresh(fresh));
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void Keep()
+    {
+        if (enc is not null) History.KeepForever(enc.Id);
+    }
+
+    private static string N(double v) => Math.Round(v).ToString("N0", CultureInfo.InvariantCulture);
+    private static string Short(double v) => Hawkeye.App.ViewModels.MeterViewModel.Compact((long)Math.Round(v), shortThousands: true);
+    private static string Rate(int part, int whole) => whole > 0 ? $"{Math.Round(100.0 * part / whole):0}%" : "-";
+    private static string Prop(int part, int whole) => $"{part.ToString("N0", CultureInfo.InvariantCulture)} ({Rate(part, whole)})";
+    private static string Pct(long part, long whole) => whole > 0 ? (100.0 * part / whole).ToString("0.##", CultureInfo.InvariantCulture) : "0";
+
+    public void Dispose()
+    {
+        cts.Cancel();
+        Details.Changed -= OnChanged;
+        History.Changed -= OnHistoryChanged;
+    }
+}

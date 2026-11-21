@@ -50,6 +50,9 @@ namespace Hawkeye.Engine.Services.Session
 
         /// <summary>Frozen fights keep their numbers on screen and take no more hits (a stopped dummy run).</summary>
         public bool IsFrozen { get; private set; }
+
+        /// <summary>Already saved to history (a stopped dummy run is saved at STOP, not again when it closes).</summary>
+        public bool Recorded { get; set; }
         public void Freeze() => IsFrozen = true;
 
         /// <summary>Length of a Timed dummy run, or null when this fight has no time limit.</summary>

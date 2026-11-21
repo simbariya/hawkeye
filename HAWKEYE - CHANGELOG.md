@@ -3,6 +3,28 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.5 (2026-11-21)
+
+Added:
+- **Combat analysis window.** Click any player on the meter. Laid out like the game's own Combat
+  Analysis: battle time, DPS, total damage; hits, critical, perfect, double, multi-hit, front,
+  back, parry (count and %), share of the fight, deaths; then every skill with HIT, CRI, PERF,
+  DOUB, FRNT, BACK, MULT, PARR, DPS, AVG, MAX and total damage (%), with a bar behind the name.
+  Tabs switch between the players in the fight. A running fight refreshes every second.
+  Not shown, because Hawkeye cannot read them yet: accuracy, block, invincible, endurance,
+  regeneration, heal.
+- **History.** The last 50 fights you took part in are saved when they end (idle, new pull, STOP on
+  a dummy run, or closing Hawkeye), with their full breakdown, in `%AppData%\Hawkeye\history\`.
+  The clock button on the meter opens the list; click a fight to open its analysis. The star keeps a
+  fight forever (`history\saved\`, never deleted by Hawkeye), for comparing a great run later.
+
+Changed:
+- **Someone else's fight never replaces yours.** Once Hawkeye knows who you are, the meter only
+  switches to fights you are in. Between fights it shows your last fight from history (timer in
+  grey italics). Fixes "someone else started on the dummy and my number got overwritten".
+- Clicking a row opens its breakdown; holding and moving still drags the meter.
+- 5 new tests (31 total).
+
 ## v0.1.4 (2026-11-21)
 
 Fixed:

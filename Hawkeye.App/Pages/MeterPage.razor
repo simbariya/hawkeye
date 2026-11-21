@@ -10,6 +10,8 @@
 @inject SystemStatsService Stats
 @inject ISettingsService Settings
 @inject OverlayManager Overlays
+@inject Hawkeye.Engine.Services.History.IEncounterHistory History
+@inject DetailsState Details
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
@@ -31,7 +33,11 @@
                         title="@(vm.DummyRunning ? "Stop the dummy run and keep its numbers" : "Clear the dummy numbers and start counting from your next hit")"
                         @onclick="() => vm.ToggleDummyRun()" @onmousedown:stopPropagation="true">@(vm.DummyRunning ? "STOP" : "START")</button>
             }
-            <span class="meter-timer">@(vm.DummyWaiting ? "ready" : vm.Duration)</span>
+            <span class="meter-timer @(vm.ShowingHistory ? "is-last" : "")" title="@(vm.ShowingHistory ? "Your last fight (from history)" : "Fight time")">@(vm.DummyWaiting ? "ready" : vm.Duration)</span>
+            <button type="button" class="meter-btn meter-btn--history" title="History: your last 50 fights"
+                    @onclick="() => vm.OpenHistory()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" /><path d="M8 4.4v3.9l2.7 1.7" /></svg>
+            </button>
             <button type="button" class="meter-btn meter-btn--settings" title="Settings"
                     @onclick="() => vm.OpenSettings()" @onmousedown:stopPropagation="true">⚙</button>
             <button type="button" class="meter-btn meter-btn--close" title="Close Hawkeye"
@@ -41,7 +47,9 @@
         <div class="meter-rows" style="@(vm.AutoHeight ? $"height:{vm.RowsHeightPx}px" : "")" @onmousedown="() => vm.BeginDrag()">
             @foreach (var p in vm.Players)
             {
-                <div class="meter-row @(p.IsUser ? "is-me" : "")" title="@p.Detail">
+                <div class="meter-row @(p.IsUser ? "is-me" : "")" title="@p.Detail"
+                     @onmousedown="RowDown" @onmousedown:stopPropagation="true"
+                     @onmousemove="RowMove" @onclick="() => vm.OpenDetails(p.PlayerId)">
                     <div class="meter-fill" style="width:@(Math.Clamp(p.BarPercent, 0, 100).ToString("0.##", CultureInfo.InvariantCulture))%"></div>
                     <div class="meter-icon" style="background-image:url('images/classes/@(p.ClassId).png')"></div>
                     <span class="meter-name">@p.Name</span>
@@ -93,7 +101,26 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, History, Details, () => InvokeAsync(StateHasChanged));
+
+    // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
+    private double downX, downY;
+    private bool rowPressed;
+
+    private void RowDown(MouseEventArgs e)
+    {
+        downX = e.ScreenX;
+        downY = e.ScreenY;
+        rowPressed = e.Button == 0;
+    }
+
+    private void RowMove(MouseEventArgs e)
+    {
+        if (!rowPressed || (e.Buttons & 1) == 0) { rowPressed = false; return; }
+        if (Math.Abs(e.ScreenX - downX) + Math.Abs(e.ScreenY - downY) < 4) return;
+        rowPressed = false;
+        vm!.BeginDrag();
+    }
 
     private string measuredKey = string.Empty;
 

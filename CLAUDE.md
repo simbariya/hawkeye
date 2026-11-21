@@ -17,9 +17,10 @@ game process), decodes the combat messages, and shows:
 - a skill tracker: each tracked skill is its own small icon you can drag anywhere on screen,
   following either its cooldown or the buff it gives.
 
-That is ALL it does, on purpose (owner, 2026-11-20: "get rid of all the other features, just leave
-opacity and allow it to be draggable"). History, player details, the stat calculator, the updater
-and the old buff bar were removed. They are listed in `PARKED IDEAS.md`; do not bring any back unasked.
+It started cut down on purpose (owner, 2026-11-20: "get rid of all the other features, just leave
+opacity and allow it to be draggable"); features come back only when the owner asks. Since then the
+owner asked for and got: fight history (last 50 + kept forever) and a combat analysis window (v0.1.5).
+Still removed: the stat calculator, the updater, the old buff bar, DPS graphs; see `PARKED IDEAS.md`.
 
 **Origin and licence.** Hawkeye started 2026-11-20 as a fork of RATmeter
 (https://github.com/Kuroukihime/AIon2-Dps-Meter, GPL-3.0). The packet engine (capture, stream

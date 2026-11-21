@@ -8,6 +8,7 @@ using Hawkeye.Engine.Models;
 using Hawkeye.Engine.PacketCapture;
 using Hawkeye.Engine.Services;
 using Hawkeye.Engine.Services.Entity;
+using Hawkeye.Engine.Services.History;
 using Hawkeye.Engine.Services.Session;
 using Hawkeye.Engine.Services.Timed;
 using Hawkeye.Engine.Settings;
@@ -51,12 +52,14 @@ namespace Hawkeye.App
                     services.AddSingleton<EntityTracker>();
                     services.AddKeyedSingleton<ITimedEventTracker, TimedEventTracker>(TimerKeys.Cooldowns);
                     services.AddKeyedSingleton<ITimedEventTracker, TimedEventTracker>(TimerKeys.Buffs);
+                    services.AddSingleton<IEncounterHistory, EncounterHistory>();
                     services.AddSingleton<CombatSessionManager>();
                     services.AddPacketProcessingRouting();
                     services.AddSingleton<IPacketService, PacketPipelineService>();
 
                     // App
                     services.AddSingleton<SystemStatsService>();
+                    services.AddSingleton<DetailsState>();
                     services.AddSingleton<OverlayManager>();
                     services.AddSingleton<MainWindow>();
                     services.AddWpfBlazorWebView();
