@@ -96,3 +96,15 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   new CSS (the I-logo trap). NEXT: owner closes Hawkeye, then `dotnet build Hawkeye.slnx`.
   Meanwhile a clean 0.1.4 build is in `..\release\0.1.4\Hawkeye` (zip 11.4 MB).
 - Not proven in game: fit height with a real party message, the cooldown sweep on a real cut.
+
+## CHECKPOINT (2026-11-21, pushed) - supersedes the ones above
+
+- PUBLISHED: https://github.com/simbariya/hawkeye (public, standalone, not a fork; branch `main`),
+  pushed on the owner's word ("push to git, as long as it's a separate project"). CI green
+  (build + 26 tests, run 44849994200). Remotes: origin = hawkeye, fork = old GitHub fork (not
+  pushed to any more), upstream = RATmeter.
+- Version label on the meter (beside the logo) and in Settings, from the csproj <Version>.
+- Owner runs `..\release\0.1.4\Hawkeye\Hawkeye.exe` (elevated). Debug output rebuilt and current.
+  Share zip: `..\release\Hawkeye-0.1.4-small.zip` (built from `..\release\0.1.4-share`, has the
+  version label and the new source link).
+- Pushing again: only on the owner's word each time (CLAUDE.md rule 5).
