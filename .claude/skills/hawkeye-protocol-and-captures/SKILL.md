@@ -76,6 +76,22 @@ target block, `varint ?`, `u8 ?`, optional varint, `varint cooldownMs`, optional
 **Skill ids**: packets carry variant ids (`14010001`, `14010030`...). `SkillRepository.NormalizeSkillCode`
 maps them to the base id the picker shows (`14010000` Deadshot). Ranger ids start `14`.
 
+### Counters `0x610B` (Odyle), found 2026-11-21
+
+Sent when you log in or switch character, about 4 s BEFORE `0x3633` names you. A list of entries
+`[flags][entry no.][key varint][value varint if flags&0x04][extra varint if flags&0x08]`; the list
+does not start at a fixed offset. **Entry 1 = Odyle**: value = current, extra = the "(+N)" refill
+pool. Recognised by entry 2 following with the same key. Confirmed on four characters (fixtures in
+`Hawkeye.Tests/Fixtures/counters-*.hex`). Caps are NOT sent: 840 current, 2000 pool, fixed.
+The pool refill (+15) runs on a GLOBAL timer (same for every character); the next tick on
+2026-11-21 was about 16:00 local; the interval is not confirmed yet. The character list (`0x3626`,
+~10 KB, all names) arrives at the switch too but holds no Odyle. Opening the Change Character
+window sends nothing.
+
+How it was found: a side recorder saved raw TCP from the first byte of each connection (Hawkeye's
+own reader only starts at the first heartbeat, so it misses logins), then the owner read out each
+character's numbers and the stream was searched for them.
+
 ## 5. Record a fight, replay it, test a decoder
 
 1. Set `"RecordPackets": true` in `%AppData%\Hawkeye\settings.json`, start Hawkeye, fight.

@@ -1,0 +1,87 @@
+@page "/extras"
+@using System.Globalization
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.Engine.Services.Odyle
+@implements IDisposable
+@inject OdyleTracker Odyle
+@inject Hawkeye.Engine.Services.Entity.EntityTracker Entities
+@inject OverlayManager Overlays
+
+@*
+    Extras: things beyond the fight. For now, every character's Odyle as last read from the game.
+    Values are as of each character's last login or switch with Hawkeye running ("verified ... ago").
+*@
+<div class="hx">
+    <header class="hx-header" @onmousedown="() => Overlays.DragPage(typeof(ExtrasPage))">
+        <span class="hx-title">EXTRAS</span>
+        <span class="hx-spacer"></span>
+        <button type="button" class="hx-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(ExtrasPage))" @onmousedown:stopPropagation="true">✕</button>
+    </header>
+
+    <div class="hx-body">
+        <div class="hx-section">ODYLE</div>
+        @if (list.Count == 0)
+        {
+            <div class="hx-empty">
+                No characters yet. Log into a character (or switch to it) while Hawkeye is running and its Odyle
+                appears here.
+            </div>
+        }
+        @foreach (var c in list)
+        {
+            bool me = c.Name == Entities.CurrentUserName;
+            <div class="hx-row @(me ? "is-me" : "")">
+                <span class="hx-class" style="@(c.ClassId > 0 ? $"background-image:url('images/classes/{c.ClassId}.png')" : "")"></span>
+                <span class="hx-name" title="@c.Name">@c.Name@(me ? " (now)" : "")</span>
+                <span class="hx-odyle">
+                    <span class="hx-bar"><i style="width:@Pct(c.Current, OdyleParser.Cap)%"></i></span>
+                    <b>@c.Current</b><span class="hx-pool"> (+@c.Pool)</span><span class="hx-cap"> / @OdyleParser.Cap</span>
+                </span>
+                <span class="hx-when" title="@c.VerifiedAt.ToString("dd MMM yyyy HH:mm", CultureInfo.InvariantCulture)">verified @Ago(c.VerifiedAt)</span>
+            </div>
+        }
+        <div class="hx-note">
+            Read from the game when you log into or switch to a character with Hawkeye running. Other characters
+            show their numbers from that moment; switch to one to refresh it.
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<CharacterOdyle> list = new();
+    private CancellationTokenSource cts = new();
+
+    protected override void OnInitialized()
+    {
+        list = Odyle.Characters.ToList();
+        Odyle.Changed += OnChanged;
+        _ = Tick();
+    }
+
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(() => { list = Odyle.Characters.ToList(); StateHasChanged(); });
+
+    /// <summary>Keeps "verified 3 min ago" current.</summary>
+    private async Task Tick()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        try { while (await timer.WaitForNextTickAsync(cts.Token)) await InvokeAsync(StateHasChanged); }
+        catch (OperationCanceledException) { }
+    }
+
+    private static string Pct(int part, int whole) => whole > 0 ? Math.Min(100.0, 100.0 * part / whole).ToString("0.#", CultureInfo.InvariantCulture) : "0";
+
+    private static string Ago(DateTime at)
+    {
+        var d = DateTime.Now - at;
+        if (d.TotalMinutes < 1) return "just now";
+        if (d.TotalHours < 1) return $"{(int)d.TotalMinutes} min ago";
+        if (d.TotalDays < 1) return $"{(int)d.TotalHours}h ago";
+        return $"{(int)d.TotalDays}d ago";
+    }
+
+    public void Dispose()
+    {
+        cts.Cancel();
+        Odyle.Changed -= OnChanged;
+    }
+}

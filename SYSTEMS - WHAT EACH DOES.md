@@ -150,6 +150,16 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Settings:** `StreamerMode` (off), `StreamerPort` (7777, file only), `StreamShowMeter`,
   `StreamShowIcons`, `StreamShowDetails` (all on).
 
+## 6d. Odyle and Extras (v0.1.7)
+
+- **Does:** `PacketProcessing/Processors/CountersProcessor.cs` reads `0x610B` with
+  `Services/Odyle/OdyleParser.cs` (layout: protocol skill section 4). `OdyleTracker` holds the
+  reading until `EntityTracker.CurrentUserNamed` fires (the name comes ~4 s later; 20 s window);
+  a reading with no switch after it goes to the character you are on. Saved per character to
+  `%AppData%\Hawkeye\characters.json` (name, class, current, pool, verified time).
+- **Shows:** `Pages/ExtrasPage.razor` (button on the meter, `OverlayManager.OpenExtras`).
+- **Caps:** 840 / 2000 constants in `OdyleParser`. Not yet: refill estimate between logins.
+
 ## 7. Settings window
 
 - **Does:** opacity, the four status switches, the tracker. Opens beside the meter, square, drag

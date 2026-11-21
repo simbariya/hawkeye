@@ -132,6 +132,9 @@ namespace Hawkeye.App.Services.Windowing
         /// <summary>The last 50 fights and the ones kept forever.</summary>
         public void OpenHistory() => OpenPage(typeof(HistoryPage), 520, 600);
 
+        /// <summary>Extras: every character's Odyle.</summary>
+        public void OpenExtras() => OpenPage(typeof(ExtrasPage), 460, 360);
+
         public void ClosePage(Type page)
         {
             // Deferred for the same reason as CloseSettings (I8).

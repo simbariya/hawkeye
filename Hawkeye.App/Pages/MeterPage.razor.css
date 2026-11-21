@@ -118,6 +118,8 @@
 
 .meter-btn--settings { color: var(--gear); }
 .meter-btn--history { color: var(--gear); }
+.meter-btn--extras { color: var(--gear); }
+.meter-btn--extras svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; vertical-align: -1px; }
 .meter-btn--history svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: square; vertical-align: -2px; }
 
 /* the meter is showing your last fight from history, not a running one */

@@ -255,6 +255,7 @@ namespace Hawkeye.App.ViewModels
         }
 
         public void OpenHistory() => overlays.OpenHistory();
+        public void OpenExtras() => overlays.OpenExtras();
 
         public void BeginDrag() => OverlayManager.TryDragMove(Application.Current.MainWindow);
         public void BeginResize(string edge) => OverlayManager.TryResize(Application.Current.MainWindow, edge);

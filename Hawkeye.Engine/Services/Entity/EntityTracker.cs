@@ -269,9 +269,21 @@ namespace Hawkeye.Engine.Services.Entity
             ApplyIdentity(session, identity);
         }
 
+        /// <summary>Raised when the game names the character you are playing (login, character switch).</summary>
+        public event Action<string>? CurrentUserNamed;
+
+        /// <summary>Your character's name once the game has said it; empty before.</summary>
+        public string CurrentUserName => currentUserName;
+
+        /// <summary>Your character's class id, if known (0 otherwise).</summary>
+        public int CurrentUserClassId =>
+            (int)(sessionPlayers.Values.FirstOrDefault(p => p.IsUser && p.Name == currentUserName)?.CharacterClass?.Id ?? 0);
+
         private void SetCurrentUser(string name)
         {
+            bool isNew = name != currentUserName;
             currentUserName = name;
+            if (isNew && !string.IsNullOrEmpty(name) && !name.StartsWith("Player_")) CurrentUserNamed?.Invoke(name);
 
   
             foreach (var player in sessionPlayers.Values)

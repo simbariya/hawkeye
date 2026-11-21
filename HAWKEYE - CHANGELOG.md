@@ -3,6 +3,20 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.7 (2026-11-21)
+
+Added:
+- **Odyle on every character.** Hawkeye reads Odyle from the game when you log into or switch to a
+  character (message `0x610B`, found and confirmed on four of the owner's characters: 760 (+40),
+  250 (+345), 480 (+295), 60 (+360), all exact) and remembers it per character in
+  `%AppData%\Hawkeye\characters.json`.
+- **Extras window** (new four-squares button on the meter): each character's Odyle as
+  "current (+pool) / 840" with a bar and "verified ... ago", the one you are on highlighted.
+- Not possible: showing it on the game's Change Character window itself; opening that window sends
+  nothing over the network, so Hawkeye cannot know it is open.
+- Next: estimate alts' pool between logins from the global refill timer once its interval is known.
+- 5 new tests (37 total) using the real messages.
+
 ## v0.1.6 (2026-11-21)
 
 Added:

@@ -54,6 +54,7 @@ namespace Hawkeye.App
                     services.AddKeyedSingleton<ITimedEventTracker, TimedEventTracker>(TimerKeys.Buffs);
                     services.AddSingleton<IEncounterHistory, EncounterHistory>();
                     services.AddSingleton<CombatSessionManager>();
+                    services.AddSingleton<Hawkeye.Engine.Services.Odyle.OdyleTracker>();
                     services.AddPacketProcessingRouting();
                     services.AddSingleton<IPacketService, PacketPipelineService>();
 

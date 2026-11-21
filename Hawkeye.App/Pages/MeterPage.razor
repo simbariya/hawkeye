@@ -34,6 +34,10 @@
                         @onclick="() => vm.ToggleDummyRun()" @onmousedown:stopPropagation="true">@(vm.DummyRunning ? "STOP" : "START")</button>
             }
             <span class="meter-timer @(vm.ShowingHistory ? "is-last" : "")" title="@(vm.ShowingHistory ? "Your last fight (from history)" : "Fight time")">@(vm.DummyWaiting ? "ready" : vm.Duration)</span>
+            <button type="button" class="meter-btn meter-btn--extras" title="Extras: Odyle on all your characters"
+                    @onclick="() => vm.OpenExtras()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" /><rect x="9" y="2" width="5" height="5" /><rect x="2" y="9" width="5" height="5" /><rect x="9" y="9" width="5" height="5" /></svg>
+            </button>
             <button type="button" class="meter-btn meter-btn--history" title="History: your last 50 fights"
                     @onclick="() => vm.OpenHistory()" @onmousedown:stopPropagation="true">
                 <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" /><path d="M8 4.4v3.9l2.7 1.7" /></svg>
