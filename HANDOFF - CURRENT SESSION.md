@@ -158,3 +158,15 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - Local zips in ..\release\0.2.7-github. NOT pushed, NOT released: needs the owner's word.
 - 0.2.6 has no updater: the owner installs 0.2.7 by hand once; from then on releases arrive by
   themselves. The first real end-to-end update proof comes with the release after 0.2.7.
+
+## CHECKPOINT (2026-11-21, v0.2.11) - supersedes the ones above
+
+- Live on GitHub: v0.2.11 (latest). PvP mode (crossed swords on the left strip): kills, deaths,
+  assists (inferred), AP and rank points gained. SYSTEMS 6f; messages in the protocol skill.
+- v0.2.9 and v0.2.10 are BROKEN (no meter window, I15) and still listed as releases. Anyone on them
+  must unzip 0.2.11 by hand once. Owner was offered deleting them; not asked for yet.
+- I14 is a wrong diagnosis on record; the 3 s restart waits it added are harmless.
+- Open: confirm an assist against a called-out one; owner to run 0.2.11 from
+  `..\release\0.2.11-github\full\Hawkeye` (his old folders hold broken 0.2.9).
+- Release gate now includes starting the packaged exe (build-and-run skill, step 4).
+- This checkpoint commit is local only (its push was not part of the owner's "PUSH").
