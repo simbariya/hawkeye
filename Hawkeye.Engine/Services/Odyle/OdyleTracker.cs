@@ -110,8 +110,7 @@ namespace Hawkeye.Engine.Services.Odyle
             int classId = entities.CurrentUserClassId;
             if (classId != 0) c.ClassId = classId;
             logger.LogInformation("[ODYLE] {Name}: {Current} (+{Pool}) / {Cap}", name, current, pool, OdyleParser.Cap);
-            var snapshot = characters.Select(Copy).ToList();
-            _ = Task.Run(() => Save(snapshot));
+            _ = Task.Run(Save);
             ThreadPool.QueueUserWorkItem(_ => Changed?.Invoke(this, EventArgs.Empty));
         }
 
@@ -130,10 +129,19 @@ namespace Hawkeye.Engine.Services.Odyle
             }
         }
 
-        private void Save(List<CharacterOdyle> list)
+        private readonly Lock saveGate = new();
+
+        /// <summary>
+        /// Writes the LATEST list, one save at a time. (Handing each save its own copy let two quick saves finish
+        /// in the wrong order and leave the older list on disk; a test caught it.)
+        /// </summary>
+        private void Save()
         {
+            lock (saveGate)
             try
             {
+                List<CharacterOdyle> list;
+                lock (gate) list = characters.Select(Copy).ToList();
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 var tmp = path + ".tmp";
                 File.WriteAllText(tmp, JsonSerializer.Serialize(list, Json));
