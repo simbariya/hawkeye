@@ -138,3 +138,16 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   the cleric's full "695 (+?)" and the refill countdown/interval (refill adds 15 to CURRENT).
 - Not pushed since 032bff4 (many local commits). Push only on the owner's word.
 - Latest package: ..\release\0.2.4 and Hawkeye-0.2.4-small.zip.
+
+## CHECKPOINT (2026-11-21, v0.2.6 RELEASED) - supersedes the ones above
+
+- PUBLISHED on the owner's word: GitHub release v0.2.6 (https://github.com/simbariya/hawkeye/releases/tag/v0.2.6)
+  with Hawkeye-0.2.6-win-x64.zip (.NET included, 68.5 MB) and Hawkeye-0.2.6-small.zip (needs the
+  .NET 10 Desktop Runtime, 12.5 MB). CI green. Built from ..\release\0.2.6-github (fresh folder).
+- Release recipe: publish small (--self-contained false) and full (--self-contained true
+  -p:IncludeNativeLibrariesForSelfExtract=true), single file, DebugType=None; drop the WebView2 xml
+  files; add LICENSE.txt and packaging/READ ME FIRST.txt ({VERSION} replaced); zip the Hawkeye folder;
+  `gh release create vX.Y.Z` with both zips. Asset names must stay Hawkeye-<ver>-win-x64.zip and
+  Hawkeye-<ver>-small.zip (the planned auto-updater will look for them).
+- NEXT (owner asked): Clear button on the left strip; auto-update from GitHub releases.
+- Local branch backup-before-scrub holds the pre-scrub history (character names): never push it.
