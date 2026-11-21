@@ -200,7 +200,7 @@ namespace Hawkeye.App.Services.Windowing
         /// <summary>Fakes a timer on every tracked skill (4s, 7s, 10s, ...) to check the look without fighting.</summary>
         public void PreviewTimers()
         {
-            var tracked = settings.Current.TrackedSkills;
+            var tracked = settings.Current.TrackedSkills.Where(t => t.Active).ToList();
             for (int i = 0; i < tracked.Count; i++)
             {
                 var skill = GameDataProvider.Instance.GetSkillOrDefault(tracked[i].SkillId);
@@ -220,7 +220,7 @@ namespace Hawkeye.App.Services.Windowing
         {
             var current = settings.Current;
             var wanted = current.TrackerEnabled
-                ? current.TrackedSkills.Select(t => t.SkillId).Distinct().ToList()
+                ? current.TrackedSkills.Where(t => t.Active).Select(t => t.SkillId).Distinct().ToList()
                 : new List<int>();
 
             foreach (var id in icons.Keys.Where(id => !wanted.Contains(id)).ToList())

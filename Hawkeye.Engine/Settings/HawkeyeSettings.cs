@@ -41,6 +41,12 @@ namespace Hawkeye.Engine.Settings
         public int SkillId { get; set; }
         public TrackMode Mode { get; set; } = TrackMode.Cooldown;
 
+        /// <summary>
+        /// Unticked: no icon and no timers, but it stays in the list with its mode and position (owner, 2026-11-21:
+        /// switch skills off on another character instead of deleting them). Older settings files load as active.
+        /// </summary>
+        public bool Active { get; set; } = true;
+
         /// <summary>Screen position of the icon (null = not placed yet).</summary>
         public double? Left { get; set; }
         public double? Top { get; set; }

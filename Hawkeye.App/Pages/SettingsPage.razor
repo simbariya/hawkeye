@@ -151,7 +151,10 @@
             @foreach (var t in S.TrackedSkills.ToList())
             {
                 var skill = GameDataProvider.Instance.GetSkillOrDefault(t.SkillId);
-                <div class="hs-tracked-row">
+                <div class="hs-tracked-row @(t.Active ? "" : "is-off")">
+                    <button type="button" class="hs-check @(t.Active ? "is-on" : "")"
+                            title="@(t.Active ? "On: shows its icon. Untick to switch it off without removing it" : "Off: tick to show its icon again")"
+                            @onclick="() => SetActive(t.SkillId, !t.Active)">@(t.Active ? "✓" : "")</button>
                     <span class="hs-skill-icon">
                         @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
                     </span>
@@ -273,6 +276,12 @@
     }
 
     private void Remove(int skillId) => Settings.Update(s => s.TrackedSkills.RemoveAll(t => t.SkillId == skillId));
+
+    private void SetActive(int skillId, bool on) => Settings.Update(s =>
+    {
+        var t = s.TrackedSkills.FirstOrDefault(x => x.SkillId == skillId);
+        if (t is not null) t.Active = on;
+    });
 
     private void SetMode(int skillId, TrackMode mode) => Settings.Update(s =>
     {

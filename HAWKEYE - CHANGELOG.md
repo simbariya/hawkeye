@@ -3,6 +3,17 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.15 (2026-11-21, not released yet)
+
+Added:
+- Skill tracker: a tick box per tracked skill. Unticked skills keep their place, mode and icon
+  position but show no icon and run no timers (for playing another character without deleting them).
+  Older settings files load with every skill ticked. 77 tests.
+
+Checked: the game does not send the AP or rank gained per kill (8 kills, 4 deaths searched within a
+second: no gain amount in any message). It sends only new totals; the game's own "+X AP" is worked out
+from the total it got at login. Next: record a login to read those totals.
+
 ## v0.2.14 (2026-11-21)
 
 Fixed / added (owner, in PvP):

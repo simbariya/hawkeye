@@ -432,7 +432,7 @@ namespace Hawkeye.Engine.Services.Session
         private volatile HashSet<int> trackedIds = new();
 
         private void RefreshTrackedIds() =>
-            trackedIds = settingsService.Current.TrackedSkills.Select(t => t.SkillId).ToHashSet();
+            trackedIds = settingsService.Current.TrackedSkills.Where(t => t.Active).Select(t => t.SkillId).ToHashSet();
 
         private bool IsTracked(int skillId) => trackedIds.Contains(skillId);
 

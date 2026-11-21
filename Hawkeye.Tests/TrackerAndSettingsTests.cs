@@ -77,4 +77,15 @@ public sealed class TrackerAndSettingsTests
             File.Delete(path);
         }
     }
+
+    /// <summary>Owner, 2026-11-21: switch a tracked skill off on another character instead of deleting it.</summary>
+    [Fact]
+    public void TrackedSkill_Active_DefaultsOn_AndOldFilesLoadAsOn()
+    {
+        Assert.True(new Hawkeye.Engine.Settings.TrackedSkill().Active);
+        var old = System.Text.Json.JsonSerializer.Deserialize<Hawkeye.Engine.Settings.TrackedSkill>("{\"SkillId\":17010000,\"Mode\":1}")!;
+        Assert.True(old.Active);
+        var off = System.Text.Json.JsonSerializer.Deserialize<Hawkeye.Engine.Settings.TrackedSkill>("{\"SkillId\":17010000,\"Active\":false}")!;
+        Assert.False(off.Active);
+    }
 }

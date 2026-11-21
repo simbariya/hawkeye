@@ -117,6 +117,9 @@ character's numbers and the stream was searched for them.
 - **Target's combat power: NOT FOUND yet** (2026-11-21, owner targeted players for ~3 min, 1.3M messages,
   no ground-truth numbers). Questlog shows it on target; it may come from the official character site
   rather than game traffic. Next try: one target's exact CP and gear score from the owner, then search.
+- **Per-kill gains are NOT sent** (2026-11-21: 8 kills and 4 deaths, every message within 1 s searched for
+  the AP and rank gained as u16/u32/u64/varint/signed: nothing). Only totals (0x561B, 0xE273). The login
+  data probably holds the totals: record a login to find them.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

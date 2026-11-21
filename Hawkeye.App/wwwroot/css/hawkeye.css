@@ -224,6 +224,27 @@ html, body {
     border: 1px solid var(--line);
 }
 
+/* Tracked skill on/off: a small square tick box; off rows dim but keep their settings */
+.hs-check {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--accent);
+    font-size: 12px;
+    line-height: 16px;
+    cursor: pointer;
+}
+
+    .hs-check.is-on { border-color: var(--accent); }
+    .hs-check:hover { border-color: var(--accent); }
+
+.hs-tracked-row.is-off .hs-skill-icon,
+.hs-tracked-row.is-off .hs-skill-name,
+.hs-tracked-row.is-off .hs-mode { opacity: 0.4; }
+
 .hs-skill-icon {
     flex: 0 0 28px;
     width: 28px;
