@@ -65,7 +65,7 @@
     {
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         try { while (await timer.WaitForNextTickAsync(cts.Token)) await InvokeAsync(StateHasChanged); }
-        catch (OperationCanceledException) { }
+        catch (Exception) { /* closed: stop refreshing */ }
     }
 
     private static string Pct(int part, int whole) => whole > 0 ? Math.Min(100.0, 100.0 * part / whole).ToString("0.#", CultureInfo.InvariantCulture) : "0";

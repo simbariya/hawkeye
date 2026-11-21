@@ -16,7 +16,10 @@ namespace Hawkeye.App.Services.Windowing
                 var core = BlazorWebView.WebView?.CoreWebView2;
                 if (core is null || !IsVisible) return null;
                 using var ms = new System.IO.MemoryStream();
-                await core.CapturePreviewAsync(Microsoft.Web.WebView2.Core.CoreWebView2CapturePreviewImageFormat.Png, ms);
+                var capture = core.CapturePreviewAsync(Microsoft.Web.WebView2.Core.CoreWebView2CapturePreviewImageFormat.Png, ms);
+                // Never let one window stall the others: give up after a second and try again next round.
+                if (await Task.WhenAny(capture, Task.Delay(1000)) != capture) return null;
+                await capture;
                 return ms.ToArray();
             }
             catch
@@ -32,6 +35,15 @@ namespace Hawkeye.App.Services.Windowing
             BlazorWebView.Services = services;
             BlazorWebView.BlazorWebViewInitialized += (_, e) =>
                 e.WebView.DefaultBackgroundColor = System.Drawing.Color.Transparent;
+
+            // Shut the page down with the window. Without this, a closed window's page kept running: closed
+            // analysis windows refreshed themselves every second into a dead web view (thousands of logged
+            // errors, 2026-11-21) and could stall streamer mode's window pictures.
+            Closed += async (_, _) =>
+            {
+                try { await BlazorWebView.DisposeAsync(); }
+                catch { /* already gone */ }
+            };
         }
     }
 }

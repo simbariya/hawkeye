@@ -24,6 +24,7 @@ description: >
 | I9 | Buffs ignored because Hawkeye did not know who you are | FIXED v0.1.1, confirmed by the owner 2026-11-21 |
 | I10 | The I9 guess flipped "you" to other rangers | FIXED v0.1.2, awaiting in-game proof |
 | I11 | Some Marking Shot recasts brought no buff message | WORKED AROUND v0.1.3, cause OPEN |
+| I12 | Closed windows kept running; History/Extras missing on stream | FIXED v0.1.9 |
 
 ## The incidents in full
 
@@ -150,7 +151,23 @@ description: >
   and the `type` in `[BUFF]` lines around a cast that got no `[TRACK] buff` line. If neither
   appears, the buff came on another opcode.
 
-Next free number: **I12**.
+### I12 - Closed windows kept running; History and Extras never reached the stream (fixed v0.1.9)
+
+- **Symptom:** after 0.1.8, the stream showed some Hawkeye windows but never History or Extras.
+- **Evidence:** the log held ~2,000 "CoreWebView2 members cannot be accessed after the WebView2
+  control is disposed" errors: 3 per second from 15:12 (three CLOSED analysis windows still running
+  their 1 s live refresh), then 3 every 30 s (closed Extras windows, 30 s refresh). `/state` on the
+  owner's running copy listed no windows.
+- **Root cause:** closing a `BlazorWindow` never disposed its `BlazorWebView`, so the Razor page
+  inside lived on and kept rendering into a dead web view. Streamer mode captured windows one after
+  another; a capture of a window that closed mid-capture never completed, `capturing` stayed true,
+  and the capture loop stopped for good, so windows opened later never got a picture.
+- **Fix:** `BlazorWindow` disposes its `BlazorWebView` on `Closed`; each capture has a 1 s limit.
+  Harness: a page redrawing 5x a second, window closed: page disposed 1, UI errors after close 0.
+- **Lesson:** a window's content has its own lifetime; tie it to the window. Any loop that awaits
+  something external needs a timeout, or one stuck item stops it for good.
+
+Next free number: **I13**.
 
 ## CHANGES
 

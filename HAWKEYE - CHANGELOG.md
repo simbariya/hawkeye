@@ -3,6 +3,16 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.9 (2026-11-21)
+
+Fixed:
+- **History and Extras never showed on stream; closed windows kept running (I12).** Closing a
+  Hawkeye window left the page inside it running (closed analysis windows refreshed themselves
+  every second into nothing: about 2,000 logged errors). A window closing while its picture was
+  being taken stalled streamer mode's picture loop for good, so windows opened later never reached
+  the stream. Pages now shut down with their window, and each picture has a 1 s limit. Proven in a
+  test harness (0 errors after closing).
+
 ## v0.1.8 (2026-11-21)
 
 Fixed:

@@ -140,7 +140,7 @@
                     await InvokeAsync(() => Details.Refresh(fresh));
             }
         }
-        catch (OperationCanceledException) { }
+        catch (Exception) { /* closed: stop refreshing */ }
     }
 
     private void Keep()
