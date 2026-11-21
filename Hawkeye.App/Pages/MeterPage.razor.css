@@ -86,12 +86,15 @@
 .meter-target {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 0.2px;
+    /* elegant serif small caps, like the game's own titles; soft shadow, no hard outline */
+    font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    font-variant: small-caps;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
     line-height: 1.2;
-    color: var(--boss);
-    text-shadow: var(--outline);
+    color: #C8323A;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
     white-space: nowrap;          /* one line; long names end in "..." (full name on hover) */
     overflow: hidden;
     text-overflow: ellipsis;
@@ -314,18 +317,18 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* DPS on a dark backing with a heavy outline: readable on the green "you" bar and the orange ones. */
+/* DPS: calm and clean. Medium weight, soft shadow, smaller "/s"; pale mint on your own (green) bar. */
 .meter-dps {
     flex: 0 0 auto;
-    margin-right: -4px;
-    padding: 0 4px;
-    background: rgba(8, 10, 16, 0.55);
     color: var(--dps);
-    font-weight: 800;
+    font-weight: 600;
+    letter-spacing: 0.2px;
     font-variant-numeric: tabular-nums;
-    text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000,
-                 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 1px rgba(0, 0, 0, 0.9);
 }
+
+    .meter-dps small { font-size: 10.5px; font-weight: 500; opacity: 0.75; margin-left: 1px; }
+    .meter-row.is-me .meter-dps { color: #E6FFEE; }
 
 /* ---------- "fit height to group": the page takes its natural height and the window follows ---------- */
 .shell.is-auto,

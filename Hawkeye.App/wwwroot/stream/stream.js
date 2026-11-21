@@ -93,7 +93,8 @@
             }
             setText(row._total, m.showTotals ? r.total : '');
             row._total.style.display = m.showTotals ? '' : 'none';
-            setText(row._dps, r.dps + '/s');
+            var dpsHtml = r.dps.replace(/</g, '&lt;') + '<small>/s</small>';
+            if (row._dps.innerHTML !== dpsHtml) row._dps.innerHTML = dpsHtml;
         });
         Object.keys(rowEls).forEach(function (id) {
             if (!seen[id]) { rowEls[id].remove(); delete rowEls[id]; }

@@ -3,6 +3,14 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.11 (2026-11-21)
+
+Changed (owner: "more stylish and elegant"):
+- **Boss name** in Palatino small caps, soft shadow instead of the hard outline (option A of three
+  shown; B Constantia and C thin spaced capitals are one CSS block away).
+- **DPS** calmer: no backing box, no heavy outline, medium weight, smaller "/s"; pale mint on your
+  own green bar so it stays readable. Same on the stream page.
+
 ## v0.1.10 (2026-11-21)
 
 Changed (owner: "buttons a bit cramped at the heading"):
