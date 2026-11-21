@@ -56,7 +56,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Does:** frameless, always on top, drag anywhere on it, resize from invisible strips on the right
   and bottom edges and the bottom-right corner (no grip). The cut-out logo
   (`wwwroot/images/hawkeye-emblem.png`, cut from `branding/hawkeye-logo.png`) sits over the
-  panel's top-left corner. Header: target name, dummy START/STOP (Start/Stop mode only), fight
+  panel's top-left corner, the version just under it, and History / Extras buttons in a slim strip
+  down the left side (v0.1.10). Header: boss name (blood red, one line), dummy START/STOP (Start/Stop mode only), fight
   timer ("ready" while waiting for your first hit), Settings, Close. Optional status line AT THE
   BOTTOM (v0.1.3). (The fight total / deaths summary line was removed in v0.1.4.) One row per player, sorted by damage, bar relative to the top
   player, eased so it glides; optional skull + deaths and total damage. Hover a row for exact damage,
