@@ -3,6 +3,21 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.14 (2026-11-21)
+
+Fixed / added (owner, in PvP):
+- **First kill after starting Hawkeye now counts.** Your AP and rank totals are remembered per character
+  (`%AppData%\Hawkeye\pvp-totals.json`); the first change compares with them. A remembered total is only
+  trusted for a jump one kill can explain (up to 12,000 AP, -1,000 to +25,000 rank); anything bigger was
+  earned while Hawkeye was closed and is not counted.
+- **Profile links for every kill:** a kill made before Hawkeye had seen the enemy server got no link
+  (a player called Ullr). Earlier rows now get the server once it is learned; else the Enemy server
+  setting is used.
+- **Profile popup on stream:** streamer mode now mirrors it too (the page, without its header bar).
+- **Side strip on a short meter:** buttons that do not fit fold behind a small chevron; clicking it
+  grows the window to show them all, clicking again folds them.
+- 76 tests.
+
 ## v0.2.13 (2026-11-21)
 
 Added (PvP mode, owner's asks):

@@ -166,14 +166,15 @@ namespace Hawkeye.App.Services.Windowing
         public void DragPage(Type page) => TryDragMove(pageWindows.GetValueOrDefault(page));
 
         /// <summary>Every open Hawkeye window besides the meter and icons, with a short id. Streamer mode mirrors them. UI thread only.</summary>
-        public IReadOnlyList<(string Id, BlazorWindow Window)> OpenPageWindows
+        public IReadOnlyList<(string Id, ICapturableWindow Window)> OpenPageWindows
         {
             get
             {
-                var list = new List<(string, BlazorWindow)>();
+                var list = new List<(string, ICapturableWindow)>();
                 if (settingsWindow is BlazorWindow s) list.Add(("settings", s));
                 foreach (var (type, w) in pageWindows)
                     if (w is BlazorWindow b) list.Add((type.Name.Replace("Page", "").ToLowerInvariant(), b));
+                if (profileWindow is { } profile) list.Add(("profile", profile));
                 return list;
             }
         }

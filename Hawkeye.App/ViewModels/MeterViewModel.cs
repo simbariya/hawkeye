@@ -241,6 +241,34 @@ namespace Hawkeye.App.ViewModels
         };
 
         /// <summary>Sets the meter window's height (from the page's measurement), on the UI thread.</summary>
+        // ---- side strip folding (owner, 2026-11-21: on a short window the PvP button did not fit) ----
+        public const int SideButtonCount = 4;
+
+        /// <summary>How many strip slots fit right now (measured after each render).</summary>
+        public int SideSlots { get; set; } = 99;
+
+        /// <summary>The chevron was clicked: show every strip button, growing the window if needed.</summary>
+        public bool SideExpanded { get; private set; }
+
+        /// <summary>Folded: some buttons hidden behind the chevron.</summary>
+        public bool SideFolded => !SideExpanded && SideSlots < SideButtonCount;
+
+        /// <summary>How many buttons show: all, or what fits beside the chevron.</summary>
+        public int SideVisible => SideFolded ? Math.Max(0, SideSlots - 1) : SideButtonCount;
+
+        public void ToggleSide()
+        {
+            SideExpanded = !SideExpanded;
+            stateKey = string.Empty;
+        }
+
+        /// <summary>Makes the window at least this tall (never shrinks it).</summary>
+        public void GrowTo(double height)
+        {
+            var window = Application.Current?.MainWindow;
+            if (window is not null && height > window.Height + 0.5) window.Height = height;
+        }
+
         public void ApplyMeasuredHeight(double height)
         {
             var window = Application.Current?.MainWindow;

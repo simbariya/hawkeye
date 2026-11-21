@@ -24,27 +24,46 @@
     The logo sits on the panel's top-left corner, half outside the frame (owner's reference look).
     The window is resized from invisible strips on the right and bottom edges; there is no grip.
 *@
-<div class="shell @vm!.LookClass @(vm.AutoHeight ? "is-auto" : "")">
+<div class="shell @vm!.LookClass @(vm.AutoHeight ? "is-auto" : "") @(vm.SideExpanded ? "side-open" : "")">
     <img class="meter-logo" src="images/hawkeye-emblem.png" alt="" draggable="false" @onmousedown="() => vm!.BeginDrag()" />
 
     @* History and Extras: a slim vertical strip down the left side, so the header stays uncluttered. *@
     <div class="meter-side">
-        <button type="button" class="side-btn" title="History: your last 50 fights"
-                @onclick="() => vm!.OpenHistory()" @onmousedown:stopPropagation="true">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" /><path d="M8 4.4v3.9l2.7 1.7" /></svg>
-        </button>
-        <button type="button" class="side-btn" title="Extras: Odyle on all your characters"
-                @onclick="() => vm!.OpenExtras()" @onmousedown:stopPropagation="true">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" /><rect x="9" y="2.5" width="4.5" height="4.5" /><rect x="2.5" y="9" width="4.5" height="4.5" /><rect x="9" y="9" width="4.5" height="4.5" /></svg>
-        </button>
-        <button type="button" class="side-btn @(vm!.PvpMode ? "is-on" : "")" title="@(vm.PvpMode ? "Back to the DPS meter" : "PvP mode: kills, deaths, assists, AP and rank points")"
-                @onclick="() => vm.TogglePvp()" @onmousedown:stopPropagation="true">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5l8 8M13.5 2.5l-8 8M9.5 12.5l3 -3M3.5 9.5l3 3M11 11l2.5 2.5M5 11l-2.5 2.5" /></svg>
-        </button>
-        <button type="button" class="side-btn" title="@(vm.PvpMode ? "Start the PvP count again" : "Clear: blank the meter until your next fight (fights are kept in History)")"
-                @onclick="() => vm!.Clear()" @onmousedown:stopPropagation="true">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6.2 4.5V3h3.6v1.5M4.6 4.5l.7 8.5h5.4l.7-8.5" /></svg>
-        </button>
+        @if (vm.SideVisible > 0)
+        {
+            <button type="button" class="side-btn" title="History: your last 50 fights"
+                    @onclick="() => vm!.OpenHistory()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.1" /><path d="M8 4.4v3.9l2.7 1.7" /></svg>
+            </button>
+        }
+        @if (vm.SideVisible > 1)
+        {
+            <button type="button" class="side-btn" title="Extras: Odyle on all your characters"
+                    @onclick="() => vm!.OpenExtras()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" /><rect x="9" y="2.5" width="4.5" height="4.5" /><rect x="2.5" y="9" width="4.5" height="4.5" /><rect x="9" y="9" width="4.5" height="4.5" /></svg>
+            </button>
+        }
+        @if (vm.SideVisible > 2)
+        {
+            <button type="button" class="side-btn @(vm!.PvpMode ? "is-on" : "")" title="@(vm.PvpMode ? "Back to the DPS meter" : "PvP mode: kills, deaths, assists, AP and rank points")"
+                    @onclick="() => vm.TogglePvp()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5l8 8M13.5 2.5l-8 8M9.5 12.5l3 -3M3.5 9.5l3 3M11 11l2.5 2.5M5 11l-2.5 2.5" /></svg>
+            </button>
+        }
+        @if (vm.SideVisible > 3)
+        {
+            <button type="button" class="side-btn" title="@(vm.PvpMode ? "Start the PvP count again" : "Clear: blank the meter until your next fight (fights are kept in History)")"
+                    @onclick="() => vm!.Clear()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6.2 4.5V3h3.6v1.5M4.6 4.5l.7 8.5h5.4l.7-8.5" /></svg>
+            </button>
+        }
+        @if (vm.SideFolded || vm.SideExpanded)
+        {
+            <button type="button" class="side-btn side-more" title="@(vm.SideExpanded ? "Fewer buttons" : "More buttons")"
+                    @onclick="() => vm.ToggleSide()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="@(vm.SideExpanded ? "M4 10l4-4 4 4" : "M4 6l4 4 4-4")" /></svg>
+            </button>
+        }
     </div>
 
     <div class="meter">
@@ -161,8 +180,10 @@
     /// <summary>"Fit height to group": after any layout change, measure the content and size the window to it.</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (vm is null || !vm.AutoHeight) { measuredKey = string.Empty; return; }
-        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}|{vm.PvpMode}";
+        if (vm is null) return;
+        await MeasureSideAsync();
+        if (!vm.AutoHeight) { measuredKey = string.Empty; return; }
+        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}|{vm.PvpMode}|{vm.SideExpanded}";
         if (key == measuredKey) return;
         measuredKey = key;
         try
@@ -171,6 +192,26 @@
             vm.ApplyMeasuredHeight(height);
         }
         catch (Exception) { measuredKey = string.Empty; /* page closing; try again next render */ }
+    }
+
+    /// <summary>Folds the side strip when the window is too short for all its buttons; unfolded, grows the window to fit.</summary>
+    private async Task MeasureSideAsync()
+    {
+        try
+        {
+            if (vm!.SideExpanded && !vm.AutoHeight)
+            {
+                vm.GrowTo(await JS.InvokeAsync<double>("hawkeyeSideNeed"));
+                return;
+            }
+            var slots = await JS.InvokeAsync<int>("hawkeyeSideSlots");
+            if (slots != vm.SideSlots)
+            {
+                vm.SideSlots = slots;
+                StateHasChanged();
+            }
+        }
+        catch (Exception) { /* page closing */ }
     }
 
     public void Dispose() => vm?.Dispose();

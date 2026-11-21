@@ -320,10 +320,10 @@ namespace Hawkeye.App.Services.Streaming
                 .Select(o => (object)new
                 {
                     id = o.Id,
-                    left = o.Window.Left,
-                    top = o.Window.Top,
-                    width = o.Window.ActualWidth,
-                    height = o.Window.ActualHeight,
+                    left = o.Window.CaptureBounds.Left,
+                    top = o.Window.CaptureBounds.Top,
+                    width = o.Window.CaptureBounds.Width,
+                    height = o.Window.CaptureBounds.Height,
                     ver = shots[o.Id].Ver,
                 })
                 .ToArray();

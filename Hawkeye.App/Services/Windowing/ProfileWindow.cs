@@ -18,8 +18,10 @@ namespace Hawkeye.App.Services.Windowing
     /// It has its OWN browser data folder (%LocalAppData%\Hawkeye\ProfileBrowser): a web site's cookies stay apart
     /// from Hawkeye's pages, and its browser processes never share (or hold) the overlay's data folder.
     /// </summary>
-    public sealed class ProfileWindow : Window
+    public sealed class ProfileWindow : Window, ICapturableWindow
     {
+        private const double HeaderHeight = 32;
+
         private static readonly string DataFolder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Hawkeye", "ProfileBrowser");
 
@@ -61,7 +63,7 @@ namespace Hawkeye.App.Services.Windowing
             var closeButton = HeaderButton("✕", 34);
             closeButton.Click += (_, _) => Close();
 
-            var header = new DockPanel { Height = 32, Background = Brush("#1F2027"), LastChildFill = true };
+            var header = new DockPanel { Height = HeaderHeight, Background = Brush("#1F2027"), LastChildFill = true };
             DockPanel.SetDock(closeButton, Dock.Right);
             DockPanel.SetDock(browserButton, Dock.Right);
             header.Children.Add(closeButton);
@@ -83,6 +85,29 @@ namespace Hawkeye.App.Services.Windowing
 
             Show(url, name);
             Closed += (_, _) => web.Dispose();
+        }
+
+        /// <summary>The web page part (below the header, inside the 1px border): what goes on stream.</summary>
+        public Rect CaptureBounds => new(Left + 1, Top + 1 + HeaderHeight,
+            Math.Max(0, ActualWidth - 2), Math.Max(0, ActualHeight - 2 - HeaderHeight));
+
+        /// <summary>A PNG of the profile page for streamer mode; same rules as <see cref="BlazorWindow.CaptureAsync"/>.</summary>
+        public async Task<byte[]?> CaptureAsync()
+        {
+            try
+            {
+                var core = web.CoreWebView2;
+                if (core is null || !IsVisible) return null;
+                using var ms = new MemoryStream();
+                var capture = core.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
+                if (await Task.WhenAny(capture, Task.Delay(1000)) != capture) return null;
+                await capture;
+                return ms.ToArray();
+            }
+            catch
+            {
+                return null; // closing
+            }
         }
 
         /// <summary>Shows another player in this same window.</summary>

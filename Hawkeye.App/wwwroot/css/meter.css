@@ -162,6 +162,9 @@
 
 /* PvP mode panel (replaces the rows) */
 .side-btn.is-on { color: var(--accent, #8CCFDF) !important; }
+.side-more svg { stroke-width: 1.8; }
+/* Unfolded: strip top (logo + 10px) + 5 slots of 21px + margin; the auto-height pass then sizes the window. */
+.shell.side-open .meter { min-height: calc(var(--logo-size) + 112px); }
 .meter-pvp { margin-left: var(--side); padding: 4px 6px 2px; cursor: move; }
 .pvp-kda { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; }
 .pvp-kda div { display: flex; flex-direction: column; align-items: center; padding: 4px 0; background: rgba(0, 0, 0, 0.18); }

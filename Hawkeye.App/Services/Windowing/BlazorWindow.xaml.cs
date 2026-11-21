@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Components.WebView.Wpf;
 namespace Hawkeye.App.Services.Windowing
 {
     /// <summary>A frameless, always-on-top window that shows one Razor page (Settings, History, Extras, analysis).</summary>
-    public partial class BlazorWindow : System.Windows.Window
+    public partial class BlazorWindow : System.Windows.Window, ICapturableWindow
     {
+        public System.Windows.Rect CaptureBounds => new(Left, Top, ActualWidth, ActualHeight);
+
         /// <summary>
         /// A PNG of what the window shows right now (streamer mode puts it on stream). Null if the page is not
         /// ready yet or the window is closing. UI thread only.

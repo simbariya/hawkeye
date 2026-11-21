@@ -231,6 +231,70 @@ public sealed class PvpTests
         Assert.Null(ShugoLinks.For(unknown, ""));
     }
 
+        /// <summary>Owner, 2026-11-21: the first kill after starting Hawkeye did not count its AP or rank.</summary>
+    [Fact]
+    public void FirstKillAfterRestart_CountsAgainstRememberedTotals()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "hawkeye-tot-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var file = Path.Combine(dir, "pvp-totals.json");
+            var before = new PvpTotalsStore(file);
+            before.Remember("Alpha", ap: 214904, rank: 4836948);  // last seen before Hawkeye closed
+            before.FlushAsync().Wait();
+
+            var entities = new EntityTracker();
+            entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
+            foreach (var enemy in new[] { 13200, 7999 }) entities.SetSessionPlayerName(enemy, "Enemy" + enemy, 0);
+            var pvp = new PvpTracker(entities, null, new PvpTotalsStore(file));
+            pvp.SetActive(true);
+
+            pvp.OnDeath(PvpParser.ParseDeath(Hex(YourKill))!.Value);
+            pvp.OnRankTotal(4838948);                             // +2000
+            pvp.OnApTotal(218684);                                // +3780
+            Assert.Equal((1, 3780L, 2000L), (pvp.Kills, pvp.ApGained, pvp.RankGained));
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        }
+    }
+
+    [Fact]
+    public void RememberedTotal_TooFarBehind_IsNotCounted()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "hawkeye-tot-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var file = Path.Combine(dir, "pvp-totals.json");
+            var store = new PvpTotalsStore(file);
+            store.Remember("Alpha", ap: 143254);                  // hours ago; 75k AP earned since, Hawkeye closed
+            var entities = new EntityTracker();
+            entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
+            var pvp = new PvpTracker(entities, null, store);
+            pvp.SetActive(true);
+            pvp.OnApTotal(218684);
+            Assert.Equal(0, pvp.ApGained);
+            pvp.OnApTotal(222003);                                // from here on, normal
+            Assert.Equal(3319, pvp.ApGained);
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        }
+    }
+
+    [Fact]
+    public void KillBeforeEnemyServerKnown_GetsItOnceLearned()
+    {
+        var (_, pvp, _, _) = Setup();
+        pvp.SetActive(true);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourKill))!.Value);   // enemy server not known yet
+        Assert.Equal(0, pvp.Events.Single().ServerId);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourDeath))!.Value);  // an enemy (server 2303) kills you
+        Assert.Equal(2303, pvp.Events.First(e => e.Kind == PvpEventKind.Kill).ServerId);
+    }
+
         [Fact]
     public void Off_CountsNothing_AndResetStartsAgain()
     {

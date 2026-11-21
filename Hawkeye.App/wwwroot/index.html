@@ -13,6 +13,19 @@
     <div id="app"></div>
     <script>
         // Natural height of the meter content, for "fit height to group" (MeterPage asks after each layout change).
+        // Side strip: how many 16px buttons (5px apart) fit between its top and the frame's bottom edge.
+        window.hawkeyeSideSlots = function () {
+            var shell = document.querySelector('.shell'), side = document.querySelector('.meter-side');
+            if (!shell || !side) return 99;
+            var room = shell.getBoundingClientRect().bottom - 8 - side.getBoundingClientRect().top;
+            return Math.max(1, Math.floor((room + 5) / 21));
+        };
+        // Window height that shows the whole (unfolded) strip.
+        window.hawkeyeSideNeed = function () {
+            var shell = document.querySelector('.shell'), side = document.querySelector('.meter-side');
+            if (!shell || !side) return 0;
+            return Math.ceil(side.getBoundingClientRect().bottom - shell.getBoundingClientRect().top + 10);
+        };
         window.hawkeyeMeasure = function () {
             var shell = document.querySelector('.shell.is-auto');
             return shell ? Math.ceil(shell.getBoundingClientRect().height) : 0;

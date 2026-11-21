@@ -23,7 +23,14 @@ namespace Hawkeye.Engine.Services.Pvp
     {
         public static readonly TimeSpan AssistWindow = TimeSpan.FromSeconds(1.5);
 
+        // A remembered total (from before Hawkeye started) is trusted only for a jump one PvP kill can explain.
+        // Biggest seen in the owner's session: +5,250 AP and +11,000 rank for one kill, -280 rank per death.
+        public const long MaxApJumpFromMemory = 12_000;
+        public const long MaxRankJumpFromMemory = 25_000;
+        public const long MaxRankDropFromMemory = 1_000;
+
         private readonly EntityTracker entities;
+        private readonly PvpTotalsStore? totals;
         private readonly ILogger logger;
         private readonly Lock gate = new();
         private long? lastAp, lastRank;
@@ -53,9 +60,10 @@ namespace Hawkeye.Engine.Services.Pvp
 
         // ONE public constructor on purpose: with two that the app's service setup could both fill, it cannot pick
         // and the meter window fails to build (0.2.9 and 0.2.10 shipped like that, I15).
-        public PvpTracker(EntityTracker entities, ILogger<PvpTracker>? logger = null)
+        public PvpTracker(EntityTracker entities, ILogger<PvpTracker>? logger = null, PvpTotalsStore? totals = null)
         {
             this.entities = entities;
+            this.totals = totals;
             this.logger = (ILogger?)logger ?? NullLogger.Instance;
         }
 
@@ -107,12 +115,22 @@ namespace Hawkeye.Engine.Services.Pvp
             return ended;
         }
 
+        /// <summary>The enemy side's server id as last seen on an enemy killer; 0 until then.</summary>
+        public int EnemyServer { get { lock (gate) return enemyServer; } }
+
         private void LearnServers(PvpParser.Death death)
         {
             if (death.Killer == 0 || death.KillerServer == 0) return;
+            int before = enemyServer;
             if (IsMe(death.Killer, death.KillerName)) ownServer = death.KillerServer;
             else if (entities.IsCurrentPlayer(death.Victim)) enemyServer = death.KillerServer;
             else if (ownServer != 0 && death.KillerServer != ownServer) enemyServer = death.KillerServer;
+
+            // Kills and assists from before the enemy server was known: they were on enemies, fill it in.
+            if (before == 0 && enemyServer != 0)
+                for (int i = 0; i < events.Count; i++)
+                    if (events[i].ServerId == 0 && events[i].Kind != PvpEventKind.Death)
+                        events[i] = events[i] with { ServerId = enemyServer };
         }
 
         /// <summary>What Hawkeye knows about a player entity right now.</summary>
@@ -174,6 +192,12 @@ namespace Hawkeye.Engine.Services.Pvp
             lock (gate)
             {
                 var t = now();
+                if (lastAp is null && totals?.Get(entities.CurrentUserName)?.Ap is { } remembered
+                    && total > remembered && total - remembered <= MaxApJumpFromMemory)
+                {
+                    lastAp = remembered;   // first AP change since Hawkeye started: compare with the remembered total
+                    logger.LogInformation("[PVP] AP compared with the remembered total (+{Gain})", total - remembered);
+                }
                 if (lastAp is { } before && total > before)
                 {
                     if (Active)
@@ -200,6 +224,7 @@ namespace Hawkeye.Engine.Services.Pvp
                 }
                 lastAp = total;
             }
+            totals?.Remember(entities.CurrentUserName, ap: total);
             if (changed) Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -208,6 +233,13 @@ namespace Hawkeye.Engine.Services.Pvp
             bool changed = false;
             lock (gate)
             {
+                if (lastRank is null && totals?.Get(entities.CurrentUserName)?.Rank is { } remembered
+                    && total != remembered && total - remembered <= MaxRankJumpFromMemory
+                    && remembered - total <= MaxRankDropFromMemory)
+                {
+                    lastRank = remembered;
+                    logger.LogInformation("[PVP] rank compared with the remembered total ({Gain:+#;-#})", total - remembered);
+                }
                 if (lastRank is { } before && total != before && Active)
                 {
                     RankGained += total - before;
@@ -215,6 +247,7 @@ namespace Hawkeye.Engine.Services.Pvp
                 }
                 lastRank = total;
             }
+            totals?.Remember(entities.CurrentUserName, rank: total);
             if (changed) Changed?.Invoke(this, EventArgs.Empty);
         }
     }
