@@ -18,8 +18,9 @@ As of v0.1.2, 2026-11-21.
   `winget install Microsoft.DotNet.SDK.10`). Use the full path in Bash if `dotnet` is not on PATH:
   `"/c/Program Files/dotnet/dotnet"`.
 - Npcap installed (WinPcap API-compatible Mode). WebView2 runtime (ships with Windows 11).
-- Repo: `C:\Users\Bison\Documents\Aion 2 DPS meter\my-meter`, branch `skill-tracker`.
-  Remotes: `origin` = `https://github.com/simbariya/AIon2-Dps-Meter` (the owner's PUBLIC fork),
+- Repo: `C:\Users\Bison\Documents\Aion 2 DPS meter\my-meter`, branch `main` (was `skill-tracker` until 2026-11-21).
+  Remotes: `origin` = `https://github.com/simbariya/hawkeye` (PUBLIC, standalone, branch `main`),
+  `fork` = `https://github.com/simbariya/AIon2-Dps-Meter` (the old GitHub fork, no longer pushed),
   `upstream` = `https://github.com/Kuroukihime/AIon2-Dps-Meter` (RATmeter).
 - The owner's previous meter (reference only, do not modify):
   `C:\Users\Bison\Documents\Aion 2 DPS meter\Aion2DpsMeter-v1.11.3.320-win-x64\`.

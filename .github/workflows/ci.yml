@@ -23,7 +23,7 @@ jobs:
         run: dotnet restore Hawkeye.slnx
 
       - name: Tests
-        run: dotnet test Hawkeye.slnx --no-restore
+        run: dotnet test --project Hawkeye.Tests/Hawkeye.Tests.csproj --no-restore
 
       - name: Build
         run: dotnet build Hawkeye.slnx --no-restore

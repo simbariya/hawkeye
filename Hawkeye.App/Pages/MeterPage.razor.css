@@ -69,6 +69,17 @@
     cursor: move;
 }
 
+/* tiny version label tucked beside the logo */
+.meter-version {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    margin: 0 2px 3px -4px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #6A6E7C;
+    font-variant-numeric: tabular-nums;
+}
+
 .meter-target {
     flex: 1 1 auto;
     min-width: 0;

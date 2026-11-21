@@ -2,6 +2,8 @@
 
 Made by **Simba** · [twitch.tv/drake22x](https://twitch.tv/drake22x) · Support: *Ko-fi link coming soon*
 
+Source: https://github.com/simbariya/hawkeye
+
 A damage meter overlay for Aion 2 (global servers): a small always-on-top meter with exact DPS per
 player, plus draggable skill and buff timer icons you can put wherever your eyes already are.
 

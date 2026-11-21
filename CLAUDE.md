@@ -29,7 +29,8 @@ applies to the whole project:
 - `README.md` keeps the one-line credit. Never remove it.
 - If Hawkeye is ever shared, its source must be shared under GPL-3.0 too.
 
-**The GitHub fork is PUBLIC** (`https://github.com/simbariya/AIon2-Dps-Meter`). Nothing personal and
+**The GitHub repo is PUBLIC** (`https://github.com/simbariya/hawkeye`, standalone since 2026-11-21;
+the older fork `simbariya/AIon2-Dps-Meter` is no longer pushed to). Nothing personal and
 no secret goes in a commit: no real names, emails, API keys, Npcap captures or settings files.
 The owner chose to be credited publicly as **Simba** with the Twitch link **twitch.tv/drake22x**
 (2026-11-21, `Hawkeye.App/Branding.cs`); those two are fine. Nothing else about the owner is.

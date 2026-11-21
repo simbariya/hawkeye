@@ -10,7 +10,7 @@
 <div class="hs">
     <header class="hs-header" @onmousedown="Overlays.DragSettings">
         <img class="hs-logo" src="images/hawkeye.png" alt="" draggable="false" />
-        <span class="hs-title">HAWKEYE · SETTINGS</span>
+        <span class="hs-title">HAWKEYE · SETTINGS <small class="hs-version">@Branding.Version</small></span>
         <button type="button" class="hs-close" title="Close" @onclick="Overlays.CloseSettings" @onmousedown:stopPropagation="true">✕</button>
     </header>
 
@@ -144,7 +144,7 @@
     </div>
 
     <footer class="hs-footer">
-        <span class="hs-credit">Hawkeye by @Branding.Author</span>
+        <span class="hs-credit">Hawkeye @Branding.Version by @Branding.Author</span>
         <a class="hs-link hs-link--twitch" href="@Branding.TwitchUrl" target="_blank" title="Watch on Twitch">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 1 1.5 3.6V14h3.3v1.8h1.9L8.5 14h2.7l3.6-3.6V1H2.5zm11 8.8-2.2 2.2H8l-1.8 1.8V12H3.3V2.3h10.2v7.5zM10.9 4.6v3.9H9.6V4.6h1.3zm-3.5 0v3.9H6.1V4.6h1.3z" /></svg>
             @Branding.TwitchName

@@ -275,6 +275,7 @@ html, body {
     .hs-button:hover { background: var(--accent); color: #111; }
 
 .hs-hint { color: var(--dim); font-size: 11px; }
+.hs-version { font-size: 10px; font-weight: 600; letter-spacing: 0; color: var(--dim); margin-left: 4px; }
 
 /* ---------- footer: credit, Twitch, support ---------- */
 .hs-footer {

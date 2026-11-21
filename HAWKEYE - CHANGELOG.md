@@ -25,6 +25,9 @@ Changed:
   party message, or the rows on the meter if more). Only the width is dragged by hand then; switch
   it off to size the window yourself.
 - 3 new tests (26 total).
+- **Version shown** small beside the logo on the meter, and in the Settings title and footer (read
+  from the build, so it is always right).
+- **Own GitHub repo:** https://github.com/simbariya/hawkeye (public, standalone; branch `main`).
 
 ## v0.1.3 (2026-11-21)
 

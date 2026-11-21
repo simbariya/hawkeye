@@ -23,6 +23,7 @@
 
     <div class="meter">
         <div class="meter-header" @onmousedown="() => vm!.BeginDrag()">
+            <span class="meter-version" title="Hawkeye @Branding.Version">@Branding.Version</span>
             <span class="meter-target" title="@vm!.TargetName">@vm.TargetName</span>
             @if (vm.ShowDummyButton)
             {
