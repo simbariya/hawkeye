@@ -64,7 +64,7 @@ namespace Hawkeye.App.Views
         private readonly Path sweep;
         private readonly Rectangle dim;
         private readonly Rectangle buffBar;
-        private readonly TextBlock countdown;
+        private readonly OutlinedText countdown;
         private readonly Border frame;
         private readonly Rectangle editOutline;
         private readonly Border modeTag;
@@ -123,15 +123,12 @@ namespace Hawkeye.App.Views
                 Visibility = Visibility.Collapsed,
             };
 
-            countdown = new TextBlock
+            countdown = new OutlinedText
             {
-                FontWeight = FontWeights.Bold,
-                FontFamily = new FontFamily("Segoe UI"),
                 Foreground = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 IsHitTestVisible = false,
-                Effect = new DropShadowEffect { Color = Colors.Black, BlurRadius = 4, ShadowDepth = 0, Opacity = 1 },
             };
 
             iconArea = new Grid { Background = Frozen(new SolidColorBrush(Color.FromRgb(0x14, 0x18, 0x27))), ClipToBounds = true };

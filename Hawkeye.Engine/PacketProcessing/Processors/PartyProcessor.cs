@@ -21,6 +21,7 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         public void Process(Packet packet)
         {
             List<Player> list = ParsePartyMemberBlocksStructured(packet.Data);
+            entityTracker.PartySize = list.Count;
             if (list.Count > 0)
             {
                 foreach (var partyMember in list)

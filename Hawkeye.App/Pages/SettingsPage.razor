@@ -26,10 +26,13 @@
         </SettingRow>
 
         <div class="hs-section">METER</div>
-        <SettingRow Title="Total damage" Description="Each player's total damage next to their DPS, and the whole fight's total">
+        <SettingRow Title="Fit height to group" Description="The meter makes room for everyone in your group, up to 5 rows. Off: drag its bottom edge yourself">
+            <ValueSlot><ToggleSwitch Checked="S.AutoHeight" CheckedChanged="v => Settings.Update(s => s.AutoHeight = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Total damage" Description="Each player's total damage next to their DPS">
             <ValueSlot><ToggleSwitch Checked="S.ShowTotalDamage" CheckedChanged="v => Settings.Update(s => s.ShowTotalDamage = v)" /></ValueSlot>
         </SettingRow>
-        <SettingRow Title="Deaths" Description="How many times each player died on this boss, over every pull since its last kill">
+        <SettingRow Title="Deaths" Description="A skull and count on each player who died on this boss, over every pull since its last kill">
             <ValueSlot><ToggleSwitch Checked="S.ShowDeaths" CheckedChanged="v => Settings.Update(s => s.ShowDeaths = v)" /></ValueSlot>
         </SettingRow>
 

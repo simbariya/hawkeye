@@ -3,6 +3,29 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.4 (2026-11-21)
+
+Fixed:
+- **Deadshot's clock sweep went wrong when another skill cut its cooldown.** Every cooldown update
+  from the game restarted the timer from full with the new time left, so a 1 s cut made the sweep
+  jump back to the start of a shorter cooldown. Now a running cooldown keeps its full length and
+  only the time left moves, so the sweep jumps forward by the second that was cut. The full length
+  is taken from the game's first update after the cast (the cast message only knows the base
+  cooldown: 16.75 s for Deadshot, about 15.7 s in practice with gear). If that update arrives before
+  the cast message, the cast no longer overwrites it.
+- **Countdown hard to read on bright icons** (Marking Shot: white number on a white icon). The
+  number now has a solid black outline like the game's own timers, not a soft shadow.
+
+Changed:
+- **DPS as "138k/s"** instead of "137,985/s" ("9.8k" under 10k, "1.24M" from a million).
+- **Fight total and total deaths line removed** (took space). Each player's total damage and
+  skull/deaths stay, behind their switches.
+- **Meter fits your group** (new switch "Fit height to group", on by default): the window makes
+  room for everyone in your group, up to 5 rows, and follows it by itself (group size from the
+  party message, or the rows on the meter if more). Only the width is dragged by hand then; switch
+  it off to size the window yourself.
+- 3 new tests (26 total).
+
 ## v0.1.3 (2026-11-21)
 
 Fixed:

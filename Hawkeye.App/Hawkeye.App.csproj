@@ -11,7 +11,7 @@
     <AssemblyName>Hawkeye</AssemblyName>
     <RootNamespace>Hawkeye.App</RootNamespace>
     <Product>Hawkeye</Product>
-    <Version>0.1.3</Version>
+    <Version>0.1.4</Version>
     <ApplicationIcon>hawkeye.ico</ApplicationIcon>
   </PropertyGroup>
 

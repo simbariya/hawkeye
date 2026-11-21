@@ -45,6 +45,9 @@ namespace Hawkeye.Engine.Services.Session
         }
 
 
+        /// <summary>Members in your group from the last party message (0 = none seen).</summary>
+        public int PartySize => entityTracker.PartySize;
+
         public void FirePingUpdate(int pingMs)
         {
             PingUpdated?.Invoke(this, pingMs);
@@ -420,6 +423,12 @@ namespace Hawkeye.Engine.Services.Session
                         buff.Name, (int)buff.Duration.TotalMilliseconds);
             }
 
+            // The game's own cooldown update sometimes arrives just BEFORE the cast message and already has the
+            // real (shorter) cooldown; the cast only knows the base one, so it must not overwrite a fresh timer.
+            if (skillCdEventTracker.Get((uint)skillCastEvent.SkillId) is { } running
+                && running.Duration - running.TimeLeft < TimeSpan.FromMilliseconds(1500))
+                return;
+
             skillCdEventTracker.Register(new TimedEvent()
             {
                 Name = skillCastEvent.Name,
@@ -443,7 +452,7 @@ namespace Hawkeye.Engine.Services.Session
             if (IsTracked((int)skillCdEvent.Id))
                 logger.LogInformation("[TRACK] cooldown update {Name} ({SkillId}) {Ms} ms left",
                     skillCdEvent.Name, skillCdEvent.Id, (int)skillCdEvent.Duration.TotalMilliseconds);
-            skillCdEventTracker.Register(skillCdEvent);
+            skillCdEventTracker.UpdateTimeLeft(skillCdEvent);
         }
 
         private void RegisterTimedBuffEvent(BuffEvent buffEvent)

@@ -53,6 +53,8 @@ namespace Hawkeye.Engine.Settings
         public bool ShowRam { get; set; } = true;
 
         // ---- meter rows ----
+        /// <summary>Meter height follows your group: room for every member, up to 5 rows. Off: resize it yourself.</summary>
+        public bool AutoHeight { get; set; } = true;
         /// <summary>Show each player's total damage next to their DPS.</summary>
         public bool ShowTotalDamage { get; set; } = false;
         /// <summary>Show how many times each player died on this boss (all pulls since its last kill).</summary>

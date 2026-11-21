@@ -58,10 +58,13 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   (`wwwroot/images/hawkeye-emblem.png`, cut from `branding/hawkeye-logo.png`) sits over the
   panel's top-left corner. Header: target name, dummy START/STOP (Start/Stop mode only), fight
   timer ("ready" while waiting for your first hit), Settings, Close. Optional status line AT THE
-  BOTTOM (v0.1.3), optional summary line (fight total, deaths). One row per player, sorted by damage, bar relative to the top
+  BOTTOM (v0.1.3). (The fight total / deaths summary line was removed in v0.1.4.) One row per player, sorted by damage, bar relative to the top
   player, eased so it glides; optional skull + deaths and total damage. Hover a row for exact damage,
   share and deaths.
-- **Settings:** `Opacity`, `ShowTotalDamage` (off), `ShowDeaths` (on),
+- **Fit height to group** (`AutoHeight`, on): rows for max(group size from the party message
+  `0x9702`, rows on the meter), 1 to 5; the page measures itself (`hawkeyeMeasure` in index.html)
+  and sets the window height. Only the right edge resizes then. DPS shown short ("138k/s").
+- **Settings:** `Opacity`, `AutoHeight` (on), `ShowTotalDamage` (off), `ShowDeaths` (on),
   `WindowLeft/Top/Width/Height` (saved 1 s after you stop moving it).
 - **Files:** `Hawkeye.App/Views/MainWindow.xaml(.cs)`, `Pages/MeterPage.razor` + `.razor.css`
   (all colours at the top of the css), `ViewModels/MeterViewModel.cs`.
@@ -95,7 +98,11 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Recast fallback** (v0.1.3, I11): your cast of a skill whose buff was seen on you restarts the
   buff timer at its last seen length; the real buff message corrects it. Log `[TRACK] buff ...
   restarted from your cast`, `[BUFF]`, `[BUFF-SKIP]`.
-- **Countdown:** whole seconds, one decimal in the last 2 s.
+- **Countdown:** whole seconds, one decimal in the last 2 s, white with a black outline
+  (`Views/OutlinedText.cs`), yellow when ending.
+- **Cooldown updates** (`TimedEventTracker.UpdateTimeLeft`, v0.1.4): a running cooldown keeps its
+  full length and only the time left moves (cuts make the sweep jump forward). An update within
+  1.5 s of the start sets the full length (the real cooldown; the cast only knows the base one).
 - **Buff mode** reads only buffs ON you (the game's caster field is a fixed 161 for these, so "by
   you" never matches). Your Marking Shot buff is 10 s; other rangers' are 15 s.
 - **When the icons show:** by default only during a boss or dummy fight

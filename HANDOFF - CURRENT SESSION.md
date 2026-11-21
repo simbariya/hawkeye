@@ -86,3 +86,13 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   is the 0.1.2 small build from `..\release\Hawkeye-small`.
 - NEXT in game: after a session, grep the log for `[BUFF-SKIP]` and `[BUFF]` types near any
   recast that got no `[TRACK] buff` line, to decode the I11 variant.
+
+## CHECKPOINT (2026-11-21, v0.1.4) - supersedes the ones above
+
+- Owner asks done: no fight total/deaths line, fit height to group (5 rows max), cooldown sweep
+  follows cuts, outlined countdown, DPS "138k/s". 26/26 tests. Visuals checked in harnesses.
+- The owner was running the Debug build (pid 43316) during the build, so the Debug folder holds
+  v0.1.3 DLLs; its wwwroot is served from source, so a restart WITHOUT a rebuild mixes old code and
+  new CSS (the I-logo trap). NEXT: owner closes Hawkeye, then `dotnet build Hawkeye.slnx`.
+  Meanwhile a clean 0.1.4 build is in `..\release\0.1.4\Hawkeye` (zip 11.4 MB).
+- Not proven in game: fit height with a real party message, the cooldown sweep on a real cut.

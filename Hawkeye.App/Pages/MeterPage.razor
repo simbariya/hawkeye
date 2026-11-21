@@ -10,13 +10,15 @@
 @inject SystemStatsService Stats
 @inject ISettingsService Settings
 @inject OverlayManager Overlays
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
 
 @*
     The meter. Colours live at the top of MeterPage.razor.css.
     The logo sits on the panel's top-left corner, half outside the frame (owner's reference look).
     The window is resized from invisible strips on the right and bottom edges; there is no grip.
 *@
-<div class="shell">
+<div class="shell @(vm!.AutoHeight ? "is-auto" : "")">
     <img class="meter-logo" src="images/hawkeye-emblem.png" alt="" draggable="false" @onmousedown="() => vm!.BeginDrag()" />
 
     <div class="meter">
@@ -35,21 +37,7 @@
                     @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
         </div>
 
-        @if ((vm.ShowTotals && vm.FightTotal.Length > 0) || (vm.ShowDeaths && vm.FightDeaths > 0))
-        {
-            <div class="meter-summary" @onmousedown="() => vm.BeginDrag()">
-                @if (vm.ShowTotals && vm.FightTotal.Length > 0)
-                {
-                    <span title="Total damage done to this target">Total <b>@vm.FightTotal</b></span>
-                }
-                @if (vm.ShowDeaths && vm.FightDeaths > 0)
-                {
-                    <span class="summary-deaths" title="Deaths on this boss, all pulls since its last kill">Deaths <b>@vm.FightDeaths</b></span>
-                }
-            </div>
-        }
-
-        <div class="meter-rows" @onmousedown="() => vm.BeginDrag()">
+        <div class="meter-rows" style="@(vm.AutoHeight ? $"height:{vm.RowsHeightPx}px" : "")" @onmousedown="() => vm.BeginDrag()">
             @foreach (var p in vm.Players)
             {
                 <div class="meter-row @(p.IsUser ? "is-me" : "")" title="@p.Detail">
@@ -92,8 +80,12 @@
     </div>
 
     <div class="resize resize--right" @onmousedown="@(() => vm!.BeginResize("right"))"></div>
-    <div class="resize resize--bottom" @onmousedown="@(() => vm!.BeginResize("bottom"))"></div>
-    <div class="resize resize--corner" @onmousedown="@(() => vm!.BeginResize("corner"))"></div>
+    @if (!vm.AutoHeight)
+    {
+        @* With "fit height to group" on, the height is automatic: only the width can be dragged. *@
+        <div class="resize resize--bottom" @onmousedown="@(() => vm!.BeginResize("bottom"))"></div>
+        <div class="resize resize--corner" @onmousedown="@(() => vm!.BeginResize("corner"))"></div>
+    }
 </div>
 
 @code {
@@ -101,6 +93,23 @@
 
     protected override void OnInitialized() =>
         vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, () => InvokeAsync(StateHasChanged));
+
+    private string measuredKey = string.Empty;
+
+    /// <summary>"Fit height to group": after any layout change, measure the content and size the window to it.</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (vm is null || !vm.AutoHeight) { measuredKey = string.Empty; return; }
+        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}";
+        if (key == measuredKey) return;
+        measuredKey = key;
+        try
+        {
+            var height = await JS.InvokeAsync<double>("hawkeyeMeasure");
+            vm.ApplyMeasuredHeight(height);
+        }
+        catch (Exception) { measuredKey = string.Empty; /* page closing; try again next render */ }
+    }
 
     public void Dispose() => vm?.Dispose();
 }

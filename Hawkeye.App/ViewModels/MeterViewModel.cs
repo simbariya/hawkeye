@@ -48,9 +48,13 @@ namespace Hawkeye.App.ViewModels
         public string Duration { get; private set; } = "00:00";
         /// <summary>Ping / FPS / CPU / RAM pieces, whichever are switched on.</summary>
         public IReadOnlyList<StatusItem> StatusItems { get; private set; } = [];
-        /// <summary>Whole-fight total and deaths, for the summary line (empty when switched off).</summary>
-        public string FightTotal { get; private set; } = string.Empty;
-        public int FightDeaths { get; private set; }
+        /// <summary>Rows the meter makes room for when it fits its height to the group: 1 to 5.</summary>
+        public int FitRows { get; private set; } = 1;
+        public bool AutoHeight => settings.Current.AutoHeight;
+
+        /// <summary>Row height + gap in px; must match .meter-row and .meter-rows in MeterPage.razor.css.</summary>
+        public const int RowPx = 20, RowGapPx = 5, MaxFitRows = 5;
+        public int RowsHeightPx => FitRows * RowPx + (FitRows - 1) * RowGapPx;
 
         public bool ShowTotals => settings.Current.ShowTotalDamage;
         public bool ShowDeaths => settings.Current.ShowDeaths;
@@ -96,18 +100,15 @@ namespace Hawkeye.App.ViewModels
             var deaths = ShowDeaths ? sessions.GetActiveBossDeaths() : new Dictionary<int, int>();
 
             var current = sessions.PlayerStats.Where(p => p.IsIdentified || p.DamagePercentage > 1).ToList();
-            long fightTotal = current.Sum(p => p.TotalDamage);
-            string total = ShowTotals && fightTotal > 0 ? Compact(fightTotal) : string.Empty;
-            int fightDeaths = deaths.Values.Sum();
+            int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{total}|{fightDeaths}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}";
             if (key != stateKey)
             {
                 Duration = duration;
                 TargetName = target;
                 StatusItems = status;
-                FightTotal = total;
-                FightDeaths = fightDeaths;
+                FitRows = fitRows;
                 stateKey = key;
                 changed = true;
             }
@@ -129,7 +130,7 @@ namespace Hawkeye.App.ViewModels
                 row.Name = p.PlayerName;
                 row.TotalDamage = p.TotalDamage;
                 row.Total = Compact(p.TotalDamage);
-                row.Dps = Math.Round(p.DamagePerSecond).ToString("N0", CultureInfo.InvariantCulture);
+                row.Dps = Compact((long)Math.Round(p.DamagePerSecond), shortThousands: true);
                 row.Deaths = deaths.GetValueOrDefault((int)p.PlayerId);
                 row.Detail = $"{p.TotalDamage.ToString("N0", CultureInfo.InvariantCulture)} damage ({p.DamagePercentage:F1}%)"
                              + (row.Deaths > 0 ? $", died {row.Deaths}x on this boss" : string.Empty);
@@ -150,14 +151,28 @@ namespace Hawkeye.App.ViewModels
             return changed;
         }
 
-        /// <summary>8,238,521 -> "8.24M", 823,400 -> "823.4K".</summary>
-        public static string Compact(long value) => value switch
+        /// <summary>
+        /// Short numbers. Totals: 8,238,521 -> "8.24M", 823,400 -> "823.4K".
+        /// DPS (shortThousands, owner 2026-11-21: "10k/s rather than 10,000/s"): 137,985 -> "138k",
+        /// 9,840 -> "9.8k", 1,240,000 -> "1.24M", 950 -> "950".
+        /// </summary>
+        public static string Compact(long value, bool shortThousands = false) => value switch
         {
             >= 1_000_000_000 => (value / 1_000_000_000d).ToString("0.00", CultureInfo.InvariantCulture) + "B",
             >= 1_000_000 => (value / 1_000_000d).ToString("0.00", CultureInfo.InvariantCulture) + "M",
+            >= 10_000 when shortThousands => (value / 1_000d).ToString("0", CultureInfo.InvariantCulture) + "k",
+            >= 1_000 when shortThousands => (value / 1_000d).ToString("0.0", CultureInfo.InvariantCulture) + "k",
             >= 1_000 => (value / 1_000d).ToString("0.0", CultureInfo.InvariantCulture) + "K",
             _ => value.ToString(CultureInfo.InvariantCulture),
         };
+
+        /// <summary>Sets the meter window's height (from the page's measurement), on the UI thread.</summary>
+        public void ApplyMeasuredHeight(double height)
+        {
+            var window = Application.Current?.MainWindow;
+            if (window is null || height < window.MinHeight) return;
+            if (Math.Abs(window.Height - height) >= 1) window.Height = height;
+        }
 
         /// <summary>Ping colour: bright green under 30 ms, yellow up to 100 ms, red above.</summary>
         public static string PingCss(int ms) => ms < 30 ? "is-good" : ms <= 100 ? "is-ok" : "is-bad";

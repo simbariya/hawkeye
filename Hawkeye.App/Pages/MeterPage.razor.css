@@ -170,25 +170,6 @@
 
 .status-fps.needs-admin { color: #C8A85A; }
 
-/* ---------- fight summary (total damage / deaths) ---------- */
-.meter-summary {
-    display: flex;
-    justify-content: space-between;
-    margin: 0 0 5px 14px;
-    padding: 0 8px;
-    font-size: 11px;
-    color: var(--header-text);
-    font-variant-numeric: tabular-nums;
-    cursor: move;
-}
-
-.meter-summary b {
-    color: var(--total);
-    text-shadow: var(--outline);
-}
-
-.summary-deaths b { color: var(--death); }
-
 /* ---------- player rows ---------- */
 .meter-rows {
     flex: 1 1 auto;
@@ -295,6 +276,16 @@
     flex: 0 0 auto;
     color: var(--dps);
     font-variant-numeric: tabular-nums;
+}
+
+/* ---------- "fit height to group": the page takes its natural height and the window follows ---------- */
+.shell.is-auto,
+.shell.is-auto .meter {
+    height: auto;
+}
+
+.shell.is-auto .meter-rows {
+    flex: 0 0 auto;   /* height set inline: room for 1 to 5 rows */
 }
 
 /* ---------- invisible resize edges (no visible grip) ---------- */

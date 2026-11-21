@@ -30,6 +30,9 @@ namespace Hawkeye.Engine.Services.Entity
         // (CombatSessionManager: a cast followed by a matching cooldown update can only be yours).
         private int currentUserId;
 
+        /// <summary>Members in your group from the last party message (0 = no group seen). Sizes the meter.</summary>
+        public int PartySize { get; set; }
+
         private const int UnknownEntityHpThreshold = 1_000_000;
 
 

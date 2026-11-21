@@ -10,6 +10,13 @@
 </head>
 <body>
     <div id="app"></div>
+    <script>
+        // Natural height of the meter content, for "fit height to group" (MeterPage asks after each layout change).
+        window.hawkeyeMeasure = function () {
+            var shell = document.querySelector('.shell.is-auto');
+            return shell ? Math.ceil(shell.getBoundingClientRect().height) : 0;
+        };
+    </script>
     <script src="_framework/blazor.webview.js"></script>
 </body>
 </html>
