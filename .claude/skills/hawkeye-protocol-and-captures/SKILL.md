@@ -110,6 +110,13 @@ character's numbers and the stream was searched for them.
   about 170 bytes from the end; resent at every respawn and zone change. Check on an alt before use.
 - **Mob or player:** Abyss mobs killed by you carry your name as killer and give AP. Tell them apart by
   whether the victim was announced by 0x3645 (39 players / 35 mobs in the 2026-11-21 session, no overlap).
+- **Your combat power 0x3656** (19 bytes): u64 current at 3, u64 highest at 11 (owner: 234,776 in the PvP
+  set, 239,918 highest; current follows the gear you wear). Seen at a zone load, 2026-11-21.
+- **Name card 0x4106:** `[entity varint][u8 flag][u16 server id][name: len + UTF-8]` then, when flag is 12,
+  more bytes and `[u16 server][legion: len + UTF-8]`. 417 cards in a home area, all server 1304.
+- **Target's combat power: NOT FOUND yet** (2026-11-21, owner targeted players for ~3 min, 1.3M messages,
+  no ground-truth numbers). Questlog shows it on target; it may come from the official character site
+  rather than game traffic. Next try: one target's exact CP and gear score from the owner, then search.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder
