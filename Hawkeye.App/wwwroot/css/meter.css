@@ -185,12 +185,11 @@
 .theme-monolith .meter-run.is-running { color: #FF6B6B; }
 .theme-monolith .meter-fill { bottom: 0; height: 1px; background: rgba(255, 255, 255, 0.55); }
 .theme-monolith .meter-row.is-me .meter-fill { height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-.theme-monolith .meter-icon { opacity: 0.55; filter: grayscale(1); }
 .theme-monolith .meter-name { font-size: 12.5px; font-weight: 400; color: #B9BCC4; }
 .theme-monolith .meter-row.is-me .meter-name { color: #fff; font-weight: 600; }
 .theme-monolith .meter-dps { font-size: 17px; font-weight: 200; letter-spacing: -0.3px; color: #fff; }
 .theme-monolith .meter-row.is-me .meter-dps { color: var(--accent); font-weight: 300; }
-.theme-monolith .meter-total { color: #5b5f69; font-weight: 300; }
+.theme-monolith .meter-total { color: #A4A8B2; font-weight: 400; }
 .theme-monolith .meter-deaths { color: #FF6B6B; }
 .theme-monolith .meter-status { color: #5b5f69; border-top: 1px solid rgba(255, 255, 255, 0.06); }
 
@@ -226,7 +225,7 @@
 .theme-aurora .meter-name { font-size: 13px; font-weight: 400; color: #EAF6FF; }
 .theme-aurora .meter-dps { font-size: 14px; font-weight: 300; color: #fff; }
 .theme-aurora .meter-row.is-me .meter-dps { color: #C8FFF1; font-weight: 400; }
-.theme-aurora .meter-total { color: #7f9fbd; font-weight: 300; }
+.theme-aurora .meter-total { color: #A9C6E0; font-weight: 400; }
 .theme-aurora .meter-deaths { color: #ff9aa8; }
 .theme-aurora .meter-status { color: #6c8cab; border-top: 1px solid rgba(160, 220, 255, 0.10); }
 
@@ -247,11 +246,10 @@
 .theme-graphite .meter-row { border-bottom: 1px solid #2b2c30; }
 .theme-graphite .meter-fill { bottom: 0; height: 3px; background: #F5F2EE; opacity: 0.85; }
 .theme-graphite .meter-row.is-me .meter-fill { background: var(--accent); opacity: 1; }
-.theme-graphite .meter-icon { filter: grayscale(1) brightness(1.4); opacity: 0.6; }
 .theme-graphite .meter-name { font-size: 12.5px; color: #D9D6D1; }
 .theme-graphite .meter-row.is-me .meter-name { color: #fff; font-weight: 600; }
 .theme-graphite .meter-dps { font-family: "Sitka Banner", "Sitka Display", Georgia, serif; font-size: 16px; font-weight: 600; color: #F5F2EE; }
 .theme-graphite .meter-row.is-me .meter-dps { color: var(--accent); }
-.theme-graphite .meter-total { color: #7a7c82; }
+.theme-graphite .meter-total { color: #A9ABB1; }
 .theme-graphite .meter-deaths { color: var(--accent); }
 .theme-graphite .meter-status { color: #7a7c82; }

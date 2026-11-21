@@ -3,6 +3,11 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.1 (2026-11-21)
+
+- Total damage easier to read in all three looks (was too faint in Monolith).
+- Class icons keep their colours in every look (Monolith and Graphite had greyed them).
+
 ## v0.2.0 (2026-11-21)
 
 New look, chosen by the owner from two rounds of mock-ups (11 designs):
