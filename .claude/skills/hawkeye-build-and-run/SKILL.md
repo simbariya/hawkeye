@@ -69,6 +69,18 @@ Result: `Hawkeye.exe`, `GameData\`, `wwwroot\`, `Hawkeye.staticwebassets.endpoin
 started, locked onto the game traffic and synchronized. Note: a second instance logs to
 `hawkeye-YYYYMMDD_001.txt` because the first holds the day's log open.
 
+**Small zip for Discord (20 MB limit), proven 2026-11-21:** same command with
+`--self-contained false` (drop `IncludeNativeLibrariesForSelfExtract`), output
+`<release>\Hawkeye-small\Hawkeye`, same steps 1 to 5, and the READ ME gets a step to install the
+free ".NET 10 Desktop Runtime x64" (https://dotnet.microsoft.com/download/dotnet/10.0). Zip is
+11.8 MB. Without the runtime, Windows shows its own "install .NET" message with the link.
+
+**Testing a package while another Hawkeye runs:** every copy shares the web view data folder
+`%LocalAppData%\Hawkeye.WebView2`; two DIFFERENT builds running at once makes the second fail with
+COMException 0x8007139F (window stays blank, logged as "Unhandled UI error"). Launch the test with
+`WEBVIEW2_USER_DATA_FOLDER` set to a scratch folder. The test window opens exactly over the owner's
+meter (shared settings), so warn the owner first; they may click it.
+
 **GPL:** anyone given the zip must be able to get the source. The README points to the public fork,
 so the fork must hold the matching code (push, on the owner's word) before the zip is shared widely.
 Not code-signed: SmartScreen warns on first run ("More info" > "Run anyway").
