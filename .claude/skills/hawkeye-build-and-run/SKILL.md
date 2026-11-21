@@ -76,6 +76,11 @@ started, locked onto the game traffic and synchronized. Note: a second instance 
 free ".NET 10 Desktop Runtime x64" (https://dotnet.microsoft.com/download/dotnet/10.0). Zip is
 11.8 MB. Without the runtime, Windows shows its own "install .NET" message with the link.
 
+**Always publish into a NEW folder** (e.g. `<release>\<version>-share`), never one that already
+exists: the owner often runs Hawkeye straight from a release folder. On 2026-11-21 a publish into
+the running `0.1.6` folder failed on the locked exe, and the zip step that followed overwrote the
+good zip with a broken 2.7 MB one. Check the zip size (about 12 MB) before handing it over.
+
 **Testing a package while another Hawkeye runs:** every copy shares the web view data folder
 `%LocalAppData%\Hawkeye.WebView2`; two DIFFERENT builds running at once makes the second fail with
 COMException 0x8007139F (window stays blank, logged as "Unhandled UI error"). Launch the test with
