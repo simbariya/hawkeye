@@ -3,6 +3,11 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.8 (2026-11-21)
+
+- After the updater installs a new version, the bottom line says "Updated to x.y.z" for a minute.
+  (Released together with 0.2.7 as the owner's first end-to-end update test: 0.2.7 -> 0.2.8.)
+
 ## v0.2.7 (2026-11-21)
 
 Added:

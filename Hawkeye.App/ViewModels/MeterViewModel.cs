@@ -120,6 +120,8 @@ namespace Hawkeye.App.ViewModels
             bool changed = false;
 
             var status = BuildStatusItems(settings.Current, stats);
+            if (updates.JustUpdatedTo is { } updatedTo)
+                status.Add(new StatusItem($"Updated to {updatedTo.ToString(3)}", "status-update", "Hawkeye just installed this version"));
             if (updates.ReadyVersion is { } ready)
                 status.Add(new StatusItem($"Update {ready.ToString(3)} ready", "status-update",
                     "Click to restart into the new version now. Or just close Hawkeye: it installs on exit.", Clickable: true));

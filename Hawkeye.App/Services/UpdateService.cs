@@ -33,6 +33,14 @@ namespace Hawkeye.App.Services
         private int busy;
         private bool launched;
 
+        /// <summary>
+        /// Set for a minute after Hawkeye starts on a version the updater just installed: the meter shows
+        /// "Updated to x.y.z". Detected by the updater's download for THIS version still sitting in the updates
+        /// folder (it is cleaned right after), so it also works when coming from 0.2.7, which recorded nothing else.
+        /// </summary>
+        public Version? JustUpdatedTo => DateTime.UtcNow < justUpdatedUntil ? CurrentVersion : null;
+        private DateTime justUpdatedUntil = DateTime.MinValue;
+
         /// <summary>The version downloaded and ready to install, or null.</summary>
         public Version? ReadyVersion { get; private set; }
         private string? readyFolder;
@@ -49,6 +57,11 @@ namespace Hawkeye.App.Services
 
         public void Start()
         {
+            if (Directory.Exists(Path.Combine(updatesDir, CurrentVersion.ToString(3))))
+            {
+                justUpdatedUntil = DateTime.UtcNow.AddMinutes(1);
+                logger.LogInformation("[UPDATE] running {Version}, just installed by the updater", CurrentVersion);
+            }
 #if DEBUG
             logger.LogInformation("[UPDATE] Debug build: auto-update off");
             return;
