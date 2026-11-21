@@ -126,3 +126,15 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   with fake state; HttpListener on localhost verified without admin. NOT yet seen in OBS or with the
   real app running (avoided popping a test copy over the owner's game).
 - Odyle recording session still pending. Pushes pending since 032bff4: ask the owner.
+
+## CHECKPOINT (2026-11-21, v0.2.4) - supersedes the ones above
+
+- LOOKS SETTLED: owner on Monolith v0.2.4: "ok that's a winner". Monolith = matte warm charcoal,
+  faint grain, soft corner light, rows in a recessed well, tone-on-tone bands (no hairlines),
+  compact 21 px rows. Aurora and Graphite & Vermilion stay as backups in Settings > Look.
+  Owner's taste, in order: MINIMAL first, then matte and layered (Korathia card lessons), warm,
+  readable; no lines-for-the-sake-of-lines, no neon, no clutter.
+- Odyle: login, switch and live spends (0x610C) read; refill estimate WAITING on the owner:
+  the cleric's full "695 (+?)" and the refill countdown/interval (refill adds 15 to CURRENT).
+- Not pushed since 032bff4 (many local commits). Push only on the owner's word.
+- Latest package: ..\release\0.2.4 and Hawkeye-0.2.4-small.zip.
