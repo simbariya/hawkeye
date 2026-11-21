@@ -20,7 +20,7 @@
     </header>
 
     <div class="hx-body">
-        <div class="hx-section">ODYLE</div>
+        <div class="hx-section">ODYLE <span class="hx-next">next +@OdyleRefill.Amount in @Until(OdyleRefill.NextAfter(DateTime.UtcNow))</span></div>
         @if (list.Count == 0)
         {
             <div class="hx-empty">
@@ -28,23 +28,21 @@
                 appears here.
             </div>
         }
-        @foreach (var c in list)
+        @foreach (var c in list.OrderByDescending(x => OdyleRefill.Estimate(x.Current, x.VerifiedAt, DateTime.UtcNow).Current))
         {
             bool me = c.Name == Entities.CurrentUserName;
+            var (current, estimated) = OdyleRefill.Estimate(c.Current, c.VerifiedAt, DateTime.UtcNow);
             <div class="hx-row @(me ? "is-me" : "")">
                 <span class="hx-class" style="@(c.ClassId > 0 ? $"background-image:url('images/classes/{c.ClassId}.png')" : "")"></span>
                 <span class="hx-name" title="@c.Name">@c.Name@(me ? " (now)" : "")</span>
                 <span class="hx-odyle">
-                    <span class="hx-bar"><i style="width:@Pct(c.Current, OdyleParser.Cap)%"></i></span>
-                    <b>@c.Current</b><span class="hx-pool"> (+@c.Pool)</span><span class="hx-cap"> / @OdyleParser.Cap</span>
+                    <span class="hx-bar"><i style="width:@Pct(current, OdyleParser.Cap)%"></i></span>
+                    <b class="@(estimated ? "is-est" : "")" title="@(estimated ? $"Estimated: {c.Current} when verified, plus +{OdyleRefill.Amount} per refill since" : "As read from the game")">@(estimated ? "~" : "")@current</b><span class="hx-pool"> (+@c.Pool)</span><span class="hx-cap"> / @OdyleParser.Cap</span>
                 </span>
                 <span class="hx-when" title="@c.VerifiedAt.ToString("dd MMM yyyy HH:mm", CultureInfo.InvariantCulture)">verified @Ago(c.VerifiedAt)</span>
             </div>
         }
-        <div class="hx-note">
-            Read from the game when you log into or switch to a character with Hawkeye running. Other characters
-            show their numbers from that moment; switch to one to refresh it.
-        </div>
+        <div class="hx-note">Log in with each alt to get its latest verified Odyle. Current values may not be fully accurate.</div>
     </div>
 </div>
 
@@ -71,6 +69,12 @@
     }
 
     private static string Pct(int part, int whole) => whole > 0 ? Math.Min(100.0, 100.0 * part / whole).ToString("0.#", CultureInfo.InvariantCulture) : "0";
+
+    private static string Until(DateTime utc)
+    {
+        var d = utc - DateTime.UtcNow;
+        return d.TotalHours >= 1 ? $"{(int)d.TotalHours}h {d.Minutes:00}m" : $"{Math.Max(0, d.Minutes)}m";
+    }
 
     private static string Ago(DateTime at)
     {

@@ -3,6 +3,17 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.5 (2026-11-21)
+
+- **Odyle refills counted automatically.** The game adds +15 to current Odyle (up to 840) on a
+  global timer every 3 hours (anchor 16:00 UTC, from the owner's countdowns; confirmed by AltB
+  250 -> 265 across the 16:00 refill). Extras now adds those refills to each character since its
+  last reading, shown as "~265" (dimmed) until a login confirms it; verified numbers show plain.
+  "next +15 in ..." at the top of the list.
+- Extras note shortened to: "Log in with each alt to get its latest verified Odyle. Current values
+  may not be fully accurate."
+- 3 new tests (45 total).
+
 ## v0.2.4 (2026-11-21)
 
 - **Monolith tighter** (owner: "taking a bit too much space ... the goal is minimalism"): rows

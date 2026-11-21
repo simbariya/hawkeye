@@ -63,3 +63,5 @@
 
 .hx-when { color: var(--dim); font-size: 11px; text-align: right; white-space: nowrap; }
 .hx-note { margin-top: 10px; color: var(--dim); font-size: 11px; line-height: 1.4; }
+.hx-next { float: right; font-weight: 400; letter-spacing: 0; color: var(--dim); }
+.hx-odyle b.is-est { opacity: 0.7; }

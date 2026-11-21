@@ -180,7 +180,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Shows:** `Pages/ExtrasPage.razor` (button on the meter, `OverlayManager.OpenExtras`).
 - **Live changes** (v0.1.12): `0x610C` updates (cube loots and other spends) go straight to the
   character you are on (`OdyleTracker.OnUpdate`), only when the entry has Odyle's key.
-- **Caps:** 840 / 2000 constants in `OdyleParser`. Not yet: refill estimate between logins.
+- **Caps:** 840 / 2000 constants in `OdyleParser`.
+- **Refill estimate** (v0.2.5): `Services/Odyle/OdyleRefill.cs`: +15 to current every 3 h on a
+  global timer anchored at 2026-11-21 16:00 UTC, capped at 840. Extras shows estimates as "~N"
+  until a reading confirms them. Whether the pool feeds the refill is NOT known (pool shown as read).
 
 ## 7. Settings window
 
