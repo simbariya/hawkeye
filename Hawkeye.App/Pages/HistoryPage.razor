@@ -7,12 +7,13 @@
 @inject IEncounterHistory History
 @inject DetailsState Details
 @inject OverlayManager Overlays
+@inject Hawkeye.Engine.Settings.ISettingsService Settings
 
 @*
     Fight history: kept-forever fights first, then the last 50 fights you took part in (oldest drop off).
     Click a fight for its combat analysis.
 *@
-<div class="hh">
+<div class="hh @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hh-header" @onmousedown="() => Overlays.DragPage(typeof(HistoryPage))">
         <span class="hh-title">HISTORY</span>
         <span class="hh-sub">your last @EncounterHistory.MaxRecent fights</span>
@@ -60,6 +61,7 @@
     {
         Load();
         History.Changed += OnChanged;
+        Settings.Changed += OnChanged;
     }
 
     private void Load()
@@ -89,5 +91,9 @@
 
     private static string Short(double v) => Hawkeye.App.ViewModels.MeterViewModel.Compact((long)Math.Round(v), shortThousands: true);
 
-    public void Dispose() => History.Changed -= OnChanged;
+    public void Dispose()
+    {
+        History.Changed -= OnChanged;
+        Settings.Changed -= OnChanged;
+    }
 }

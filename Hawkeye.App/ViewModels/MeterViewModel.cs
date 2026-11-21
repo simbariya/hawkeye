@@ -55,9 +55,20 @@ namespace Hawkeye.App.ViewModels
         public int FitRows { get; private set; } = 1;
         public bool AutoHeight => settings.Current.AutoHeight;
 
-        /// <summary>Row height + gap in px; must match .meter-row and .meter-rows in MeterPage.razor.css.</summary>
-        public const int RowPx = 20, RowGapPx = 5, MaxFitRows = 5;
-        public int RowsHeightPx => FitRows * RowPx + (FitRows - 1) * RowGapPx;
+        public const int MaxFitRows = 5;
+
+        /// <summary>Room for FitRows rows in the current look (row sizes from <see cref="Looks.RowMetrics"/>).</summary>
+        public int RowsHeightPx
+        {
+            get
+            {
+                var (row, gap) = Looks.RowMetrics(settings.Current.Look);
+                return FitRows * row + (FitRows - 1) * gap;
+            }
+        }
+
+        /// <summary>CSS class for the chosen look.</summary>
+        public string LookClass => Looks.ClassFor(settings.Current.Look);
 
         public bool ShowTotals => settings.Current.ShowTotalDamage;
         public bool ShowDeaths => settings.Current.ShowDeaths;
@@ -115,7 +126,7 @@ namespace Hawkeye.App.ViewModels
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}";
             if (key != stateKey)
             {
                 Duration = duration;
@@ -208,7 +219,11 @@ namespace Hawkeye.App.ViewModels
                         ? new StatusItem($"{fps:0} FPS", "status-fps", "Game frame rate")
                         : new StatusItem("-- FPS", "status-fps", "Game not found, or no frames yet"));
             if (s.ShowCpu) parts.Add(new StatusItem($"CPU {stats.CpuPercent:0}%", "status-cpu", "Whole-system CPU use"));
-            if (s.ShowRam) parts.Add(new StatusItem($"RAM {stats.RamUsedGb:0.0}/{stats.RamTotalGb:0} GB", "status-ram", "Whole-system memory in use"));
+            if (s.ShowRam)
+            {
+                double pct = stats.RamTotalGb > 0 ? 100.0 * stats.RamUsedGb / stats.RamTotalGb : 0;
+                parts.Add(new StatusItem($"RAM {pct:0}%", "status-ram", $"Whole-system memory in use: {stats.RamUsedGb:0.0} of {stats.RamTotalGb:0} GB"));
+            }
             return parts;
         }
 

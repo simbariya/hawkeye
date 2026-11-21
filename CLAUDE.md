@@ -75,9 +75,10 @@ Hawkeye.App\bin\Debug\net10.0-windows10.0.20348.0\Hawkeye.exe   # run it
 
 ## Rules that are not up for debate
 
-1. **One look.** The meter layout is the owner's. Reference screenshot (kept OUTSIDE the repo because
-   it shows other players' names): `C:\Users\Bison\Documents\Aion 2 DPS meter\look i like.png`.
-   No layout picker, no themes, no alternative styles.
+1. **Three looks, owner-chosen (2026-11-21), nothing else.** Monolith (default), Aurora, Graphite &
+   Vermilion, picked in Settings > Look. They were chosen from two rounds of mock-ups
+   (`..\design-options\`). Do not add looks or restyle one unasked. The meter's styles live in
+   `wwwroot/css/meter.css` (shared with the stream page); window palettes in `hawkeye.css` (`theme-*`).
 2. **Square corners everywhere.** Meter, icons, settings, buttons. `hawkeye.css` forces it.
 3. **No em or en dashes in anything the user sees** (UI text, tooltips, messages). Use "to" or a
    plain hyphen.

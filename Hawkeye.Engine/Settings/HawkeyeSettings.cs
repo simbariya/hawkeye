@@ -13,6 +13,18 @@ namespace Hawkeye.Engine.Settings
         Buff,
     }
 
+    /// <summary>The overall look, chosen in Settings (owner picked these three on 2026-11-21).</summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum Look
+    {
+        /// <summary>Black glass slab, hairline bars, big thin numerals. The default.</summary>
+        Monolith,
+        /// <summary>Deep glass, bars fading to a glowing edge, a light drifting along the top.</summary>
+        Aurora,
+        /// <summary>Charcoal, hairline rules, vermilion accent, serif numerals.</summary>
+        Graphite,
+    }
+
     /// <summary>How a fight on a training dummy is measured.</summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DummyMode
@@ -41,6 +53,7 @@ namespace Hawkeye.Engine.Settings
     {
         // ---- meter window ----
         public double Opacity { get; set; } = 0.92;
+        public Look Look { get; set; } = Look.Monolith;
         public double? WindowLeft { get; set; }
         public double? WindowTop { get; set; }
         public double? WindowWidth { get; set; }

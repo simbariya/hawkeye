@@ -20,11 +20,10 @@
     The logo sits on the panel's top-left corner, half outside the frame (owner's reference look).
     The window is resized from invisible strips on the right and bottom edges; there is no grip.
 *@
-<div class="shell @(vm!.AutoHeight ? "is-auto" : "")">
+<div class="shell @vm!.LookClass @(vm.AutoHeight ? "is-auto" : "")">
     <img class="meter-logo" src="images/hawkeye-emblem.png" alt="" draggable="false" @onmousedown="() => vm!.BeginDrag()" />
 
     @* History and Extras: a slim vertical strip down the left side, so the header stays uncluttered. *@
-    <span class="meter-version" title="Hawkeye @Branding.Version">@Branding.Version</span>
     <div class="meter-side">
         <button type="button" class="side-btn" title="History: your last 50 fights"
                 @onclick="() => vm!.OpenHistory()" @onmousedown:stopPropagation="true">
@@ -64,7 +63,7 @@
                     @if (vm.ShowDeaths && p.Deaths > 0)
                     {
                         <span class="meter-deaths" title="Died @(p.Deaths)x on this boss">
-                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1C4.1 1 1.5 3.6 1.5 7c0 2 .9 3.5 2.3 4.4V14h2v-1.5h1.2V14h2v-1.5h1.2V14h2v-2.6c1.4-.9 2.3-2.4 2.3-4.4C14.5 3.6 11.9 1 8 1zM5.3 9.2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>@p.Deaths
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.6c-3.3 0-5.9 2.4-5.9 5.6 0 1.9.9 3.4 2.4 4.2v2.4h7v-2.4c1.5-.8 2.4-2.3 2.4-4.2 0-3.2-2.6-5.6-5.9-5.6zM5.6 9.5a1.45 1.45 0 1 0 0-2.9 1.45 1.45 0 0 0 0 2.9zm4.8 0a1.45 1.45 0 1 0 0-2.9 1.45 1.45 0 0 0 0 2.9z" /></svg>@p.Deaths
                         </span>
                     }
                     @if (vm.ShowTotals)
@@ -76,9 +75,7 @@
             }
         </div>
 
-        @* Status line sits at the bottom of the panel (owner, 2026-11-21). *@
-        @if (vm.StatusItems.Count > 0)
-        {
+        @* Status line at the bottom, with the version at its end so it always sits inside the frame. *@
             <div class="meter-status" @onmousedown="() => vm.BeginDrag()">
                 @foreach (var item in vm.StatusItems)
                 {
@@ -92,8 +89,8 @@
                         <span class="@item.Css" title="@item.Title">@item.Text</span>
                     }
                 }
+                <span class="status-version" title="Hawkeye @Branding.Version">@Branding.Version</span>
             </div>
-        }
     </div>
 
     <div class="resize resize--right" @onmousedown="@(() => vm!.BeginResize("right"))"></div>
@@ -136,7 +133,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (vm is null || !vm.AutoHeight) { measuredKey = string.Empty; return; }
-        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}";
+        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}";
         if (key == measuredKey) return;
         measuredKey = key;
         try

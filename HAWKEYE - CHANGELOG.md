@@ -3,6 +3,21 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.0 (2026-11-21)
+
+New look, chosen by the owner from two rounds of mock-ups (11 designs):
+- **Three looks, switchable in Settings > Look:**
+  - **Monolith** (default): a black glass slab, bars reduced to a hairline under each name (yours
+    glows cyan), big thin numerals; the breakdown opens with one huge DPS figure.
+  - **Aurora**: deep glass, bars fading in to a glowing edge, a slow light drifting along the top.
+  - **Graphite & Vermilion**: charcoal, hairline rules, a vermilion accent, serif numerals.
+  The look covers the meter, the breakdown, Settings, History and Extras, and the stream page.
+- **Death marker** is a plain skull (no crossbones).
+- **Version** now sits at the end of the bottom line, always inside the frame.
+- **RAM** shown as a percentage (exact GB on hover).
+- Built so the meter and the stream share one stylesheet (`wwwroot/css/meter.css`); the old
+  "Classic" style is gone.
+
 ## v0.1.12 (2026-11-21)
 
 Added:

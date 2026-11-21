@@ -224,6 +224,7 @@ namespace Hawkeye.App.Services.Streaming
                         top = main.Top,
                         width = main.ActualWidth,
                         opacity = s.Opacity,
+                        look = Looks.ClassFor(s.Look),
                         target = data.Target,
                         duration = data.Duration.ToString(@"mm\:ss"),
                         fromHistory = data.Shown is not null,

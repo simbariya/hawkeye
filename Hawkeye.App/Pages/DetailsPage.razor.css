@@ -1,13 +1,13 @@
 /* Combat analysis. Modelled on the game's own window; Hawkeye's frame colour and square corners. */
 .hd {
-    --panel: #1E2330;
-    --panel-2: #171B26;
-    --line: #2C3242;
-    --border: #9B8172;
-    --text: #E6E8EC;
-    --dim: #8A8F9C;
-    --cyan: #34D3D8;
-    --bar: rgba(52, 160, 160, 0.55);
+    --panel: var(--w-panel, #1E2330);
+    --panel-2: var(--w-panel-2, #171B26);
+    --line: var(--w-line, #2C3242);
+    --border: var(--w-border, #9B8172);
+    --text: var(--w-text, #E6E8EC);
+    --dim: var(--w-dim, #8A8F9C);
+    --cyan: var(--w-accent, #34D3D8);
+    --bar: var(--w-bar, rgba(52, 160, 160, 0.55));
     --gold: #C8A85A;
 
     display: flex;
@@ -17,7 +17,7 @@
     background: var(--panel);
     border: 1px solid var(--border);
     color: var(--text);
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: var(--w-font, "Segoe UI", Arial, sans-serif);
     font-size: 13px;
     user-select: none;
 }
@@ -193,3 +193,43 @@
     text-overflow: ellipsis;
     font-size: 13px;
 }
+
+/* ---------- per-look touches (palette comes from the theme-* variables in hawkeye.css) ---------- */
+.hd-hero { display: none; }
+
+/* Monolith: one huge thin DPS figure leads; hairline skill bars. */
+.hd.theme-monolith .hd-hero { display: flex; align-items: baseline; gap: 14px; padding: 6px 18px 4px; }
+.hd.theme-monolith .hd-hero b { font-weight: 200; font-size: 54px; letter-spacing: -2px; line-height: 1; color: #fff; }
+.hd.theme-monolith .hd-hero span { color: var(--cyan); font-size: 12px; letter-spacing: 1px; }
+.hd.theme-monolith .hd-title { font-size: 11px; letter-spacing: 3.5px; }
+.hd.theme-monolith .hd-top { background: transparent; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--dim); font-size: 12px; letter-spacing: 1px; }
+.hd.theme-monolith .hd-top b { color: #fff; font-weight: 300; font-size: 15px; letter-spacing: 0; }
+.hd.theme-monolith .hd-bar { top: auto; bottom: 4px; height: 1px; background: rgba(255, 255, 255, 0.5); }
+.hd.theme-monolith .hd-player.is-on { background: transparent; border-color: transparent; border-bottom: 1px solid var(--cyan); }
+
+/* Aurora: the same drifting light along the top edge as the meter; bars fade in to a glowing edge. */
+.hd.theme-aurora { position: relative; }
+.hd.theme-aurora::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #6ff3d6, #7fc8ff, #e8f7ff, #6ff3d6, transparent);
+    background-size: 300% 100%;
+    animation: hd-aurora 9s linear infinite;
+}
+@keyframes hd-aurora { from { background-position: 0 0; } to { background-position: 300% 0; } }
+.hd.theme-aurora .hd-title { font-weight: 300; letter-spacing: 5px; }
+.hd.theme-aurora .hd-bar { background: linear-gradient(90deg, rgba(127, 200, 255, 0), rgba(127, 200, 255, 0.35)); box-shadow: inset -2px 0 0 #bfe6ff; }
+.hd.theme-aurora .hd-player.is-on { border-color: rgba(111, 243, 214, 0.7); box-shadow: 0 0 12px -2px rgba(111, 243, 214, 0.5); }
+
+/* Graphite & Vermilion: serif title and figures, vermilion underlines. */
+.hd.theme-graphite .hd-title { font-family: "Sitka Banner", Georgia, serif; font-size: 22px; letter-spacing: 0; color: #F5F2EE; }
+.hd.theme-graphite .hd-top { background: transparent; border-top: 1px solid #F5F2EE; color: var(--dim); font-size: 12px; letter-spacing: 1px; }
+.hd.theme-graphite .hd-top b { font-family: "Sitka Banner", Georgia, serif; color: #F5F2EE; font-size: 18px; letter-spacing: 0; }
+.hd.theme-graphite .hd-bar { top: auto; bottom: 3px; height: 2px; background: var(--cyan); }
+.hd.theme-graphite .hd-head { color: var(--cyan); }
+.hd.theme-graphite .c-total { font-family: "Sitka Banner", Georgia, serif; color: #F5F2EE; }
+.hd.theme-graphite .hd-player.is-on { background: transparent; border-color: transparent; border-bottom: 2px solid var(--cyan); }

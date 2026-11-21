@@ -70,6 +70,16 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Files:** `Hawkeye.App/Views/MainWindow.xaml(.cs)`, `Pages/MeterPage.razor` + `.razor.css`
   (all colours at the top of the css), `ViewModels/MeterViewModel.cs`.
 
+## 4b. Looks (v0.2.0)
+
+- **Does:** `Settings.Look` (Monolith default, Aurora, Graphite) sets a `theme-*` class on the meter
+  (`.shell`), the analysis, Settings, History and Extras roots, and on the stream meter.
+  `Services/Looks.cs` maps look to class, name and meter row metrics (row height / gap, which
+  "fit height to group" needs). Meter styles: `wwwroot/css/meter.css` (shared by the meter window and
+  the stream page). Window palettes: `theme-*` blocks in `wwwroot/css/hawkeye.css` (variables
+  `--w-*`, which each window's own colours fall back from). Per-look touches of the analysis window
+  at the end of `Pages/DetailsPage.razor.css`.
+
 ## 5. Status line (ping, FPS, CPU, RAM)
 
 - **Does:** refreshes once a second.

@@ -10,7 +10,7 @@
     var meterEl = null;
     var rowEls = {};
     var iconEls = {};
-    var SKULL = '<svg viewBox="0 0 16 16"><path d="M8 1C4.1 1 1.5 3.6 1.5 7c0 2 .9 3.5 2.3 4.4V14h2v-1.5h1.2V14h2v-1.5h1.2V14h2v-2.6c1.4-.9 2.3-2.4 2.3-4.4C14.5 3.6 11.9 1 8 1zM5.3 9.2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>';
+    var SKULL = '<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1.6c-3.3 0-5.9 2.4-5.9 5.6 0 1.9.9 3.4 2.4 4.2v2.4h7v-2.4c1.5-.8 2.4-2.3 2.4-4.2 0-3.2-2.6-5.6-5.9-5.6zM5.6 9.5a1.45 1.45 0 1 0 0-2.9 1.45 1.45 0 0 0 0 2.9zm4.8 0a1.45 1.45 0 1 0 0-2.9 1.45 1.45 0 0 0 0 2.9z"/></svg>';
 
     function poll() {
         fetch('/state', { cache: 'no-store' })
@@ -40,7 +40,6 @@
         var shell = el('div', 'shell', stage);
         var logo = el('img', 'meter-logo', shell);
         logo.src = '/images/hawkeye-emblem.png';
-        shell._version = el('span', 'meter-version', shell);
         var meter = el('div', 'meter', shell);
         var head = el('div', 'meter-header', meter);
         shell._target = el('span', 'meter-target', head);
@@ -60,7 +59,8 @@
         meterEl.style.top = m.top + 'px';
         meterEl.style.width = m.width + 'px';
         meterEl.style.opacity = m.opacity;
-        setText(meterEl._version, state.version);
+        var shellClass = 'shell ' + (m.look || 'theme-monolith');
+        if (meterEl.className !== shellClass) meterEl.className = shellClass;
         setText(meterEl._target, m.target);
         setText(meterEl._timer, m.duration);
         meterEl._timer.className = 'meter-timer' + (m.fromHistory ? ' is-last' : '');
@@ -102,7 +102,7 @@
 
         var statusHtml = m.status.map(function (s) {
             return '<span class="' + s.css + '">' + s.text.replace(/</g, '&lt;') + '</span>';
-        }).join('');
+        }).join('') + '<span class="status-version">' + state.version + '</span>';
         if (meterEl._status.innerHTML !== statusHtml) meterEl._status.innerHTML = statusHtml;
     }
 

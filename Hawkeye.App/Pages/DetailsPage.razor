@@ -9,13 +9,14 @@
 @inject CombatSessionManager Sessions
 @inject IEncounterHistory History
 @inject OverlayManager Overlays
+@inject Hawkeye.Engine.Settings.ISettingsService Settings
 
 @*
     Combat analysis: one player's fight, laid out like the game's own Combat Analysis window
     (owner's reference screenshot 2026-11-21, kept outside the repo). Columns the game shows that Hawkeye
     cannot read yet (accuracy, block, invincible, endurance, regeneration, heal) are left out, not faked.
 *@
-<div class="hd">
+<div class="hd @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hd-header" @onmousedown="() => Overlays.DragPage(typeof(DetailsPage))">
         <span class="hd-title">COMBAT ANALYSIS</span>
         @if (enc is not null)
@@ -55,6 +56,8 @@
                 </button>
             }
         </div>
+
+        <div class="hd-hero"><b>@N(player.Dps)</b><span>DPS · @TimeSpan.FromSeconds(enc.DurationSeconds).ToString(@"mm\:ss") · @N(player.TotalDamage) total</span></div>
 
         <div class="hd-top">
             <span>Total Battle Time</span><b>@TimeSpan.FromSeconds(enc.DurationSeconds).ToString(@"mm\:ss")</b>
@@ -119,11 +122,13 @@
     protected override void OnInitialized()
     {
         Details.Changed += OnChanged;
+        Settings.Changed += OnSettingsChanged;
         History.Changed += OnHistoryChanged;
         _ = LiveLoop();
     }
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
+    private void OnSettingsChanged(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
     private void OnHistoryChanged(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
 
     /// <summary>While showing the running fight, refresh once a second; stop when that fight is no longer on the meter.</summary>
@@ -158,6 +163,7 @@
     {
         cts.Cancel();
         Details.Changed -= OnChanged;
+        Settings.Changed -= OnSettingsChanged;
         History.Changed -= OnHistoryChanged;
     }
 }

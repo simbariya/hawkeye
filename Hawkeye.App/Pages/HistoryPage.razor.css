@@ -1,12 +1,12 @@
 .hh {
-    --panel: #21232E;
-    --panel-2: #191B24;
-    --line: #2E3140;
-    --border: #9B8172;
-    --text: #E6E8EC;
-    --dim: #8A8F9C;
+    --panel: var(--w-panel, #21232E);
+    --panel-2: var(--w-panel-2, #191B24);
+    --line: var(--w-line, #2E3140);
+    --border: var(--w-border, #9B8172);
+    --text: var(--w-text, #E6E8EC);
+    --dim: var(--w-dim, #8A8F9C);
     --gold: #C8A85A;
-    --dps: #58FF77;
+    --dps: var(--w-accent-2, #58FF77);
 
     display: flex;
     flex-direction: column;
@@ -15,7 +15,7 @@
     background: var(--panel);
     border: 1px solid var(--border);
     color: var(--text);
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: var(--w-font, "Segoe UI", Arial, sans-serif);
     font-size: 13px;
     user-select: none;
 }
@@ -57,7 +57,7 @@
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.1em;
-    color: #DE893A;
+    color: var(--w-accent, #DE893A);
 }
 
 .hh-empty { color: var(--dim); padding: 8px 2px; }

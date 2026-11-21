@@ -6,12 +6,13 @@
 @inject OdyleTracker Odyle
 @inject Hawkeye.Engine.Services.Entity.EntityTracker Entities
 @inject OverlayManager Overlays
+@inject Hawkeye.Engine.Settings.ISettingsService Settings
 
 @*
     Extras: things beyond the fight. For now, every character's Odyle as last read from the game.
     Values are as of each character's last login or switch with Hawkeye running ("verified ... ago").
 *@
-<div class="hx">
+<div class="hx @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hx-header" @onmousedown="() => Overlays.DragPage(typeof(ExtrasPage))">
         <span class="hx-title">EXTRAS</span>
         <span class="hx-spacer"></span>
@@ -55,6 +56,7 @@
     {
         list = Odyle.Characters.ToList();
         Odyle.Changed += OnChanged;
+        Settings.Changed += OnChanged;
         _ = Tick();
     }
 
@@ -83,5 +85,6 @@
     {
         cts.Cancel();
         Odyle.Changed -= OnChanged;
+        Settings.Changed -= OnChanged;
     }
 }

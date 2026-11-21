@@ -9,7 +9,7 @@
 @inject Hawkeye.App.Services.Streaming.StreamServer Stream
 @implements IDisposable
 
-<div class="hs">
+<div class="hs @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hs-header" @onmousedown="Overlays.DragSettings">
         <img class="hs-logo" src="images/hawkeye.png" alt="" draggable="false" />
         <span class="hs-title">HAWKEYE · SETTINGS <small class="hs-version">@Branding.Version</small></span>
@@ -17,6 +17,19 @@
     </header>
 
     <div class="hs-body">
+        <div class="hs-section">LOOK</div>
+        <SettingRow Title="Look" Description="The style of the meter, the breakdown and these windows">
+            <ValueSlot>
+                <div class="hs-mode">
+                    @foreach (var look in Enum.GetValues<Look>())
+                    {
+                        <button type="button" class="@(S.Look == look ? "is-on" : "")"
+                                @onclick="() => Settings.Update(s => s.Look = look)">@Hawkeye.App.Services.Looks.NameOf(look)</button>
+                    }
+                </div>
+            </ValueSlot>
+        </SettingRow>
+
         <div class="hs-section">WINDOW</div>
         <SettingRow Title="Opacity" Description="How solid the meter is (10 to 100%)">
             <ValueSlot>

@@ -1,0 +1,257 @@
+/*
+   The meter's look, shared by the meter window (Pages/MeterPage.razor) and the stream page
+   (wwwroot/stream). Three looks, chosen in Settings > Look; the class sits on .shell:
+     theme-monolith  (default)  black glass slab, hairline bars, big thin numerals
+     theme-aurora               deep glass, bars fading to a glowing edge, a light drifting on top
+     theme-graphite             charcoal, hairline rules, vermilion accent, serif numerals
+   Square corners everywhere. Row heights per look must match MeterViewModel.RowMetrics.
+*/
+
+/* ============================== structure (all looks) ============================== */
+.shell {
+    --logo-size: 40px;
+    --logo-overhang: 9px;
+    --side: 20px;              /* left strip for History / Extras */
+    --row-h: 26px;
+    --row-gap: 2px;
+    --ping-good: #58FF77;
+    --ping-ok: #FFD84D;
+    --ping-bad: #FF5A5A;
+
+    position: relative;
+    height: 100%;
+    box-sizing: border-box;
+    padding: var(--logo-overhang) 4px 4px var(--logo-overhang);
+    font-family: "Segoe UI Variable Display", "Segoe UI", Arial, sans-serif;
+    color: #fff;
+    user-select: none;
+}
+
+.shell *, .shell *::before, .shell *::after { border-radius: 0 !important; box-sizing: border-box; }
+
+.meter {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2px 10px 9px 10px;
+    overflow: hidden;
+}
+
+.meter-logo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--logo-size);
+    height: var(--logo-size);
+    z-index: 3;
+    cursor: move;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.9));
+}
+
+.meter-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding-left: calc(var(--logo-size) - var(--logo-overhang) - 2px);
+    cursor: move;
+}
+
+.meter-target { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter-timer { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.meter-timer.is-last { opacity: 0.55; font-style: italic; }
+
+.meter-btn {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+    .meter-btn:hover { background: rgba(255, 255, 255, 0.08); }
+
+.meter-side {
+    position: absolute;
+    left: calc(var(--logo-overhang) + 5px);
+    top: calc(var(--logo-size) + 10px);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.side-btn { width: 16px; height: 16px; padding: 0; border: none; background: transparent; cursor: pointer; }
+    .side-btn:hover { background: rgba(255, 255, 255, 0.08); }
+    .side-btn svg { display: block; width: 13px; height: 13px; margin: auto; fill: none; stroke: currentColor; stroke-width: 1.5; }
+
+.meter-run {
+    flex: 0 0 auto;
+    height: 20px;
+    padding: 0 8px;
+    border: 1px solid currentColor;
+    background: transparent;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.meter-rows {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--row-gap);
+    padding-left: var(--side);
+    overflow-y: auto;
+    min-height: 0;
+    cursor: move;
+    scrollbar-width: none;
+}
+
+    .meter-rows::-webkit-scrollbar { display: none; }
+
+.meter-row {
+    position: relative;
+    flex: 0 0 var(--row-h);
+    height: var(--row-h);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 2px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.meter-fill { position: absolute; left: 0; transition: width 0.3s ease-out; }
+.meter-icon, .meter-name, .meter-deaths, .meter-total, .meter-dps { position: relative; }
+
+.meter-icon { flex: 0 0 16px; height: 16px; background-size: contain; background-position: center; background-repeat: no-repeat; }
+.meter-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter-total { flex: 0 0 auto; margin-right: 10px; font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.meter-dps { flex: 0 0 auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .meter-dps small { font-size: 0.68em; opacity: 0.6; margin-left: 1px; }
+
+.meter-deaths { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 2px; font-size: 11px; }
+    .meter-deaths svg { width: 10px; height: 10px; fill: currentColor; }
+
+.meter-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin: 8px 0 0 var(--side);
+    padding: 4px 2px 0;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: move;
+}
+
+.status-ping.is-good { color: var(--ping-good); }
+.status-ping.is-ok { color: var(--ping-ok); }
+.status-ping.is-bad { color: var(--ping-bad); }
+.status-version { opacity: 0.45; }
+.is-clickable { cursor: pointer; text-decoration: underline dotted; }
+
+.shell.is-auto, .shell.is-auto .meter { height: auto; }
+.shell.is-auto .meter-rows { flex: 0 0 auto; }
+
+.resize { position: absolute; z-index: 4; }
+.resize--right { top: 0; right: 0; bottom: 10px; width: 6px; cursor: ew-resize; }
+.resize--bottom { left: 0; right: 10px; bottom: 0; height: 6px; cursor: ns-resize; }
+.resize--corner { right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; }
+
+/* ============================== Monolith (default) ============================== */
+.theme-monolith { --row-h: 26px; --row-gap: 2px; --accent: #7FE0FF; }
+.theme-monolith .meter {
+    background: rgba(6, 6, 7, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.85);
+}
+.theme-monolith .meter-target { font-size: 11px; font-weight: 600; letter-spacing: 3.5px; text-transform: uppercase; color: #F4F4F5; }
+.theme-monolith .meter-timer { font-size: 20px; font-weight: 200; letter-spacing: -0.5px; color: #F4F4F5; }
+.theme-monolith .meter-btn { color: #6d717c; }
+.theme-monolith .side-btn { color: #6d717c; }
+.theme-monolith .side-btn:hover { color: var(--accent); }
+.theme-monolith .meter-run { color: var(--accent); }
+.theme-monolith .meter-run.is-running { color: #FF6B6B; }
+.theme-monolith .meter-fill { bottom: 0; height: 1px; background: rgba(255, 255, 255, 0.55); }
+.theme-monolith .meter-row.is-me .meter-fill { height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.theme-monolith .meter-icon { opacity: 0.55; filter: grayscale(1); }
+.theme-monolith .meter-name { font-size: 12.5px; font-weight: 400; color: #B9BCC4; }
+.theme-monolith .meter-row.is-me .meter-name { color: #fff; font-weight: 600; }
+.theme-monolith .meter-dps { font-size: 17px; font-weight: 200; letter-spacing: -0.3px; color: #fff; }
+.theme-monolith .meter-row.is-me .meter-dps { color: var(--accent); font-weight: 300; }
+.theme-monolith .meter-total { color: #5b5f69; font-weight: 300; }
+.theme-monolith .meter-deaths { color: #FF6B6B; }
+.theme-monolith .meter-status { color: #5b5f69; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+
+/* ============================== Aurora ============================== */
+.theme-aurora { --row-h: 20px; --row-gap: 6px; --accent: #6FF3D6; }
+.theme-aurora .meter {
+    background: linear-gradient(180deg, rgba(12, 22, 38, 0.72), rgba(8, 14, 26, 0.78));
+    border: 1px solid rgba(160, 220, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 50px -20px rgba(0, 0, 0, 0.8);
+}
+.theme-aurora .meter::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #6ff3d6, #7fc8ff, #e8f7ff, #6ff3d6, transparent);
+    background-size: 300% 100%;
+    animation: hawkeye-aurora 9s linear infinite;
+    filter: drop-shadow(0 0 5px #7fd9ff);
+}
+@keyframes hawkeye-aurora { from { background-position: 0 0; } to { background-position: 300% 0; } }
+@media (prefers-reduced-motion: reduce) { .theme-aurora .meter::before { animation: none; } }
+.theme-aurora .meter-target { font-size: 15px; font-weight: 300; letter-spacing: 3.5px; text-transform: uppercase; color: #F2FBFF; text-shadow: 0 0 16px rgba(127, 200, 255, 0.35); }
+.theme-aurora .meter-timer { font-size: 17px; font-weight: 200; color: #BFE6FF; }
+.theme-aurora .meter-btn, .theme-aurora .side-btn { color: #6e93b5; }
+.theme-aurora .side-btn:hover { color: #7fc8ff; }
+.theme-aurora .meter-run { color: #7fc8ff; }
+.theme-aurora .meter-run.is-running { color: #ff9aa8; }
+.theme-aurora .meter-fill { top: 0; bottom: 0; background: linear-gradient(90deg, rgba(127, 200, 255, 0), rgba(127, 200, 255, 0.42)); box-shadow: inset -2px 0 0 #bfe6ff, 6px 0 14px -6px #7fc8ff; }
+.theme-aurora .meter-row.is-me .meter-fill { background: linear-gradient(90deg, rgba(111, 243, 214, 0), rgba(111, 243, 214, 0.45)); box-shadow: inset -2px 0 0 #c8fff1, 6px 0 16px -6px #6ff3d6; }
+.theme-aurora .meter-name { font-size: 13px; font-weight: 400; color: #EAF6FF; }
+.theme-aurora .meter-dps { font-size: 14px; font-weight: 300; color: #fff; }
+.theme-aurora .meter-row.is-me .meter-dps { color: #C8FFF1; font-weight: 400; }
+.theme-aurora .meter-total { color: #7f9fbd; font-weight: 300; }
+.theme-aurora .meter-deaths { color: #ff9aa8; }
+.theme-aurora .meter-status { color: #6c8cab; border-top: 1px solid rgba(160, 220, 255, 0.10); }
+
+/* ============================== Graphite & Vermilion ============================== */
+.theme-graphite { --row-h: 27px; --row-gap: 0px; --accent: #E4412B; }
+.theme-graphite .meter {
+    background: rgba(22, 23, 26, 0.95);
+    border-top: 3px solid var(--accent);
+    box-shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.85);
+}
+.theme-graphite .meter-target { font-family: "Sitka Banner", "Sitka Display", Georgia, serif; font-size: 19px; font-weight: 700; color: #F5F2EE; }
+.theme-graphite .meter-timer { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; color: var(--accent); }
+.theme-graphite .meter-btn, .theme-graphite .side-btn { color: #7a7c82; }
+.theme-graphite .side-btn:hover { color: var(--accent); }
+.theme-graphite .meter-run { color: #F5F2EE; }
+.theme-graphite .meter-run.is-running { color: var(--accent); }
+.theme-graphite .meter-rows { border-top: 1px solid #2b2c30; }
+.theme-graphite .meter-row { border-bottom: 1px solid #2b2c30; }
+.theme-graphite .meter-fill { bottom: 0; height: 3px; background: #F5F2EE; opacity: 0.85; }
+.theme-graphite .meter-row.is-me .meter-fill { background: var(--accent); opacity: 1; }
+.theme-graphite .meter-icon { filter: grayscale(1) brightness(1.4); opacity: 0.6; }
+.theme-graphite .meter-name { font-size: 12.5px; color: #D9D6D1; }
+.theme-graphite .meter-row.is-me .meter-name { color: #fff; font-weight: 600; }
+.theme-graphite .meter-dps { font-family: "Sitka Banner", "Sitka Display", Georgia, serif; font-size: 16px; font-weight: 600; color: #F5F2EE; }
+.theme-graphite .meter-row.is-me .meter-dps { color: var(--accent); }
+.theme-graphite .meter-total { color: #7a7c82; }
+.theme-graphite .meter-deaths { color: var(--accent); }
+.theme-graphite .meter-status { color: #7a7c82; }
