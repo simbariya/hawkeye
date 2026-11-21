@@ -169,6 +169,12 @@
 .pvp-kda span { font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.6; }
 .pvp-gain { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 2px; font-size: 12px; }
 .pvp-gain span { opacity: 0.65; }
+.pvp-kda .is-clickable { cursor: pointer; }
+.pvp-kda .is-clickable:hover { background: rgba(255, 255, 255, 0.07); }
+.pvp-end { display: block; width: 100%; margin: 6px 0 2px; padding: 4px 0; border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.18); color: inherit; font: inherit; font-size: 10.5px; letter-spacing: 1.5px;
+    text-transform: uppercase; opacity: 0.75; cursor: pointer; }
+.pvp-end:hover { opacity: 1; border-color: var(--accent, #8CCFDF); }
 .pvp-gain b { font-size: 14px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--accent, #8CCFDF); }
 .status-update { color: var(--accent, #8CCFDF); font-weight: 600; }
 .is-clickable { cursor: pointer; text-decoration: underline dotted; }

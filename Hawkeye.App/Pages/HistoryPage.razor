@@ -8,6 +8,8 @@
 @inject DetailsState Details
 @inject OverlayManager Overlays
 @inject Hawkeye.Engine.Settings.ISettingsService Settings
+@inject Hawkeye.Engine.Services.Pvp.PvpHistory PvpHistory
+@inject PvpView PvpView
 
 @*
     Fight history: kept-forever fights first, then the last 50 fights you took part in (oldest drop off).
@@ -16,11 +18,36 @@
 <div class="hh @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hh-header" @onmousedown="() => Overlays.DragPage(typeof(HistoryPage))">
         <span class="hh-title">HISTORY</span>
-        <span class="hh-sub">your last @EncounterHistory.MaxRecent fights</span>
+        <button type="button" class="hh-tab @(!pvpTab ? "is-on" : "")" @onclick="() => pvpTab = false" @onmousedown:stopPropagation="true">Fights</button>
+        <button type="button" class="hh-tab @(pvpTab ? "is-on" : "")" @onclick="() => pvpTab = true" @onmousedown:stopPropagation="true">PvP</button>
         <span class="hh-spacer"></span>
         <button type="button" class="hh-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(HistoryPage))" @onmousedown:stopPropagation="true">✕</button>
     </header>
 
+    @if (pvpTab)
+    {
+        <div class="hh-body">
+            @if (pvpSessions.Count == 0)
+            {
+                <div class="hh-empty">No PvP sessions yet. Press End session in PvP mode to save one here.</div>
+            }
+            @foreach (var s in pvpSessions)
+            {
+                <div class="hh-row hh-pvp" @onclick="() => OpenPvp(s)" title="See who you killed, died to and helped with">
+                    <span class="hh-when">@s.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)</span>
+                    <span class="hh-target" title="@s.Character">@s.Character</span>
+                    <span class="hh-dur">@Dur(s.Duration)</span>
+                    <span class="hh-kda" title="Kills / deaths / assists">@s.Kills / @s.Deaths / @s.Assists</span>
+                    <span class="hh-gain" title="AP gained">@Signed(s.Ap) AP</span>
+                    <span class="hh-gain" title="Rank points gained">@Signed(s.Rank) RP</span>
+                    <button type="button" class="hh-del" title="Delete this session"
+                            @onclick="() => PvpHistory.Delete(s.Id)" @onclick:stopPropagation="true">✕</button>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
     <div class="hh-body">
         @if (saved.Count > 0)
         {
@@ -51,24 +78,38 @@
             </div>
         }
     </div>
+    }
 </div>
 
 @code {
     private List<EncounterSnapshot> recent = new();
     private List<EncounterSnapshot> saved = new();
+    private List<Hawkeye.Engine.Services.Pvp.PvpSession> pvpSessions = new();
+    private bool pvpTab;
 
     protected override void OnInitialized()
     {
         Load();
         History.Changed += OnChanged;
         Settings.Changed += OnChanged;
+        PvpHistory.Changed += OnChanged;
     }
 
     private void Load()
     {
         recent = History.Recent.ToList();
         saved = History.Saved.ToList();
+        pvpSessions = PvpHistory.Sessions.ToList();
     }
+
+    private void OpenPvp(Hawkeye.Engine.Services.Pvp.PvpSession s)
+    {
+        PvpView.ShowSaved(s);
+        Overlays.OpenPvp();
+    }
+
+    private static string Dur(TimeSpan d) => d.TotalHours >= 1 ? d.ToString(@"h\:mm\:ss") : d.ToString(@"mm\:ss");
+    private static string Signed(long v) => (v > 0 ? "+" : "") + Short(v);
 
     private void OnChanged(object? sender, EventArgs e) => InvokeAsync(() => { Load(); StateHasChanged(); });
 
@@ -95,5 +136,6 @@
     {
         History.Changed -= OnChanged;
         Settings.Changed -= OnChanged;
+        PvpHistory.Changed -= OnChanged;
     }
 }

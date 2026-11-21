@@ -14,6 +14,8 @@
 @inject DetailsState Details
 @inject UpdateService Updates
 @inject Hawkeye.Engine.Services.Pvp.PvpTracker Pvp
+@inject Hawkeye.Engine.Services.Pvp.PvpHistory PvpHistory
+@inject PvpView PvpView
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
@@ -65,12 +67,14 @@
         {
             <div class="meter-pvp" @onmousedown="() => vm.BeginDrag()">
                 <div class="pvp-kda">
-                    <div><b>@vm.Kills</b><span>Kills</span></div>
-                    <div><b>@vm.Deaths</b><span>Deaths</span></div>
-                    <div><b>@vm.Assists</b><span>Assists</span></div>
+                    <div class="is-clickable" title="Who you killed" @onclick="() => vm.OpenPvpList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Kill)" @onmousedown:stopPropagation="true"><b>@vm.Kills</b><span>Kills</span></div>
+                    <div class="is-clickable" title="Who killed you" @onclick="() => vm.OpenPvpList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Death)" @onmousedown:stopPropagation="true"><b>@vm.Deaths</b><span>Deaths</span></div>
+                    <div class="is-clickable" title="Kills you helped with" @onclick="() => vm.OpenPvpList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Assist)" @onmousedown:stopPropagation="true"><b>@vm.Assists</b><span>Assists</span></div>
                 </div>
                 <div class="pvp-gain"><span>AP</span><b>@vm.ApGained</b></div>
                 <div class="pvp-gain"><span>Rank points</span><b>@vm.RankGained</b></div>
+                <button type="button" class="pvp-end" title="Save this session to PvP history and start a new one"
+                        @onclick="() => vm.EndPvpSession()" @onmousedown:stopPropagation="true">End session</button>
             </div>
         }
         else
@@ -131,7 +135,7 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, PvpHistory, PvpView, () => InvokeAsync(StateHasChanged));
 
     // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
     private double downX, downY;

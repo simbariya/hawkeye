@@ -30,8 +30,14 @@ public sealed class PvpTests
         Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton(services, typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger<>));
         Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<EntityTracker>(services);
         Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<PvpTracker>(services);
+        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<PvpHistory>(services);
         using var provider = Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services);
         Assert.NotNull(provider.GetService(typeof(PvpTracker)));
+        // PvpHistory: only the logger constructor is fillable (the other needs a path), so no tie. Building it
+        // would read the real %AppData% file, so only check that the setup can choose.
+        var ctors = typeof(PvpHistory).GetConstructors().Where(c => c.GetParameters().All(p =>
+            p.ParameterType != typeof(string))).ToList();
+        Assert.Single(ctors);
     }
 
     [Fact]
@@ -146,6 +152,61 @@ public sealed class PvpTests
 
         Assert.Equal((0, 0), (pvp.Kills, pvp.Assists));
         Assert.Equal(50, pvp.ApGained);   // AP is AP, whatever paid it
+    }
+
+    /// <summary>End session: who it was about goes with it; enemy victims get the enemy server learned from killers.</summary>
+    [Fact]
+    public void EndSession_KeepsWhoItWasAbout()
+    {
+        var (_, pvp, _, wait) = Setup();
+        pvp.OnApTotal(100000);
+        pvp.SetActive(true);
+
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourDeath))!.Value);   // killer "Bravo" of "XY", server 0x08FF
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(YourKill))!.Value);    // you (server 0x0518) kill 13200
+        pvp.OnApTotal(103780);
+        wait(2);
+        pvp.OnDeath(PvpParser.ParseDeath(Hex(OthersKill))!.Value);  // someone else kills 7999
+        wait(0.1);
+        pvp.OnApTotal(104000);                                      // assist
+
+        var s = pvp.EndSession()!;
+        Assert.Equal((1, 1, 1, 4000L), (s.Kills, s.Deaths, s.Assists, s.Ap));
+        var death = s.Events.Single(e => e.Kind == PvpEventKind.Death);
+        Assert.Equal(("Bravo", "XY", 2303), (death.Name, death.Legion, death.ServerId));
+        var kill = s.Events.Single(e => e.Kind == PvpEventKind.Kill);
+        Assert.Equal(("Enemy13200", 2303), (kill.Name, kill.ServerId));
+        Assert.Equal("Enemy7999", s.Events.Single(e => e.Kind == PvpEventKind.Assist).Name);
+
+        Assert.Equal((0, 0), (pvp.Kills, pvp.Events.Count));      // fresh count, still on
+        Assert.True(pvp.Active);
+        Assert.Null(pvp.EndSession());                              // nothing happened: nothing saved
+    }
+
+    [Fact]
+    public void PvpHistory_SurvivesARestart()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "hawkeye-pvp-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var file = Path.Combine(dir, "pvp-sessions.json");
+            var ev = new PvpEvent(new DateTime(2026, 11, 21, 19, 42, 14), PvpEventKind.Kill, "Enemy", "Legion", 2303, 0, "", 0);
+            var a = new PvpSession(Guid.NewGuid(), new DateTime(2026, 11, 21, 19, 41, 0), new DateTime(2026, 11, 21, 19, 49, 0), "Alpha", 13, 4, 2, 22327, 40000, [ev]);
+            var b = a with { Id = Guid.NewGuid(), EndedAt = a.EndedAt.AddHours(1) };
+            var history = new PvpHistory(file);
+            history.Add(a);
+            history.Add(b);
+            history.Delete(b.Id);
+            history.FlushAsync().Wait();
+
+            var reloaded = new PvpHistory(file).Sessions;
+            var only = Assert.Single(reloaded);
+            Assert.Equal((a.Id, 13, "Enemy", 2303), (only.Id, only.Kills, only.Events[0].Name, only.Events[0].ServerId));
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        }
     }
 
     [Fact]

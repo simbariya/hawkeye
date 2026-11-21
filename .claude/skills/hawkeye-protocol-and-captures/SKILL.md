@@ -99,7 +99,9 @@ character's numbers and the stream was searched for them.
 
 ### PvP messages (found 2026-11-21, owner in live PvP calling out numbers)
 
-- **Death 0x8D04:** `[victim varint][u32 ?][killer varint][u16][killer name: len + UTF-8][legion: len + UTF-8]...`;
+- **Death 0x8D04:** `[victim varint][u32 ?][killer varint][u16 killer server id][killer name: len + UTF-8][legion: len + UTF-8]...`;
+  global server ids seen: 1304 (owner's side), 2303 (enemies); not in `ServerMap` (Korean ids).
+  Player announcements (0x3645) do NOT carry `[server][len][name]` like this (checked 11,579 of them).
   killer 0 and no names for non-player kills. Names can be non-ASCII (UTF-8).
 - **Item count 0x561B** (44 bytes): item id u32 at 6, new count u32 at 18. AP = item 0x1AC7C1. The
   same message counts arrows going down while a Ranger shoots.

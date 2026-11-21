@@ -3,6 +3,23 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.13 (2026-11-21)
+
+Added (PvP mode, owner's asks):
+- **End session** button under the PvP numbers: saves the session (kills, deaths, assists, AP, rank
+  points, and who each one was about) to the new **PvP** tab in History, then starts a fresh count.
+  Saved in `%AppData%\Hawkeye\pvp-sessions.json`, kept until you delete a session.
+- Kills, deaths and assists are clickable, live and in saved sessions: a PvP window lists who it was
+  (time, class icon when they used a skill in view, name, legion for killers, combat power when known).
+- **Profile** opens a player's shugo.gg page in a popup inside the overlay, with Open in browser.
+  Needs the server's shugo address; the game sends server ids (yours 1304, enemies 2303 in the
+  owner's session) and only ids listed in `ShugoLinks` get a link.
+- Death messages now keep the killer's server id; victims of your kills and assists get the enemy
+  server learned from enemy killers.
+
+Not yet: other players' combat power (their announcements are laid out differently; yours reads
+right, it follows the gear you wear). 63 tests.
+
 ## v0.2.12 (2026-11-21)
 
 Fixed (PvP mode, from the owner's live session):

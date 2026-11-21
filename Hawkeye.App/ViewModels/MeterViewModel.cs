@@ -44,6 +44,8 @@ namespace Hawkeye.App.ViewModels
         private readonly MeterSource source;
         private readonly UpdateService updates;
         private readonly PvpTracker pvp;
+        private readonly PvpHistory pvpHistory;
+        private readonly PvpView pvpView;
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
@@ -79,6 +81,20 @@ namespace Hawkeye.App.ViewModels
         public string RankGained => Signed(pvp.RankGained);
         private static string Signed(long v) => (v > 0 ? "+" : "") + v.ToString("N0", CultureInfo.InvariantCulture);
 
+        /// <summary>Saves this PvP session to the PvP history (if anything happened) and starts a fresh one.</summary>
+        public void EndPvpSession()
+        {
+            if (pvp.EndSession() is { } ended) pvpHistory.Add(ended);
+            stateKey = string.Empty;
+        }
+
+        /// <summary>Opens the list of who this session's kills, deaths or assists were about.</summary>
+        public void OpenPvpList(PvpEventKind kind)
+        {
+            pvpView.ShowLive(kind);
+            overlays.OpenPvp();
+        }
+
         public void TogglePvp()
         {
             pvp.SetActive(!pvp.Active);
@@ -106,7 +122,7 @@ namespace Hawkeye.App.ViewModels
         private EncounterSnapshot? shown;
 
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
-            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, PvpTracker pvp, Func<Task> redraw)
+            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, PvpTracker pvp, PvpHistory pvpHistory, PvpView pvpView, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
@@ -115,6 +131,8 @@ namespace Hawkeye.App.ViewModels
             this.source = source;
             this.updates = updates;
             this.pvp = pvp;
+            this.pvpHistory = pvpHistory;
+            this.pvpView = pvpView;
             this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();

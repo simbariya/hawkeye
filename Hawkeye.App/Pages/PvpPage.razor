@@ -1,0 +1,104 @@
+@page "/pvp"
+@using System.Globalization
+@using Hawkeye.App.Services
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.Engine.Services.Pvp
+@implements IDisposable
+@inject PvpView View
+@inject PvpTracker Tracker
+@inject OverlayManager Overlays
+@inject Hawkeye.Engine.Settings.ISettingsService Settings
+
+@*
+    Who your kills, deaths and assists were about, for the live PvP session or one from the PvP history.
+    Victims for kills and assists, killers for deaths.
+*@
+<div class="pv @Looks.ClassFor(Settings.Current.Look)">
+    <header class="pv-header" @onmousedown="() => Overlays.DragPage(typeof(PvpPage))">
+        <span class="pv-title">PVP</span>
+        <span class="pv-sub">@Subtitle</span>
+        <span class="pv-spacer"></span>
+        <button type="button" class="pv-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(PvpPage))" @onmousedown:stopPropagation="true">✕</button>
+    </header>
+
+    <nav class="pv-tabs">
+        @foreach (var kind in new[] { PvpEventKind.Kill, PvpEventKind.Death, PvpEventKind.Assist })
+        {
+            <button type="button" class="pv-tab @(View.Kind == kind ? "is-on" : "")" @onclick="() => View.Select(kind)">
+                <b>@events.Count(e => e.Kind == kind)</b> @Label(kind)
+            </button>
+        }
+    </nav>
+
+    <div class="pv-body">
+        @{ var shown = events.Where(e => e.Kind == View.Kind).Reverse().ToList(); }
+        @if (shown.Count == 0)
+        {
+            <div class="pv-empty">No @Label(View.Kind).ToLowerInvariant() @(View.Live ? "yet this session" : "in this session").</div>
+        }
+        @foreach (var e in shown)
+        {
+            var link = ShugoLinks.For(e.Name, e.ServerId);
+            <div class="pv-row">
+                <span class="pv-when">@e.At.ToString("HH:mm:ss", CultureInfo.InvariantCulture)</span>
+                <span class="pv-icon" title="@e.ClassName" style="@(e.ClassId != 0 ? $"background-image:url('images/classes/{e.ClassId}.png')" : "")"></span>
+                @if (link is not null)
+                {
+                    <span class="pv-name is-link" title="Open @e.Name's profile" @onclick="() => Overlays.OpenProfile(link, e.Name)">@e.Name</span>
+                }
+                else
+                {
+                    <span class="pv-name" title="@e.Name">@(string.IsNullOrEmpty(e.Name) ? "Unknown" : e.Name)</span>
+                }
+                <span class="pv-legion" title="Legion">@e.Legion</span>
+                <span class="pv-cp" title="Combat power">@(e.CombatPower > 0 ? e.CombatPower.ToString("N0", CultureInfo.InvariantCulture) : "")</span>
+                @if (link is not null)
+                {
+                    <span class="pv-link" title="Open @e.Name's profile" @onclick="() => Overlays.OpenProfile(link, e.Name)">Profile</span>
+                }
+                else
+                {
+                    <span class="pv-link is-off" title="Server not known yet (id @e.ServerId)"></span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<PvpEvent> events = Array.Empty<PvpEvent>();
+
+    private string Subtitle => View.Saved is { } s
+        ? $"{s.Character}  {s.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)}  {Dur(s.Duration)}"
+        : "this session";
+
+    private static string Dur(TimeSpan d) => d.TotalHours >= 1 ? d.ToString(@"h\:mm\:ss") : d.ToString(@"mm\:ss");
+
+    private static string Label(PvpEventKind k) => k switch
+    {
+        PvpEventKind.Kill => "Kills",
+        PvpEventKind.Death => "Deaths",
+        _ => "Assists",
+    };
+
+    protected override void OnInitialized()
+    {
+        Load();
+        View.Changed += OnChanged;
+        Tracker.Changed += OnTracker;
+        Settings.Changed += OnSettings;
+    }
+
+    private void Load() => events = View.Saved?.Events ?? Tracker.Events;
+
+    private void OnChanged() => InvokeAsync(() => { Load(); StateHasChanged(); });
+    private void OnTracker(object? sender, EventArgs e) { if (View.Live) OnChanged(); }
+    private void OnSettings(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        View.Changed -= OnChanged;
+        Tracker.Changed -= OnTracker;
+        Settings.Changed -= OnSettings;
+    }
+}

@@ -56,6 +56,8 @@ namespace Hawkeye.App
                     services.AddSingleton<CombatSessionManager>();
                     services.AddSingleton<Hawkeye.Engine.Services.Odyle.OdyleTracker>();
                     services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpTracker>();
+                    services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpHistory>();
+                    services.AddSingleton<PvpView>();
                     services.AddPacketProcessingRouting();
                     services.AddSingleton<IPacketService, PacketPipelineService>();
 
@@ -141,6 +143,7 @@ namespace Hawkeye.App
                 Task.WaitAll([
                     services.GetRequiredService<Hawkeye.Engine.Services.History.IEncounterHistory>().FlushAsync(),
                     services.GetRequiredService<Hawkeye.Engine.Services.Odyle.OdyleTracker>().FlushAsync(),
+                    services.GetRequiredService<Hawkeye.Engine.Services.Pvp.PvpHistory>().FlushAsync(),
                 ], TimeSpan.FromSeconds(3));
                 services.GetRequiredService<IPacketService>().Stop();
                 services.GetRequiredService<SystemStatsService>().Dispose();

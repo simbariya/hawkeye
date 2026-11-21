@@ -7,7 +7,7 @@ namespace Hawkeye.Engine.Services.Pvp
     /// two kills (+5600 / +2200 rank points, +3780 / +2100 AP) and one death (-280 rank points), every change at
     /// exactly the moment of the kill or death.
     ///
-    /// Death (0x8D04): [len][op][victim varint][u32 unknown][killer varint][u16][killer name: len + UTF-8][legion: len + UTF-8]...
+    /// Death (0x8D04): [len][op][victim varint][u32 unknown][killer varint][u16 killer's server id][killer name: len + UTF-8][legion: len + UTF-8]...
     ///   killer 0 and no names = not a player kill (mobs, falls).
     /// Item count (0x561B, 44 bytes): item id u32 at offset 6, new count u32 at offset 18. AP is an item with id
     ///   <see cref="ApItemId"/> (the same message counts arrows going down while you shoot).
@@ -18,7 +18,7 @@ namespace Hawkeye.Engine.Services.Pvp
         /// <summary>Abyss Points, as the game counts them (an item). Seen on the owner's main.</summary>
         public const uint ApItemId = 0x001AC7C1;
 
-        public readonly record struct Death(int Victim, int Killer, string KillerName, string KillerLegion);
+        public readonly record struct Death(int Victim, int Killer, string KillerName, string KillerLegion, int KillerServer = 0);
 
         public static Death? ParseDeath(byte[] d)
         {
@@ -31,10 +31,11 @@ namespace Hawkeye.Engine.Services.Pvp
                 p += 4;                                   // unknown u32
                 int killer = Varint(d, ref p);
                 if (killer == 0 || p + 3 > d.Length) return new Death(victim, 0, "", "");
-                p += 2;                                   // server / race
+                int server = d[p] | (d[p + 1] << 8);      // e.g. 1304 / 2303 on global: not in ServerMap (Korean ids)
+                p += 2;
                 string name = Text(d, ref p);
                 string legion = p < d.Length ? Text(d, ref p) : "";
-                return new Death(victim, killer, name, legion);
+                return new Death(victim, killer, name, legion, server);
             }
             catch (Exception)
             {

@@ -211,6 +211,12 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   only sets the starting point (known gap). The bin button resets the count in PvP mode.
 - **Shows:** meter panel instead of the rows (`MeterPage.razor`, `.meter-pvp` in `meter.css`); the
   stream page draws the same panel from `/state.meter.pvp`.
+- **Sessions (v0.2.13):** End session (`PvpTracker.EndSession`) hands a `PvpSession` with its `PvpEvent`
+  list (who each kill/death/assist was about) to `PvpHistory` (`%AppData%\Hawkeye\pvp-sessions.json`,
+  temp-file save, flushed on exit). History window has Fights / PvP tabs. `PvpPage` lists the events
+  for the live session or a saved one (`PvpView` says which). `ProfileWindow` shows a shugo.gg profile
+  in its own web view with its own data folder (`%LocalAppData%\Hawkeye\ProfileBrowser`); links only for
+  server ids in `ShugoLinks.ServerSlugs`. The profile popup is not mirrored on stream.
 - **Messages:** layouts in the protocol skill and `PvpParser`.
 
 ## 7. Settings window

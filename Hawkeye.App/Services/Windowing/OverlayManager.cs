@@ -132,6 +132,27 @@ namespace Hawkeye.App.Services.Windowing
         /// <summary>The last 50 fights and the ones kept forever.</summary>
         public void OpenHistory() => OpenPage(typeof(HistoryPage), 520, 600);
 
+        /// <summary>Who your PvP kills, deaths and assists were about (live or from history; set PvpView first).</summary>
+        public void OpenPvp() => OpenPage(typeof(PvpPage), 460, 420);
+
+        private ProfileWindow? profileWindow;
+
+        /// <summary>A player's shugo.gg profile in a popup inside the overlay; one window, reused.</summary>
+        public void OpenProfile(string url, string name)
+        {
+            if (profileWindow is { } open)
+            {
+                open.Show(url, name);
+                open.Activate();
+                return;
+            }
+            profileWindow = new ProfileWindow(url, name);
+            var main = Application.Current.MainWindow;
+            if (main is not null) PlaceBeside(profileWindow, main);
+            profileWindow.Closed += (_, _) => profileWindow = null;
+            profileWindow.Show();
+        }
+
         /// <summary>Extras: every character's Odyle.</summary>
         public void OpenExtras() => OpenPage(typeof(ExtrasPage), 460, 360);
 

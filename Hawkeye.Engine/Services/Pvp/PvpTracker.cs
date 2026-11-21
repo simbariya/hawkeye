@@ -27,7 +27,11 @@ namespace Hawkeye.Engine.Services.Pvp
         private readonly ILogger logger;
         private readonly Lock gate = new();
         private long? lastAp, lastRank;
-        private sealed record KillEvent(DateTime At, bool Yours, bool VictimIsPlayer);
+        private sealed record KillEvent(DateTime At, bool Yours, bool VictimIsPlayer, int Victim);
+        private readonly List<PvpEvent> events = new();
+        // Server ids learned from death messages (only killers carry one). Victims of your kills and assists are
+        // enemies, so they get the last enemy server seen (one enemy server in the whole 2026-11-21 session).
+        private int ownServer, enemyServer;
         private readonly List<KillEvent> recentKills = new();   // waiting for the AP they may bring
 
         public bool Active { get; private set; }
@@ -37,6 +41,9 @@ namespace Hawkeye.Engine.Services.Pvp
         public int Assists { get; private set; }
         public long ApGained { get; private set; }
         public long RankGained { get; private set; }
+
+        /// <summary>Who this session's kills, deaths and assists were about, oldest first.</summary>
+        public IReadOnlyList<PvpEvent> Events { get { lock (gate) return events.ToList(); } }
 
         public event EventHandler? Changed;
 
@@ -67,12 +74,56 @@ namespace Hawkeye.Engine.Services.Pvp
         {
             lock (gate)
             {
-                Kills = Deaths = Assists = 0;
-                ApGained = RankGained = 0;
-                StartedAt = now();
-                recentKills.Clear();
+                ClearCounts();
             }
             Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ClearCounts()
+        {
+            Kills = Deaths = Assists = 0;
+            ApGained = RankGained = 0;
+            StartedAt = now();
+            recentKills.Clear();
+            events.Clear();
+        }
+
+        /// <summary>
+        /// Ends the session: returns it for the PvP history (null if nothing happened) and starts a fresh count.
+        /// PvP mode stays on.
+        /// </summary>
+        public PvpSession? EndSession()
+        {
+            PvpSession? ended = null;
+            lock (gate)
+            {
+                var t = now();
+                if (Kills + Deaths + Assists > 0 || ApGained != 0 || RankGained != 0)
+                    ended = new PvpSession(Guid.NewGuid(), StartedAt, t, entities.CurrentUserName ?? "",
+                        Kills, Deaths, Assists, ApGained, RankGained, events.ToList());
+                ClearCounts();
+            }
+            Changed?.Invoke(this, EventArgs.Empty);
+            return ended;
+        }
+
+        private void LearnServers(PvpParser.Death death)
+        {
+            if (death.Killer == 0 || death.KillerServer == 0) return;
+            if (IsMe(death.Killer, death.KillerName)) ownServer = death.KillerServer;
+            else if (entities.IsCurrentPlayer(death.Victim)) enemyServer = death.KillerServer;
+            else if (ownServer != 0 && death.KillerServer != ownServer) enemyServer = death.KillerServer;
+        }
+
+        /// <summary>What Hawkeye knows about a player entity right now.</summary>
+        private PvpEvent About(PvpEventKind kind, DateTime at, int entityId, string name = "", string legion = "", int server = 0)
+        {
+            var p = entities.GetPlayerEntity(entityId);
+            return new PvpEvent(at, kind,
+                !string.IsNullOrEmpty(name) ? name : p?.Name ?? "",
+                legion, server,
+                (int)(p?.CharacterClass?.Id ?? 0), p?.CharacterClass?.Name ?? "",
+                p?.CombatPower ?? 0);
         }
 
         private bool IsMe(int entityId, string name) =>
@@ -85,9 +136,15 @@ namespace Hawkeye.Engine.Services.Pvp
             lock (gate)
             {
                 var t = now();
+                LearnServers(death);
                 if (entities.IsCurrentPlayer(death.Victim))
                 {
-                    if (Active) { Deaths++; changed = true; }
+                    if (Active)
+                    {
+                        Deaths++;
+                        changed = true;
+                        events.Add(About(PvpEventKind.Death, t, death.Killer, death.KillerName, death.KillerLegion, death.KillerServer));
+                    }
                     logger.LogInformation("[PVP] you died (killer {Killer})", death.KillerName);
                 }
                 else if (death.Killer != 0)
@@ -96,11 +153,16 @@ namespace Hawkeye.Engine.Services.Pvp
                     bool player = entities.IsIdentifiedPlayer(death.Victim);
                     if (yours && player)
                     {
-                        if (Active) { Kills++; changed = true; }
+                        if (Active)
+                        {
+                            Kills++;
+                            changed = true;
+                            events.Add(About(PvpEventKind.Kill, t, death.Victim, server: enemyServer));
+                        }
                         logger.LogInformation("[PVP] kill (victim entity {Victim})", death.Victim);
                     }
                     recentKills.RemoveAll(k => t - k.At > AssistWindow);
-                    recentKills.Add(new KillEvent(t, yours, player));
+                    recentKills.Add(new KillEvent(t, yours, player, death.Victim));
                 }
             }
             if (changed) Changed?.Invoke(this, EventArgs.Empty);
@@ -127,7 +189,11 @@ namespace Hawkeye.Engine.Services.Pvp
                         recentKills.RemoveAt(idx);
                         if (!cause.Yours && cause.VictimIsPlayer)
                         {
-                            if (Active) Assists++;
+                            if (Active)
+                            {
+                                Assists++;
+                                events.Add(About(PvpEventKind.Assist, cause.At, cause.Victim, server: enemyServer));
+                            }
                             logger.LogInformation("[PVP] assist (+{Ap} AP)", total - before);
                         }
                     }
