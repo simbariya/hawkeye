@@ -35,12 +35,18 @@ namespace Hawkeye.App.Services.Streaming
         private readonly ITimedEventTracker cooldowns;
         private readonly ITimedEventTracker buffs;
         private readonly ILogger<StreamServer> logger;
-        private readonly DetailsState details;
         private readonly DispatcherTimer timer;
+        private readonly DispatcherTimer captureTimer;
 
         private HttpListener? listener;
         private int runningPort;
         private volatile string stateJson = "{}";
+
+        /// <summary>
+        /// Different every time Hawkeye starts. The page reloads itself when it changes, because OBS keeps the page
+        /// it first loaded: after an update it would otherwise go on running the old page (owner hit this in 0.1.7).
+        /// </summary>
+        private static readonly string Instance = Guid.NewGuid().ToString("N");
 
         /// <summary>Shown in Settings: "Running", or why it is not.</summary>
         public string Status { get; private set; } = "Off";
@@ -50,10 +56,8 @@ namespace Hawkeye.App.Services.Streaming
         public StreamServer(ISettingsService settings, MeterSource meter, SystemStatsService stats, OverlayManager overlays,
             [FromKeyedServices(TimerKeys.Cooldowns)] ITimedEventTracker cooldowns,
             [FromKeyedServices(TimerKeys.Buffs)] ITimedEventTracker buffs,
-            DetailsState details,
             ILogger<StreamServer> logger)
         {
-            this.details = details;
             this.settings = settings;
             this.meter = meter;
             this.stats = stats;
@@ -63,6 +67,8 @@ namespace Hawkeye.App.Services.Streaming
             this.logger = logger;
             timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
             timer.Tick += (_, _) => BuildState();
+            captureTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+            captureTimer.Tick += (_, _) => CaptureWindows();
             settings.Changed += (_, _) => Application.Current?.Dispatcher.BeginInvoke(Apply);
         }
 
@@ -77,6 +83,7 @@ namespace Hawkeye.App.Services.Streaming
             if (!s.StreamerMode)
             {
                 timer.Stop();
+                captureTimer.Stop();
                 SetStatus("Off");
                 return;
             }
@@ -91,6 +98,7 @@ namespace Hawkeye.App.Services.Streaming
                 runningPort = s.StreamerPort;
                 _ = Task.Run(() => ServeAsync(l));
                 timer.Start();
+                captureTimer.Start();
                 BuildState();
                 SetStatus("Running");
                 logger.LogInformation("[STREAM] Streamer mode on at {Url}", Url);
@@ -139,6 +147,14 @@ namespace Hawkeye.App.Services.Streaming
             var path = ctx.Request.Url?.AbsolutePath ?? "/";
             var res = ctx.Response;
             res.Headers["Cache-Control"] = "no-store";
+
+            if (path.StartsWith("/window/") && path.EndsWith(".png"))
+            {
+                var id = path["/window/".Length..^".png".Length];
+                if (shots.TryGetValue(id, out var shot)) Write(res, "image/png", shot.Png);
+                else res.StatusCode = 404;
+                return;
+            }
 
             if (path == "/state")
             {
@@ -201,6 +217,7 @@ namespace Hawkeye.App.Services.Streaming
                 {
                     screen = new { width = SystemParameters.PrimaryScreenWidth, height = SystemParameters.PrimaryScreenHeight },
                     version = Branding.Version,
+                    instance = Instance,
                     meter = !s.StreamShowMeter || main is null ? null : new
                     {
                         left = main.Left,
@@ -224,7 +241,7 @@ namespace Hawkeye.App.Services.Streaming
                             bar = top > 0 ? Math.Round(100.0 * r.TotalDamage / top, 2) : 0,
                         }),
                     },
-                    details = BuildDetails(s),
+                    windows = BuildWindows(s),
                     icons = !s.StreamShowIcons || !overlays.IconsVisible ? Array.Empty<object>() : overlays.IconWindows.Select(object (w) =>
                     {
                         var tracked = s.TrackedSkills.FirstOrDefault(t => t.SkillId == w.SkillId);
@@ -253,67 +270,56 @@ namespace Hawkeye.App.Services.Streaming
             }
         }
 
-        /// <summary>The combat analysis window as data, while it is open on screen; else null.</summary>
-        private object? BuildDetails(HawkeyeSettings s)
+        // ------------------------------------------------------------------ window pictures (UI thread)
+
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (byte[] Png, int Ver)> shots = new();
+        private bool capturing;
+
+        /// <summary>
+        /// Pictures of every open Hawkeye window (Settings, History, Extras, combat analysis) about 4 times a second,
+        /// so the stream shows them exactly as on screen, scroll position included. Unchanged pictures keep their
+        /// version, so the page only reloads what changed.
+        /// </summary>
+        private async void CaptureWindows()
         {
-            if (!s.StreamShowDetails) return null;
-            var window = overlays.GetPageWindow(typeof(Hawkeye.App.Pages.DetailsPage));
-            if (window is null || !window.IsVisible || details.Snapshot is not { } enc) return null;
-            var player = enc.Players.FirstOrDefault(p => p.PlayerId == details.PlayerId) ?? enc.Players.FirstOrDefault();
-            if (player is null) return null;
-            long topSkill = player.Skills.Count > 0 ? player.Skills.Max(k => k.TotalDamage) : 1;
-
-            static string Rate(int part, int whole) => whole > 0 ? $"{Math.Round(100.0 * part / whole):0}%" : "-";
-            static string N(double v) => Math.Round(v).ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
-            static string Prop(int part, int whole) => $"{N(part)} ({Rate(part, whole)})";
-            static string Short(double v) => MeterViewModel.Compact((long)Math.Round(v), shortThousands: true);
-
-            return new
+            if (capturing) return;
+            capturing = true;
+            try
             {
-                left = window.Left,
-                top = window.Top,
-                width = window.ActualWidth,
-                height = window.ActualHeight,
-                sub = $"{enc.TargetName} · {enc.StartedAt.ToString("dd MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture)}" + (details.Live ? " · live" : ""),
-                players = enc.Players.Select(p => new { name = p.Name, classId = p.ClassId, dps = Short(p.Dps), me = p.IsUser, on = p.PlayerId == player.PlayerId }),
-                duration = TimeSpan.FromSeconds(enc.DurationSeconds).ToString(@"mm\:ss"),
-                dps = N(player.Dps),
-                total = N(player.TotalDamage),
-                summary = new[]
+                var open = settings.Current.StreamShowDetails ? overlays.OpenPageWindows : [];
+                foreach (var id in shots.Keys.Where(k => open.All(o => o.Id != k)).ToList()) shots.TryRemove(id, out _);
+                foreach (var (id, window) in open)
                 {
-                    new[] { "Total Hits", N(player.Hits) },
-                    new[] { "Share of the fight", player.SharePercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "%" },
-                    new[] { "Critical Hits (Proportion)", Prop(player.Critical, player.Hits) },
-                    new[] { "Perfect Hits (Proportion)", Prop(player.Perfect, player.Hits) },
-                    new[] { "Double Hits (Proportion)", Prop(player.Double, player.Hits) },
-                    new[] { "Multi-Hit (Proportion)", Prop(player.Multi, player.Hits) },
-                    new[] { "Front Attack Hits (Proportion)", Prop(player.Front, player.Hits) },
-                    new[] { "Back Attack Hits (Proportion)", Prop(player.Back, player.Hits) },
-                    new[] { "Parry (Proportion)", Prop(player.Parry, player.Hits) },
-                    new[] { "Deaths", player.Deaths.ToString(System.Globalization.CultureInfo.InvariantCulture) },
-                },
-                skills = player.Skills.Select(k => new
+                    var png = await window.CaptureAsync();
+                    if (png is null) continue;
+                    if (shots.TryGetValue(id, out var old) && old.Png.AsSpan().SequenceEqual(png)) continue;
+                    shots[id] = (png, old.Ver + 1);
+                }
+            }
+            finally { capturing = false; }
+        }
+
+        private object[] BuildWindows(HawkeyeSettings s)
+        {
+            if (!s.StreamShowDetails) return [];
+            return overlays.OpenPageWindows
+                .Where(o => o.Window.IsVisible && shots.ContainsKey(o.Id))
+                .Select(o => (object)new
                 {
-                    name = k.Name + (k.IsDot ? " (DoT)" : ""),
-                    icon = k.Icon,
-                    bar = topSkill > 0 ? Math.Round(100.0 * k.TotalDamage / topSkill, 2) : 0,
-                    cells = new[]
-                    {
-                        k.Hits.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        Rate(k.Critical, k.Hits), Rate(k.Perfect, k.Hits), Rate(k.Double, k.Hits), Rate(k.Front, k.Hits),
-                        Rate(k.Back, k.Hits), Rate(k.Multi, k.Hits), Rate(k.Parry, k.Hits),
-                    },
-                    dps = Short(k.Dps),
-                    avg = Short(k.Average),
-                    max = Short(k.MaxHit),
-                    total = $"{N(k.TotalDamage)} ({k.SharePercent.ToString("0", System.Globalization.CultureInfo.InvariantCulture)}%)",
-                }),
-            };
+                    id = o.Id,
+                    left = o.Window.Left,
+                    top = o.Window.Top,
+                    width = o.Window.ActualWidth,
+                    height = o.Window.ActualHeight,
+                    ver = shots[o.Id].Ver,
+                })
+                .ToArray();
         }
 
         public void Dispose()
         {
             timer.Stop();
+            captureTimer.Stop();
             StopListener();
         }
     }

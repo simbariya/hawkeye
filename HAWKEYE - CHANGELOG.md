@@ -3,6 +3,19 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.8 (2026-11-21)
+
+Fixed:
+- **Stream showed none of Hawkeye's windows, and still no breakdown after updating.** Two causes:
+  OBS keeps the page it first loaded, so after an update it kept running the old stream page; and
+  only the combat analysis had ever been rebuilt for the stream. Now:
+  - the stream page reloads itself whenever Hawkeye restarts or updates (a per-run id in `/state`);
+  - every open Hawkeye window (Settings, History, Extras, combat analysis) is shown on stream as a
+    live picture taken about 4 times a second, exactly as on screen, scroll position included.
+    Replaces the hand-built analysis panel. Switch: "Hawkeye windows on stream" (on).
+  - Layering as on screen: windows above the meter, skill icons above everything.
+- Window pictures proven with an off-screen test window; not yet seen in OBS.
+
 ## v0.1.7 (2026-11-21)
 
 Added:

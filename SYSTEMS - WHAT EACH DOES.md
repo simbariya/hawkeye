@@ -144,11 +144,14 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   `innerWidth / screen.width`, so the Browser Source must be the screen's aspect (resolution).
 - **Look:** `stream.css` copies the meter CSS and the icon colours; keep it in step with
   `MeterPage.razor.css` and `TrackerIconWindow.cs`.
-- **Combat analysis:** while the details window is open, `/state` carries it (position, size,
-  the selected player's numbers, ready-formatted) and the page draws it; styles copied from
-  `DetailsPage.razor.css`.
+- **Hawkeye's windows** (v0.1.8): every open `BlazorWindow` (Settings, History, Extras, analysis;
+  `OverlayManager.OpenPageWindows`) is captured as a PNG every 250 ms (`BlazorWindow.CaptureAsync`,
+  WebView2 `CapturePreviewAsync`), served at `/window/<id>.png`; `/state` lists them with position,
+  size and a version that only changes when the picture does. The page swaps pictures without flicker.
+- **Self-reload:** `/state.instance` is new per Hawkeye run; the page reloads when it changes, because
+  OBS keeps the first page it loaded.
 - **Settings:** `StreamerMode` (off), `StreamerPort` (7777, file only), `StreamShowMeter`,
-  `StreamShowIcons`, `StreamShowDetails` (all on).
+  `StreamShowIcons`, `StreamShowDetails` (= "Hawkeye windows on stream"; all on).
 
 ## 6d. Odyle and Extras (v0.1.7)
 

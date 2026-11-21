@@ -5,6 +5,7 @@
 
     var stage = document.getElementById('stage');
     var state = null;
+    var firstInstance = null;
     var receivedAt = 0;
     var meterEl = null;
     var rowEls = {};
@@ -14,7 +15,12 @@
     function poll() {
         fetch('/state', { cache: 'no-store' })
             .then(function (r) { return r.json(); })
-            .then(function (s) { state = s; receivedAt = performance.now(); })
+            .then(function (s) {
+                // A new Hawkeye run (restart or update): reload so OBS gets the new page, not the one it cached.
+                if (firstInstance && s.instance && s.instance !== firstInstance) { location.reload(); return; }
+                if (!firstInstance) firstInstance = s.instance;
+                state = s; receivedAt = performance.now();
+            })
             .catch(function () { state = null; })
             .then(function () { setTimeout(poll, 100); });
     }
@@ -181,53 +187,37 @@
         });
     }
 
-    // ------------------------------------------------------------------ combat analysis
+    // ------------------------------------------------------------------ Hawkeye's own windows
+    // Settings, History, Extras, combat analysis: pictures taken by Hawkeye ~4x a second (/window/<id>.png).
+    // A new picture is loaded off-screen first and swapped in when ready, so nothing flickers.
 
-    var detailsEl = null;
-    var detailsKey = '';
+    var winEls = {};
 
-    function esc(t) {
-        return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    function renderDetails(d) {
-        if (!d) {
-            if (detailsEl) { detailsEl.remove(); detailsEl = null; detailsKey = ''; }
-            return;
-        }
-        if (!detailsEl) detailsEl = el('div', 'hd', stage);
-        detailsEl.style.left = d.left + 'px';
-        detailsEl.style.top = d.top + 'px';
-        detailsEl.style.width = d.width + 'px';
-        detailsEl.style.height = d.height + 'px';
-
-        var key = JSON.stringify([d.sub, d.players, d.duration, d.dps, d.total, d.summary, d.skills]);
-        if (key === detailsKey) return;   // redraw only when something changed
-        detailsKey = key;
-
-        var h = '<div class="hd-header"><span class="hd-title">COMBAT ANALYSIS</span><span class="hd-sub">' + esc(d.sub) + '</span></div>';
-        h += '<div class="hd-players">' + d.players.map(function (p) {
-            return '<span class="hd-player' + (p.on ? ' is-on' : '') + (p.me ? ' is-me' : '') + '">' +
-                '<span class="hd-class" style="background-image:url(/images/classes/' + p.classId + '.png)"></span>' +
-                esc(p.name) + ' <small>' + esc(p.dps) + '/s</small></span>';
-        }).join('') + '</div>';
-        h += '<div class="hd-top"><span>Total Battle Time</span><b>' + esc(d.duration) + '</b><i></i><span>DPS</span><b>' + esc(d.dps) +
-             '</b><i></i><span>Total Damage Given</span><b>' + esc(d.total) + '</b></div>';
-        h += '<div class="hd-summary">' + d.summary.map(function (s) {
-            return '<div><span>' + esc(s[0]) + '</span><b>' + esc(s[1]) + '</b></div>';
-        }).join('') + '</div>';
-        h += '<div class="hd-table"><div class="hd-row hd-head"><span class="c-skill"></span>' +
-             ['HIT', 'CRI', 'PERF', 'DOUB', 'FRNT', 'BACK', 'MULT', 'PARR'].map(function (c) { return '<span>' + c + '</span>'; }).join('') +
-             '<span class="c-num">DPS</span><span class="c-num">AVG</span><span class="c-num">MAX</span><span class="c-total">Total Damage</span></div>';
-        h += d.skills.map(function (k) {
-            return '<div class="hd-row"><span class="c-skill"><i class="hd-bar" style="width:' + k.bar + '%"></i>' +
-                (k.icon ? '<img src="' + esc(k.icon) + '" alt="">' : '<em></em>') +
-                '<span class="hd-skill-name">' + esc(k.name) + '</span></span>' +
-                k.cells.map(function (c) { return '<span>' + esc(c) + '</span>'; }).join('') +
-                '<span class="c-num">' + esc(k.dps) + '</span><span class="c-num">' + esc(k.avg) + '</span><span class="c-num">' + esc(k.max) +
-                '</span><span class="c-total">' + esc(k.total) + '</span></div>';
-        }).join('') + '</div>';
-        detailsEl.innerHTML = h;
+    function renderWindows(list) {
+        var seen = {};
+        list.forEach(function (w) {
+            seen[w.id] = true;
+            var e = winEls[w.id];
+            if (!e) {
+                e = el('img', 'win', stage);
+                e._ver = -1;
+                e._loading = -1;
+                winEls[w.id] = e;
+            }
+            e.style.left = w.left + 'px';
+            e.style.top = w.top + 'px';
+            e.style.width = w.width + 'px';
+            e.style.height = w.height + 'px';
+            if (w.ver !== e._ver && w.ver !== e._loading) {
+                e._loading = w.ver;
+                var next = new Image();
+                next.onload = function () { e.src = next.src; e._ver = w.ver; };
+                next.src = '/window/' + w.id + '.png?v=' + w.ver;
+            }
+        });
+        Object.keys(winEls).forEach(function (id) {
+            if (!seen[id]) { winEls[id].remove(); delete winEls[id]; }
+        });
     }
 
     // ------------------------------------------------------------------ frame
@@ -239,11 +229,11 @@
             stage.style.height = state.screen.height + 'px';
             stage.style.transform = 'scale(' + scale + ')';
             renderMeter(state.meter);
-            renderDetails(state.details);
+            renderWindows(state.windows || []);
             renderIcons(state.icons || [], performance.now() - receivedAt);
         } else {
             renderMeter(null);
-            renderDetails(null);
+            renderWindows([]);
             renderIcons([], 0);
         }
         requestAnimationFrame(frame);

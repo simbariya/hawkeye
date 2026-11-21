@@ -36,6 +36,7 @@ html, body {
     --outline: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 1px #000;
 
     position: absolute;
+    z-index: 1;
     padding: 9px 4px 4px 9px;
 }
 
@@ -197,6 +198,7 @@ html, body {
 /* ================= skill icons ================= */
 .ic {
     position: absolute;
+    z-index: 3;
     border: 2px solid rgba(255, 255, 255, 0.56);
     background: #141827 center / cover no-repeat;
     transition: box-shadow 0.15s;
@@ -240,67 +242,5 @@ html, body {
     50% { box-shadow: 0 0 12px 3px rgba(255, 77, 77, 1); }
 }
 
-/* ================= combat analysis (mirrors Pages/DetailsPage.razor.css) ================= */
-.hd {
-    --panel: #1E2330;
-    --panel-2: #171B26;
-    --line: #2C3242;
-    --text: #E6E8EC;
-    --dim: #8A8F9C;
-    --cyan: #34D3D8;
-
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-    border: 1px solid #9B8172;
-    color: var(--text);
-    font-size: 13px;
-    overflow: hidden;
-}
-
-.hd-header { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-bottom: 1px solid var(--line); }
-.hd-title { font-weight: 700; letter-spacing: 0.08em; color: #B9BDC7; }
-.hd-sub { color: var(--dim); font-size: 12px; white-space: nowrap; }
-
-.hd-players { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
-.hd-player {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px 3px 4px;
-    border: 1px solid var(--line);
-    background: var(--panel-2);
-    font-size: 12px;
-}
-    .hd-player small { color: var(--dim); }
-    .hd-player.is-me { border-color: #3FB292; }
-    .hd-player.is-on { background: #2B3446; border-color: var(--cyan); }
-.hd-class { width: 18px; height: 18px; background-size: contain; background-repeat: no-repeat; background-position: center; }
-
-.hd-top { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--panel-2); color: var(--cyan); font-size: 15px; }
-    .hd-top b { margin-left: auto; font-weight: 600; }
-    .hd-top i { width: 1px; height: 18px; background: var(--line); margin: 0 8px 0 18px; }
-    .hd-top span { white-space: nowrap; }
-
-.hd-summary { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; padding: 6px 12px 10px; }
-    .hd-summary div { display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px solid var(--line); }
-    .hd-summary b { font-weight: 600; }
-
-.hd-table { padding: 0 10px 10px; overflow: hidden; }
-.hd-row {
-    display: grid;
-    grid-template-columns: minmax(150px, 1fr) repeat(8, 44px) repeat(3, 54px) 150px;
-    align-items: center;
-    column-gap: 4px;
-    min-height: 30px;
-    border-bottom: 1px solid var(--line);
-}
-    .hd-row > span { text-align: center; }
-    .hd-row > .c-num { text-align: right; }
-    .hd-row > .c-total { text-align: right; color: var(--cyan); padding-right: 4px; }
-.hd-head { background: var(--panel-2); font-weight: 700; font-size: 12px; color: #C9CDD6; }
-.c-skill { position: relative; display: flex !important; align-items: center; gap: 7px; height: 30px; padding-left: 4px; text-align: left !important; overflow: hidden; }
-    .c-skill img, .c-skill em { position: relative; width: 22px; height: 22px; flex: 0 0 22px; background: #0E1119; }
-.hd-bar { position: absolute; left: 0; top: 3px; bottom: 3px; background: rgba(52, 160, 160, 0.55); }
-.hd-skill-name { position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ================= Hawkeye's own windows (pictures) ================= */
+.win { position: absolute; display: block; z-index: 2; }
