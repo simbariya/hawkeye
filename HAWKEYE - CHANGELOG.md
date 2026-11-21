@@ -3,6 +3,16 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.3 (2026-11-21)
+
+- **Monolith made matte and layered** (owner: "more matte ... layering to make it more human", with
+  the Korathia combat-card lessons as the reference): warm charcoal with a faint grain instead of
+  cold glass, a soft light from the logo corner, the rows sunk into a recessed well (a frame within
+  the frame), a soft rim and fading halo instead of hard hairline boxes, warm whites, a matte cyan,
+  and your line glowing gently instead of neon. Settings, History, Extras and the breakdown share
+  the same surface in Monolith.
+- **Class icons in Extras:** each character's class is filled in as soon as Hawkeye knows it.
+
 ## v0.2.2 (2026-11-21)
 
 - Timer a little smaller in every look and never italic (a fight from history is just dimmed).

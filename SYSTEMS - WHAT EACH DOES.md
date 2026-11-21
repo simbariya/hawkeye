@@ -79,6 +79,12 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   the stream page). Window palettes: `theme-*` blocks in `wwwroot/css/hawkeye.css` (variables
   `--w-*`, which each window's own colours fall back from). Per-look touches of the analysis window
   at the end of `Pages/DetailsPage.razor.css`.
+- **Design principles** (owner, from the Korathia combat-card rounds, local only:
+  the Korathia project's combat-card lessons file (kept outside this repo)):
+  layered not flat (frames within frames, recessed wells with a lip); MATTE (flat velvety fills, no
+  gloss lines, no hard 1px white highlights); soft rims (one soft border plus a fading halo, never
+  hard double rings); emphasis as a seep glow, not a harder outline; a soft light source and a
+  little texture rather than bare black. Monolith follows them since v0.2.3.
 
 ## 5. Status line (ping, FPS, CPU, RAM)
 
