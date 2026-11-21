@@ -3,6 +3,11 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.2 (2026-11-21)
+
+- Timer a little smaller in every look and never italic (a fight from history is just dimmed).
+- Graphite & Vermilion: total damage brighter still.
+
 ## v0.2.1 (2026-11-21)
 
 - Total damage easier to read in all three looks (was too faint in Monolith).

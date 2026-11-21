@@ -60,7 +60,7 @@
 
 .meter-target { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .meter-timer { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
-.meter-timer.is-last { opacity: 0.55; font-style: italic; }
+.meter-timer.is-last { opacity: 0.55; }   /* your last fight from history: dimmed, never italic */
 
 .meter-btn {
     flex: 0 0 auto;
@@ -177,7 +177,7 @@
     box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.85);
 }
 .theme-monolith .meter-target { font-size: 11px; font-weight: 600; letter-spacing: 3.5px; text-transform: uppercase; color: #F4F4F5; }
-.theme-monolith .meter-timer { font-size: 20px; font-weight: 200; letter-spacing: -0.5px; color: #F4F4F5; }
+.theme-monolith .meter-timer { font-size: 16px; font-weight: 200; letter-spacing: -0.5px; color: #F4F4F5; }
 .theme-monolith .meter-btn { color: #6d717c; }
 .theme-monolith .side-btn { color: #6d717c; }
 .theme-monolith .side-btn:hover { color: var(--accent); }
@@ -215,7 +215,7 @@
 @keyframes hawkeye-aurora { from { background-position: 0 0; } to { background-position: 300% 0; } }
 @media (prefers-reduced-motion: reduce) { .theme-aurora .meter::before { animation: none; } }
 .theme-aurora .meter-target { font-size: 15px; font-weight: 300; letter-spacing: 3.5px; text-transform: uppercase; color: #F2FBFF; text-shadow: 0 0 16px rgba(127, 200, 255, 0.35); }
-.theme-aurora .meter-timer { font-size: 17px; font-weight: 200; color: #BFE6FF; }
+.theme-aurora .meter-timer { font-size: 14.5px; font-weight: 200; color: #BFE6FF; }
 .theme-aurora .meter-btn, .theme-aurora .side-btn { color: #6e93b5; }
 .theme-aurora .side-btn:hover { color: #7fc8ff; }
 .theme-aurora .meter-run { color: #7fc8ff; }
@@ -237,7 +237,7 @@
     box-shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.85);
 }
 .theme-graphite .meter-target { font-family: "Sitka Banner", "Sitka Display", Georgia, serif; font-size: 19px; font-weight: 700; color: #F5F2EE; }
-.theme-graphite .meter-timer { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; color: var(--accent); }
+.theme-graphite .meter-timer { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--accent); }
 .theme-graphite .meter-btn, .theme-graphite .side-btn { color: #7a7c82; }
 .theme-graphite .side-btn:hover { color: var(--accent); }
 .theme-graphite .meter-run { color: #F5F2EE; }
@@ -250,6 +250,6 @@
 .theme-graphite .meter-row.is-me .meter-name { color: #fff; font-weight: 600; }
 .theme-graphite .meter-dps { font-family: "Sitka Banner", "Sitka Display", Georgia, serif; font-size: 16px; font-weight: 600; color: #F5F2EE; }
 .theme-graphite .meter-row.is-me .meter-dps { color: var(--accent); }
-.theme-graphite .meter-total { color: #A9ABB1; }
+.theme-graphite .meter-total { color: #D2CFCA; font-weight: 500; }
 .theme-graphite .meter-deaths { color: var(--accent); }
 .theme-graphite .meter-status { color: #7a7c82; }
