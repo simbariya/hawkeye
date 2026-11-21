@@ -171,12 +171,13 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - Release gate now includes starting the packaged exe (build-and-run skill, step 4).
 - This checkpoint commit is local only (its push was not part of the owner's "PUSH").
 
-## CHECKPOINT (2026-11-21 evening, v0.2.14 live, 0.2.15 local) - supersedes the ones above
+## CHECKPOINT (2026-11-21 evening, v0.2.15 live) - supersedes the ones above
 
 - Live on GitHub: v0.2.14. PvP mode complete: kills/deaths/assists (mob kills ignored), AP and rank,
   End session + History > PvP tab, who-was-it lists, shugo.gg profile popup (on stream too),
   Settings > PvP > Enemy server, remembered totals for the first kill.
-- Local, NOT pushed: 0.2.15 (tracked skill tick box). Push on the owner's word.
+- v0.2.15 (tracked skill tick box) released on the owner's word ("push latest to github"), with the
+  full documentation pass (START HERE, SYSTEMS 4/6/7, changelog, protocol skill).
 - Next session, needs the game running:
   1. First kill exact: start the recorder BEFORE the owner logs in (or goes to character select and
      back); search the login data for his AP total (0x561B values) and rank total.

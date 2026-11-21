@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.15 (2026-11-21, not released yet)
+## v0.2.15 (2026-11-21)
 
 Added:
 - Skill tracker: a tick box per tracked skill. Unticked skills keep their place, mode and icon

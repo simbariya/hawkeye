@@ -56,8 +56,12 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Does:** frameless, always on top, drag anywhere on it, resize from invisible strips on the right
   and bottom edges and the bottom-right corner (no grip). The cut-out logo
   (`wwwroot/images/hawkeye-emblem.png`, cut from `branding/hawkeye-logo.png`) sits over the
-  panel's top-left corner, the version just under it, and History / Extras buttons in a slim strip
-  down the left side (v0.1.10). Header: boss name (blood red, one line), dummy START/STOP (Start/Stop mode only), fight
+  panel's top-left corner, the version at the end of the status line, and a slim strip down the
+  left side: History, Extras, PvP mode, Clear (v0.1.10, v0.2.7, v0.2.9). On a window too short for
+  all four, the ones that do not fit fold behind a small chevron; clicking it grows the window to
+  show them (auto height: a CSS min-height the measure pass picks up; manual: `GrowTo`), clicking
+  again folds them (v0.2.14; `hawkeyeSideSlots` / `hawkeyeSideNeed` in index.html, `SideSlots`,
+  `SideExpanded`, `SideVisible` in MeterViewModel). Header: boss name (blood red, one line), dummy START/STOP (Start/Stop mode only), fight
   timer ("ready" while waiting for your first hit), Settings, Close. Optional status line AT THE
   BOTTOM (v0.1.3). (The fight total / deaths summary line was removed in v0.1.4.) One row per player, sorted by damage, bar relative to the top
   player, eased so it glides; optional skull + deaths and total damage. Hover a row for exact damage,
@@ -127,7 +131,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   hit in the last 15 s), plus always while Settings is open. `OverlayManager` checks 4 times a second
   and hides or shows the icon windows (never taking focus). The timers keep running while hidden.
 - **Settings:** `TrackerEnabled`, `TrackerAlwaysVisible` (false), `TrackerIconSize` (24 to 96),
-  `TrackedSkills[]` (`SkillId`, `Mode`, `Left`, `Top`).
+  `TrackedSkills[]` (`SkillId`, `Mode`, `Active`, `Left`, `Top`). `Active` (v0.2.15, default on; the
+  tick box in Settings): off = no icon and no timers (`OverlayManager.SyncIcons`,
+  `CombatSessionManager.RefreshTrackedIds`), mode and position kept.
 - **Files:** `Hawkeye.App/Views/TrackerIconWindow.cs`, `Services/Windowing/OverlayManager.cs`,
   `Services/Windowing/ClickThrough.cs`, `Hawkeye.Engine/Services/Timed/`.
 - **Proven in game (2026-11-21):** Deadshot cooldown and the Marking Shot buff (id 14090000). Not yet: every other Ranger skill.
@@ -225,8 +231,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 
 ## 7. Settings window
 
-- **Does:** opacity, the four status switches, the tracker. Opens beside the meter, square, drag
-  by its header.
+- **Does:** sections LOOK, WINDOW (auto-update, opacity), METER, TRAINING DUMMY, PVP (enemy server for
+  shugo.gg links), STATUS LINE, STREAMER MODE, SKILL TRACKER; footer with the Twitch link and
+  Support (placeholder). Opens beside the meter, square, drag by its header.
 - **Files:** `Hawkeye.App/Pages/SettingsPage.razor`, `Pages/Components/`, styles in
   `wwwroot/css/hawkeye.css`, window in `Services/Windowing/BlazorWindow.xaml(.cs)`.
 
