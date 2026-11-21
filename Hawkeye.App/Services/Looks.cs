@@ -27,7 +27,7 @@ namespace Hawkeye.App.Services
         {
             Look.Aurora => (20, 6, 0),
             Look.Graphite => (27, 0, 0),
-            _ => (26, 2, 8),   // Monolith: rows sit in a recessed well with 4px top and bottom
+            _ => (21, 2, 4),   // Monolith: rows sit in a recessed well with 2px top and bottom
         };
     }
 }

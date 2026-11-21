@@ -175,9 +175,9 @@
    the logo corner, the rows sunk into a recessed well (a frame within the frame), soft rims and a
    fading halo instead of hard lines, matte colours, emphasis as a gentle seep glow. */
 .theme-monolith {
-    --row-h: 26px;
+    --row-h: 21px;
     --row-gap: 2px;
-    --well-pad: 4px;                 /* top and bottom padding of the rows well; see Looks.RowMetrics */
+    --well-pad: 2px;                 /* top and bottom padding of the rows well; see Looks.RowMetrics */
     --accent: #8CCFDF;               /* matte cyan */
     --ink: #ECE8E1;                  /* warm white */
     --ink-2: #B9B5AE;
@@ -192,8 +192,9 @@
     border: 1px solid rgba(255, 245, 230, 0.07);
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 14px 34px -12px rgba(0, 0, 0, 0.75);
 }
+.theme-monolith .meter-header { min-height: 28px; }
 .theme-monolith .meter-target { font-size: 11px; font-weight: 600; letter-spacing: 3.2px; text-transform: uppercase; color: var(--ink); }
-.theme-monolith .meter-timer { font-size: 16px; font-weight: 300; letter-spacing: -0.2px; color: var(--ink-2); }
+.theme-monolith .meter-timer { font-size: 15px; font-weight: 300; letter-spacing: -0.2px; color: var(--ink-2); }
 .theme-monolith .meter-btn, .theme-monolith .side-btn { color: var(--ink-3); }
 .theme-monolith .side-btn:hover { color: var(--accent); }
 .theme-monolith .meter-run { color: var(--accent); }
@@ -202,21 +203,22 @@
 /* the recessed well that holds the rows */
 .theme-monolith .meter-rows {
     margin-left: var(--side);
-    padding: var(--well-pad) 8px;
+    padding: var(--well-pad) 4px;
     background: rgba(0, 0, 0, 0.22);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 245, 230, 0.03);
 }
-.theme-monolith .meter-row { padding: 0 1px; }
+.theme-monolith .meter-row { padding: 0 6px 0 4px; }
 
-.theme-monolith .meter-fill { bottom: 1px; height: 1px; background: rgba(236, 232, 225, 0.38); }
-.theme-monolith .meter-row.is-me .meter-fill { height: 2px; background: var(--accent); box-shadow: 0 0 6px rgba(140, 207, 223, 0.35); }
+/* the bar: a soft tone-on-tone band that grows with damage (no lines); yours a faint matte cyan */
+.theme-monolith .meter-fill { top: 0; bottom: 0; background: linear-gradient(90deg, rgba(236, 232, 225, 0.05), rgba(236, 232, 225, 0.11)); }
+.theme-monolith .meter-row.is-me .meter-fill { background: linear-gradient(90deg, rgba(140, 207, 223, 0.08), rgba(140, 207, 223, 0.22)); box-shadow: inset -1px 0 0 rgba(140, 207, 223, 0.45); }
 .theme-monolith .meter-name { font-size: 12.5px; font-weight: 400; color: var(--ink-2); }
 .theme-monolith .meter-row.is-me .meter-name { color: var(--ink); font-weight: 600; }
-.theme-monolith .meter-dps { font-size: 16px; font-weight: 300; color: var(--ink); }
+.theme-monolith .meter-dps { font-size: 14.5px; font-weight: 300; color: var(--ink); }
 .theme-monolith .meter-row.is-me .meter-dps { color: var(--accent); font-weight: 400; }
 .theme-monolith .meter-total { color: #A9A59E; font-weight: 400; }
 .theme-monolith .meter-deaths { color: #E08A7E; }
-.theme-monolith .meter-status { margin-left: var(--side); color: var(--ink-3); border-top: none; padding-top: 6px; }
+.theme-monolith .meter-status { margin: 5px 0 0 var(--side); color: var(--ink-3); border-top: none; padding-top: 0; }
 
 /* ============================== Aurora ============================== */
 .theme-aurora { --row-h: 20px; --row-gap: 6px; --accent: #6FF3D6; }

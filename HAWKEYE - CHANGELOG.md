@@ -3,6 +3,13 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.4 (2026-11-21)
+
+- **Monolith tighter** (owner: "taking a bit too much space ... the goal is minimalism"): rows
+  21 px (were 26), thinner well, tighter header and bottom line; about a fifth shorter.
+- **Monolith bars:** the hairline under each name is gone; each row now has a soft tone-on-tone
+  band that grows with damage, yours a faint matte cyan with a soft edge.
+
 ## v0.2.3 (2026-11-21)
 
 - **Monolith made matte and layered** (owner: "more matte ... layering to make it more human", with
