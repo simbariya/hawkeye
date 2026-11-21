@@ -60,6 +60,8 @@ namespace Hawkeye.App
                     // App
                     services.AddSingleton<SystemStatsService>();
                     services.AddSingleton<DetailsState>();
+                    services.AddSingleton<MeterSource>();
+                    services.AddSingleton<Hawkeye.App.Services.Streaming.StreamServer>();
                     services.AddSingleton<OverlayManager>();
                     services.AddSingleton<MainWindow>();
                     services.AddWpfBlazorWebView();
@@ -99,6 +101,7 @@ namespace Hawkeye.App
             main.Show();
 
             services.GetRequiredService<OverlayManager>().Start();
+            services.GetRequiredService<Hawkeye.App.Services.Streaming.StreamServer>().Start();
         }
 
         private static bool TryStartCapture(IPacketService packets)
@@ -128,6 +131,7 @@ namespace Hawkeye.App
                 services.GetRequiredService<CombatSessionManager>().CompleteActiveSessions();
                 services.GetRequiredService<IPacketService>().Stop();
                 services.GetRequiredService<SystemStatsService>().Dispose();
+                services.GetRequiredService<Hawkeye.App.Services.Streaming.StreamServer>().Dispose();
                 await AppHost.StopAsync(TimeSpan.FromSeconds(2));
             }
             catch (Exception ex)

@@ -10,7 +10,7 @@
 @inject SystemStatsService Stats
 @inject ISettingsService Settings
 @inject OverlayManager Overlays
-@inject Hawkeye.Engine.Services.History.IEncounterHistory History
+@inject MeterSource Source
 @inject DetailsState Details
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
@@ -101,7 +101,7 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, History, Details, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, () => InvokeAsync(StateHasChanged));
 
     // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
     private double downX, downY;

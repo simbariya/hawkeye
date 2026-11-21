@@ -28,9 +28,6 @@ namespace Hawkeye.App.ViewModels
         public double BarPercent { get; set; }
     }
 
-    /// <summary>What one meter row is built from: a live player or a player in a saved fight.</summary>
-    internal readonly record struct RowSource(long PlayerId, bool IsUser, int ClassId, string Name, long TotalDamage, double Dps, double Share, int Deaths);
-
     /// <summary>One piece of the status line. Css picks its colour; Clickable items run an action.</summary>
     public sealed record StatusItem(string Text, string Css, string Title = "", bool Clickable = false);
 
@@ -43,7 +40,7 @@ namespace Hawkeye.App.ViewModels
         private readonly SystemStatsService stats;
         private readonly ISettingsService settings;
         private readonly OverlayManager overlays;
-        private readonly IEncounterHistory history;
+        private readonly MeterSource source;
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
@@ -80,13 +77,13 @@ namespace Hawkeye.App.ViewModels
         private EncounterSnapshot? shown;
 
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
-            OverlayManager overlays, IEncounterHistory history, DetailsState details, Func<Task> redraw)
+            OverlayManager overlays, MeterSource source, DetailsState details, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
             this.settings = settings;
             this.overlays = overlays;
-            this.history = history;
+            this.source = source;
             this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();
@@ -109,25 +106,12 @@ namespace Hawkeye.App.ViewModels
         {
             bool changed = false;
 
-            var status = BuildStatusItems();
-            var live = sessions.PlayerStats.Where(p => p.IsIdentified || p.DamagePercentage > 1).ToList();
-            shown = live.Count == 0 ? history.LastOwn : null;
-
-            string duration, target;
-            List<RowSource> current;
-            if (shown is not null)
-            {
-                duration = TimeSpan.FromSeconds(shown.DurationSeconds).ToString(@"mm\:ss");
-                target = shown.TargetName;
-                current = shown.Players.Select(p => new RowSource(p.PlayerId, p.IsUser, p.ClassId, p.Name, p.TotalDamage, p.Dps, p.SharePercent, p.Deaths)).ToList();
-            }
-            else
-            {
-                duration = sessions.GetCombatDuration().ToString(@"mm\:ss");
-                target = sessions.GetActiveTargetInfo()?.Name ?? string.Empty;
-                var deaths = ShowDeaths ? sessions.GetActiveBossDeaths() : new Dictionary<int, int>();
-                current = live.Select(p => new RowSource(p.PlayerId, p.IsUser, p.ClassId, p.PlayerName, p.TotalDamage, p.DamagePerSecond, p.DamagePercentage, deaths.GetValueOrDefault((int)p.PlayerId))).ToList();
-            }
+            var status = BuildStatusItems(settings.Current, stats);
+            var data = source.Read();
+            shown = data.Shown;
+            string duration = data.Duration.ToString(@"mm\:ss");
+            string target = data.Target;
+            var current = data.Rows;
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
@@ -160,7 +144,7 @@ namespace Hawkeye.App.ViewModels
                 row.TotalDamage = p.TotalDamage;
                 row.Total = Compact(p.TotalDamage);
                 row.Dps = Compact((long)Math.Round(p.Dps), shortThousands: true);
-                row.Deaths = ShowDeaths ? p.Deaths : 0;
+                row.Deaths = p.Deaths;
                 row.Detail = $"{p.TotalDamage.ToString("N0", CultureInfo.InvariantCulture)} damage ({p.Share:F1}%)"
                              + (row.Deaths > 0 ? $", died {row.Deaths}x on this boss" : string.Empty)
                              + ". Click for the skill breakdown";
@@ -207,9 +191,9 @@ namespace Hawkeye.App.ViewModels
         /// <summary>Ping colour: bright green under 30 ms, yellow up to 100 ms, red above.</summary>
         public static string PingCss(int ms) => ms < 30 ? "is-good" : ms <= 100 ? "is-ok" : "is-bad";
 
-        private List<StatusItem> BuildStatusItems()
+        /// <summary>The status line pieces; shared with streamer mode.</summary>
+        public static List<StatusItem> BuildStatusItems(HawkeyeSettings s, SystemStatsService stats)
         {
-            var s = settings.Current;
             var parts = new List<StatusItem>(4);
             if (s.ShowPing)
                 parts.Add(stats.PingMs is int ping

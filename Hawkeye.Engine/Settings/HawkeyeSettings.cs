@@ -72,6 +72,13 @@ namespace Hawkeye.Engine.Settings
         public bool TrackerAlwaysVisible { get; set; } = false;
         public List<TrackedSkill> TrackedSkills { get; set; } = new();
 
+        // ---- streamer mode (an OBS Browser Source page served by Hawkeye on this PC) ----
+        public bool StreamerMode { get; set; } = false;
+        /// <summary>http://localhost:{StreamerPort}/ (file only; change it if 7777 is taken).</summary>
+        public int StreamerPort { get; set; } = 7777;
+        public bool StreamShowMeter { get; set; } = true;
+        public bool StreamShowIcons { get; set; } = true;
+
         // ---- engine behaviour (no UI; edit the file if you ever need to) ----
         /// <summary>Only open a fight for bosses / training dummies, not trash mobs.</summary>
         public bool BossOnlyCapture { get; set; } = true;

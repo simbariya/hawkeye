@@ -11,7 +11,7 @@
     <AssemblyName>Hawkeye</AssemblyName>
     <RootNamespace>Hawkeye.App</RootNamespace>
     <Product>Hawkeye</Product>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
     <ApplicationIcon>hawkeye.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -31,6 +31,11 @@
 
   <ItemGroup>
     <Content Include="hawkeye.ico" />
+  </ItemGroup>
+
+  <!-- Streamer mode serves these from inside the exe (Services/Streaming/StreamServer.cs). -->
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" LogicalName="hawkeye-web/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

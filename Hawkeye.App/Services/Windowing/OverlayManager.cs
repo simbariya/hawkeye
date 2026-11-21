@@ -30,6 +30,12 @@ namespace Hawkeye.App.Services.Windowing
         private readonly DispatcherTimer visibilityTimer;
         private bool iconsShown = true;
 
+        /// <summary>Whether the tracker icons are on screen right now (streamer mode mirrors this).</summary>
+        public bool IconsVisible => iconsShown && settings.Current.TrackerEnabled;
+
+        /// <summary>The icon windows, for streamer mode. UI thread only.</summary>
+        public IReadOnlyCollection<TrackerIconWindow> IconWindows => icons.Values;
+
         public OverlayManager(
             IServiceProvider services,
             ISettingsService settings,

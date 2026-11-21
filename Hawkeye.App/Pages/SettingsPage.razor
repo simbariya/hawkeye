@@ -6,6 +6,8 @@
 @using Hawkeye.Engine.Settings
 @inject ISettingsService Settings
 @inject OverlayManager Overlays
+@inject Hawkeye.App.Services.Streaming.StreamServer Stream
+@implements IDisposable
 
 <div class="hs">
     <header class="hs-header" @onmousedown="Overlays.DragSettings">
@@ -75,6 +77,32 @@
         <SettingRow Title="RAM" Description="Whole-system memory in use">
             <ValueSlot><ToggleSwitch Checked="S.ShowRam" CheckedChanged="v => Settings.Update(s => s.ShowRam = v)" /></ValueSlot>
         </SettingRow>
+
+        <div class="hs-section">STREAMER MODE</div>
+        <SettingRow Title="Streamer mode" Description="Shows the meter and skill icons in OBS as one Browser Source, with real transparency">
+            <ValueSlot><ToggleSwitch Checked="S.StreamerMode" CheckedChanged="v => Settings.Update(s => s.StreamerMode = v)" /></ValueSlot>
+        </SettingRow>
+        @if (S.StreamerMode)
+        {
+            <div class="hs-stream">
+                <div class="hs-stream-link">
+                    <code>@Stream.Url</code>
+                    <button type="button" class="hs-button" @onclick="CopyLink">@(copied ? "Copied" : "Copy link")</button>
+                </div>
+                <div class="hs-stream-status @(Stream.Status == "Running" ? "is-ok" : "is-bad")">@Stream.Status</div>
+                <ol class="hs-stream-steps">
+                    <li>In OBS: <b>+</b> &gt; <b>Browser</b>, paste the link as the URL.</li>
+                    <li>Width and height: your screen resolution (for example 1920 x 1080).</li>
+                    <li>Put it above your Game Capture and stretch it over the whole canvas.</li>
+                </ol>
+            </div>
+            <SettingRow Title="Meter on stream" Description="Show the meter in the Browser Source">
+                <ValueSlot><ToggleSwitch Checked="S.StreamShowMeter" CheckedChanged="v => Settings.Update(s => s.StreamShowMeter = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Skill icons on stream" Description="Show the tracker icons in the Browser Source">
+                <ValueSlot><ToggleSwitch Checked="S.StreamShowIcons" CheckedChanged="v => Settings.Update(s => s.StreamShowIcons = v)" /></ValueSlot>
+            </SettingRow>
+        }
 
         <div class="hs-section">SKILL TRACKER</div>
         <SettingRow Title="Enabled" Description="Show each tracked skill as its own icon. While this window is open, drag the icons where you want them">
@@ -165,6 +193,20 @@
     private string query = string.Empty;
 
     private HawkeyeSettings S => Settings.Current;
+    private bool copied;
+
+    protected override void OnInitialized() => Stream.StatusChanged += OnStreamStatus;
+    private void OnStreamStatus(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+    public void Dispose() => Stream.StatusChanged -= OnStreamStatus;
+
+    private async Task CopyLink()
+    {
+        try { System.Windows.Clipboard.SetText(Stream.Url); copied = true; }
+        catch { copied = false; }
+        StateHasChanged();
+        await Task.Delay(1500);
+        copied = false;
+    }
     private int OpacityPercent => (int)Math.Round(S.Opacity * 100);
     private int IconSize => (int)Math.Round(S.TrackerIconSize);
 

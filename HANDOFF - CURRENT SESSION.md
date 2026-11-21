@@ -119,3 +119,10 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   close Hawkeye, set RecordPackets, relog/zone, search the unpacked stream for 360 and 2000).
 - Local commits after the last push: not pushed. Push only on the owner's word.
 - Packages: `..\release\Hawkeye-0.1.5-small.zip`. Owner runs `..\release\0.1.4\Hawkeye\Hawkeye.exe`.
+
+## CHECKPOINT (2026-11-21, v0.1.6) - supersedes the ones above
+
+- Streamer mode built (OBS Browser Source at http://localhost:7777/). Page verified in headless Edge
+  with fake state; HttpListener on localhost verified without admin. NOT yet seen in OBS or with the
+  real app running (avoided popping a test copy over the owner's game).
+- Odyle recording session still pending. Pushes pending since 032bff4: ask the owner.

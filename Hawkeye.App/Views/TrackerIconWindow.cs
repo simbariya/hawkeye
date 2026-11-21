@@ -72,6 +72,12 @@ namespace Hawkeye.App.Views
         private readonly DropShadowEffect glow;
 
         private double iconSize;
+
+        // For streamer mode: where the icon itself (not the glow margin) is on screen, in WPF units.
+        public int SkillId => skillId;
+        public double IconLeft => Left + Pad;
+        public double IconTop => Top + Pad;
+        public double IconSize => iconSize;
         private bool isEditMode;
         private bool wasActive;
         private DateTime flashUntilUtc = DateTime.MinValue;

@@ -131,6 +131,22 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   fight). Opened by clicking a meter row or a history entry. `Pages/HistoryPage.razor` lists kept
   and recent fights. Windows: `OverlayManager.OpenDetails/OpenHistory`.
 
+## 6c. Streamer mode (v0.1.6)
+
+- **Does:** with `StreamerMode` on, `Services/Streaming/StreamServer.cs` runs an `HttpListener` on
+  `http://localhost:{StreamerPort}/` (localhost only; no admin needed). `/` is the page
+  (`wwwroot/stream/index.html`, `stream.css`, `stream.js`), `/state` is JSON, anything else a file
+  from `wwwroot` (logo, class icons). Page files are EMBEDDED in the exe (`hawkeye-web/...`
+  resources, see the csproj), so Debug, publish and single-file builds all serve them.
+- **State:** built on the UI thread every 100 ms (it reads the meter window and the icon windows)
+  from the same `MeterSource` as the meter, plus the status line, icon positions (`IconLeft/Top`,
+  WPF units) and timers; the HTTP thread hands out the last JSON. The page scales everything by
+  `innerWidth / screen.width`, so the Browser Source must be the screen's aspect (resolution).
+- **Look:** `stream.css` copies the meter CSS and the icon colours; keep it in step with
+  `MeterPage.razor.css` and `TrackerIconWindow.cs`.
+- **Settings:** `StreamerMode` (off), `StreamerPort` (7777, file only), `StreamShowMeter`,
+  `StreamShowIcons`.
+
 ## 7. Settings window
 
 - **Does:** opacity, the four status switches, the tracker. Opens beside the meter, square, drag

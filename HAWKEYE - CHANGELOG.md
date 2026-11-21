@@ -3,6 +3,19 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.6 (2026-11-21)
+
+Added:
+- **Streamer mode** (Settings > Streamer mode, off by default). Hawkeye serves a page at
+  `http://localhost:7777/` (this PC only) for an OBS **Browser Source**: the meter and the skill
+  icons, drawn where they are on your screen, in the same style, with real transparency, live
+  countdowns and icons that come and go with fights. One source instead of a Window Capture per
+  window, and no black corners. Settings shows the link (Copy button), whether it is running, the
+  three OBS steps, and switches for meter / icons on stream. Port in settings.json
+  (`StreamerPort`) if 7777 is taken.
+- The stream page was checked in a headless browser against test data (transparent background,
+  meter, cooldown sweep, buff up/down, ending colours). Not yet seen inside OBS.
+
 ## v0.1.5 (2026-11-21)
 
 Added:
