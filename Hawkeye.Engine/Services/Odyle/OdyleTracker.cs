@@ -69,6 +69,24 @@ namespace Hawkeye.Engine.Services.Odyle
             }
         }
 
+        /// <summary>Odyle's key, learned from the login message; the default until then.</summary>
+        public int OdyleKey { get; private set; } = OdyleParser.DefaultKey;
+
+        /// <summary>A live change (0x610C, e.g. a cube loot): it is the character you are on, right now.</summary>
+        public void OnUpdate(int current, int pool)
+        {
+            var name = entities.CurrentUserName;
+            if (string.IsNullOrEmpty(name) || name.StartsWith("Player_")) return;
+            lock (gate) Store(name, current, pool, now());
+        }
+
+        /// <summary>The login/switch message (0x610B), with the key that marks Odyle in later updates.</summary>
+        public void OnReading(int current, int pool, int key)
+        {
+            OdyleKey = key;
+            OnReading(current, pool);
+        }
+
         /// <summary>Called by the packet reader with a fresh reading.</summary>
         public void OnReading(int current, int pool)
         {

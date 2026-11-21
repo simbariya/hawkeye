@@ -31,6 +31,32 @@ public sealed class OdyleTests : IDisposable
     }
 
     [Fact]
+    public void CubeLoot_Update_IsRead()
+    {
+        // cleric looted a double cube: 760 (+40) -> 680 (+40). The real 0x610C message:
+        var r = OdyleParser.ParseUpdate(Convert.FromHexString("100C61000C01879303A8052803"), OdyleParser.DefaultKey);
+        Assert.Equal((680, 40), r);
+    }
+
+    [Theory]
+    [InlineData("0F0C61000C01000000050103")]   // entry 1 of another counter (key 0): not Odyle
+    [InlineData("0E0C6100040C0000000E02")]     // entry 12: not Odyle
+    public void OtherCounterUpdates_AreNotOdyle(string hex)
+    {
+        Assert.Null(OdyleParser.ParseUpdate(Convert.FromHexString(hex), OdyleParser.DefaultKey));
+    }
+
+    [Fact]
+    public void LiveUpdate_GoesToTheCharacterYouAreOn()
+    {
+        var entities = new EntityTracker();
+        entities.SetSessionPlayerName(1, "cleric", 0, isUser: true);
+        var odyle = new OdyleTracker(entities, path, clock: () => clock);
+        odyle.OnUpdate(680, 40);
+        Assert.Equal(("cleric", 680, 40), (odyle.Current!.Name, odyle.Current.Current, odyle.Current.Pool));
+    }
+
+    [Fact]
     public void SomethingElse_IsNotMistakenForOdyle()
     {
         Assert.Null(OdyleParser.Parse(Convert.FromHexString("0B21 8D92 F802 0001".Replace(" ", ""))));

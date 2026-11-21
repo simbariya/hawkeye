@@ -19,4 +19,5 @@ public static class PacketOpcodes
     public const ushort SkillCdUpdate = 0x3847;       // 47 38
     public const ushort SkillCast = 0x3802;           // 02 38
     public const ushort Counters = 0x610B;            // 0B 61  (Odyle is entry 1; see Services/Odyle)
+    public const ushort CounterUpdate = 0x610C;       // 0C 61  (one counter changed, e.g. Odyle spent)
 }

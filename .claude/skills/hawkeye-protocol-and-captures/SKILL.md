@@ -88,6 +88,11 @@ The pool refill (+15) runs on a GLOBAL timer (same for every character); the nex
 ~10 KB, all names) arrives at the switch too but holds no Odyle. Opening the Change Character
 window sends nothing.
 
+**Counter update `0x610C`** (proven 2026-11-21, a double cube loot): `[0x00][one entry, same layout
+as 0x610B][0x03]`, sent the moment a counter changes. Odyle = entry 1 WITH Odyle's key (51591 on all
+the owner's characters; another counter's update also had entry 1 but key 0). Real example:
+`100C61000C01879303A8052803` = 680 (+40).
+
 How it was found: a side recorder saved raw TCP from the first byte of each connection (Hawkeye's
 own reader only starts at the first heartbeat, so it misses logins), then the owner read out each
 character's numbers and the stream was searched for them.

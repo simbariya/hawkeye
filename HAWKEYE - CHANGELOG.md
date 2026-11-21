@@ -3,6 +3,16 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.12 (2026-11-21)
+
+Added:
+- **Odyle follows spending live.** Looting a cube (40 single, 80 double) makes the game send a
+  one-counter update (`0x610C`); Hawkeye now reads it, so the Extras list stays right while you
+  play, not only at login. Proven on the owner's double loot: cleric 760 (+40) became 680 (+40),
+  exactly what the update carried. Other counters use the same update, so it only counts when the
+  entry carries Odyle's own key (learned from the login message).
+- 4 new tests (42 total) with the real update.
+
 ## v0.1.11 (2026-11-21)
 
 Changed (owner: "more stylish and elegant"):
