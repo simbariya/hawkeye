@@ -3,6 +3,14 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.6 (2026-11-21)
+
+First public release on GitHub (Releases page): a full zip with .NET included and a small one.
+- Fix: Odyle list could freeze (deadlock between saving and storing a reading); found when the
+  test run hung before any release.
+- README and the zip's READ ME FIRST rewritten in plain words; the read-me now lives in
+  `packaging/` and every package uses it.
+
 ## v0.2.5 (2026-11-21)
 
 - **Odyle refills counted automatically.** The game adds +15 to current Odyle (up to 840) on a
