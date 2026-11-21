@@ -185,6 +185,20 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   global timer anchored at 2026-11-21 16:00 UTC, capped at 840. Extras shows estimates as "~N"
   until a reading confirms them. Whether the pool feeds the refill is NOT known (pool shown as read).
 
+## 6e. Clear and auto-update (v0.2.7)
+
+- **Clear:** `MeterSource.Clear` completes all open fights (they go to History) and hides any fight
+  started before the clear; the meter stays blank until your next fight.
+- **Auto-update:** `Services/UpdateService.cs` (app) + `Engine/Services/Updates/` (`ReleaseInfo`:
+  latest-release JSON, version compare, asset choice; `UpdateInstaller`: the install batch script).
+  GitHub API `releases/latest`, User-Agent "Hawkeye-Updater", no personal data sent. Self-contained
+  builds (compile constant SELF_CONTAINED, set by the csproj when `SelfContained` is true) fetch
+  `Hawkeye-<ver>-win-x64.zip`, others `Hawkeye-<ver>-small.zip`: NEVER rename release assets.
+  Downloads go to %LocalAppData%\Hawkeye\updates (older ones cleaned at start). Install: batch file
+  waits for the PID to exit, robocopies the new folder over AppContext.BaseDirectory, optionally
+  restarts. Needs a writable install folder (not Program Files). Works only while the repo is public.
+- **Settings:** `AutoUpdate` (on).
+
 ## 7. Settings window
 
 - **Does:** opacity, the four status switches, the tracker. Opens beside the meter, square, drag

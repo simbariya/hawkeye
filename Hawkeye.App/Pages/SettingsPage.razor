@@ -31,6 +31,9 @@
         </SettingRow>
 
         <div class="hs-section">WINDOW</div>
+        <SettingRow Title="Auto-update" Description="Download new versions from GitHub; they install when you close Hawkeye">
+            <ValueSlot><ToggleSwitch Checked="S.AutoUpdate" CheckedChanged="v => Settings.Update(s => s.AutoUpdate = v)" /></ValueSlot>
+        </SettingRow>
         <SettingRow Title="Opacity" Description="How solid the meter is (10 to 100%)">
             <ValueSlot>
                 <div class="hs-slider">

@@ -151,3 +151,10 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   Hawkeye-<ver>-small.zip (the planned auto-updater will look for them).
 - NEXT (owner asked): Clear button on the left strip; auto-update from GitHub releases.
 - Local branch backup-before-scrub holds the pre-scrub history (character names): never push it.
+
+## CHECKPOINT (2026-11-21, v0.2.7 built, NOT released)
+
+- Clear button and auto-update built; 53/53 tests (the install script is run for real by a test).
+- Local zips in ..\release\0.2.7-github. NOT pushed, NOT released: needs the owner's word.
+- 0.2.6 has no updater: the owner installs 0.2.7 by hand once; from then on releases arrive by
+  themselves. The first real end-to-end update proof comes with the release after 0.2.7.

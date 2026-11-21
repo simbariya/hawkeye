@@ -41,6 +41,7 @@ namespace Hawkeye.App.ViewModels
         private readonly ISettingsService settings;
         private readonly OverlayManager overlays;
         private readonly MeterSource source;
+        private readonly UpdateService updates;
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
@@ -88,13 +89,14 @@ namespace Hawkeye.App.ViewModels
         private EncounterSnapshot? shown;
 
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
-            OverlayManager overlays, MeterSource source, DetailsState details, Func<Task> redraw)
+            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
             this.settings = settings;
             this.overlays = overlays;
             this.source = source;
+            this.updates = updates;
             this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();
@@ -118,6 +120,9 @@ namespace Hawkeye.App.ViewModels
             bool changed = false;
 
             var status = BuildStatusItems(settings.Current, stats);
+            if (updates.ReadyVersion is { } ready)
+                status.Add(new StatusItem($"Update {ready.ToString(3)} ready", "status-update",
+                    "Click to restart into the new version now. Or just close Hawkeye: it installs on exit.", Clickable: true));
             var data = source.Read();
             shown = data.Shown;
             string duration = data.Duration.ToString(@"mm\:ss");
@@ -230,6 +235,7 @@ namespace Hawkeye.App.ViewModels
         public void OnStatusClick(StatusItem item)
         {
             if (item.Clickable && item.Css.Contains("needs-admin")) RestartAsAdmin();
+            if (item.Clickable && item.Css.Contains("status-update") && updates.LaunchInstaller(restart: true)) Close();
         }
 
         /// <summary>Starts an elevated copy of Hawkeye (one Windows prompt), then closes this one.</summary>
@@ -271,6 +277,14 @@ namespace Hawkeye.App.ViewModels
 
         public void OpenHistory() => overlays.OpenHistory();
         public void OpenExtras() => overlays.OpenExtras();
+
+        /// <summary>Clear button: blank the meter until your next fight (fights are saved to History first).</summary>
+        public void Clear()
+        {
+            source.Clear();
+            rows.Clear();
+            stateKey = string.Empty;
+        }
 
         public void BeginDrag() => OverlayManager.TryDragMove(Application.Current.MainWindow);
         public void BeginResize(string edge) => OverlayManager.TryResize(Application.Current.MainWindow, edge);

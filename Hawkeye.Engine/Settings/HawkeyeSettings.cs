@@ -85,6 +85,9 @@ namespace Hawkeye.Engine.Settings
         public bool TrackerAlwaysVisible { get; set; } = false;
         public List<TrackedSkill> TrackedSkills { get; set; } = new();
 
+        /// <summary>Download new releases from GitHub and install them when Hawkeye closes (or on click).</summary>
+        public bool AutoUpdate { get; set; } = true;
+
         // ---- streamer mode (an OBS Browser Source page served by Hawkeye on this PC) ----
         public bool StreamerMode { get; set; } = false;
         /// <summary>http://localhost:{StreamerPort}/ (file only; change it if 7777 is taken).</summary>

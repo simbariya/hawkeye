@@ -12,6 +12,7 @@
 @inject OverlayManager Overlays
 @inject MeterSource Source
 @inject DetailsState Details
+@inject UpdateService Updates
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
@@ -32,6 +33,10 @@
         <button type="button" class="side-btn" title="Extras: Odyle on all your characters"
                 @onclick="() => vm!.OpenExtras()" @onmousedown:stopPropagation="true">
             <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" /><rect x="9" y="2.5" width="4.5" height="4.5" /><rect x="2.5" y="9" width="4.5" height="4.5" /><rect x="9" y="9" width="4.5" height="4.5" /></svg>
+        </button>
+        <button type="button" class="side-btn" title="Clear: blank the meter until your next fight (fights are kept in History)"
+                @onclick="() => vm!.Clear()" @onmousedown:stopPropagation="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6.2 4.5V3h3.6v1.5M4.6 4.5l.7 8.5h5.4l.7-8.5" /></svg>
         </button>
     </div>
 
@@ -106,7 +111,7 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, () => InvokeAsync(StateHasChanged));
 
     // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
     private double downX, downY;

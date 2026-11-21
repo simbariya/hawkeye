@@ -159,6 +159,7 @@
 .status-ping.is-ok { color: var(--ping-ok); }
 .status-ping.is-bad { color: var(--ping-bad); }
 .status-version { opacity: 0.45; }
+.status-update { color: var(--accent, #8CCFDF); font-weight: 600; }
 .is-clickable { cursor: pointer; text-decoration: underline dotted; }
 
 .shell.is-auto, .shell.is-auto .meter { height: auto; }

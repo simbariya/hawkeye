@@ -16,12 +16,24 @@ namespace Hawkeye.App.Services
     /// </summary>
     public sealed class MeterSource(CombatSessionManager sessions, IEncounterHistory history, ISettingsService settings)
     {
+        private DateTime clearedAt = DateTime.MinValue;
+
+        /// <summary>
+        /// The Clear button: closes any fight in progress (it is saved to History first) and blanks the meter until
+        /// your next fight. Fights from before the clear are no longer shown as "your last fight".
+        /// </summary>
+        public void Clear()
+        {
+            sessions.CompleteActiveSessions();
+            clearedAt = DateTime.Now;
+        }
+
         public MeterData Read()
         {
             var live = sessions.PlayerStats.Where(p => p.IsIdentified || p.DamagePercentage > 1).ToList();
             bool showDeaths = settings.Current.ShowDeaths;
 
-            if (live.Count == 0 && history.LastOwn is { } shown)
+            if (live.Count == 0 && history.LastOwn is { } shown && shown.StartedAt > clearedAt)
             {
                 return new MeterData(
                     shown.TargetName,

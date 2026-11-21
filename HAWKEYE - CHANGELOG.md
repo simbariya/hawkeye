@@ -3,6 +3,23 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.7 (2026-11-21)
+
+Added:
+- **Clear button** (third button on the left strip): closes any fight in progress (saved to History
+  first) and blanks the meter until your next boss or dummy fight.
+- **Auto-update from GitHub.** At start and every 6 hours Hawkeye checks the latest release; if it is
+  newer it downloads the zip that matches this copy (full or small) and unpacks it in
+  %LocalAppData%\Hawkeye\updates. "Update x.y.z ready" then shows on the bottom line: click it to
+  restart into the new version, or close Hawkeye and it installs on exit. Settings, History and Odyle
+  (in %AppData%) are never touched. Switch: Settings > Auto-update. Off in Debug builds.
+- 8 new tests (53 total), including one that runs the real install script against temporary folders.
+
+Fixed before release:
+- The install script's "wait for Hawkeye to exit" used plain `find`, which resolved to Git's find.exe
+  in testing, so it copied without waiting. All Windows tools are now called by their System32 path
+  (I13).
+
 ## v0.2.6 (2026-11-21)
 
 First public release on GitHub (Releases page): a full zip with .NET included and a small one.

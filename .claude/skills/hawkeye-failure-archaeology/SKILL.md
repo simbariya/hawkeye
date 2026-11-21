@@ -25,6 +25,7 @@ description: >
 | I10 | The I9 guess flipped "you" to other rangers | FIXED v0.1.2, awaiting in-game proof |
 | I11 | Some Marking Shot recasts brought no buff message | WORKED AROUND v0.1.3, cause OPEN |
 | I12 | Closed windows kept running; History/Extras missing on stream | FIXED v0.1.9 |
+| I13 | Update script copied without waiting (plain `find` was Git's) | FIXED before v0.2.7 shipped |
 
 ## The incidents in full
 
@@ -167,7 +168,19 @@ description: >
 - **Lesson:** a window's content has its own lifetime; tie it to the window. Any loop that awaits
   something external needs a timeout, or one stuck item stops it for good.
 
-Next free number: **I13**.
+### I13 - The update script copied without waiting for Hawkeye to exit (fixed before v0.2.7 shipped)
+
+- **Symptom:** the test that runs the real install script failed: "copied before the app had exited".
+- **Root cause:** the wait loop piped `tasklist` into plain `find`; on PATH, Git's `find.exe` (a file
+  finder) came before Windows' `find.exe`, so the check never matched and the loop ended at once. A
+  user with Git on PATH would have had robocopy hit the still-running exe.
+- **Fix:** every Windows tool in the script is called by its full System32 path
+  (`Engine/Services/Updates/UpdateInstaller.cs`); the test runs the script for real against
+  temporary folders with spaces in their names.
+- **Lesson:** scripts that ship to users name system tools by absolute path; test install steps by
+  running them, not by reading them.
+
+Next free number: **I14**.
 
 ## CHANGES
 

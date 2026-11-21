@@ -62,6 +62,7 @@ namespace Hawkeye.App
                     services.AddSingleton<SystemStatsService>();
                     services.AddSingleton<DetailsState>();
                     services.AddSingleton<MeterSource>();
+                    services.AddSingleton<UpdateService>();
                     services.AddSingleton<Hawkeye.App.Services.Streaming.StreamServer>();
                     services.AddSingleton<OverlayManager>();
                     services.AddSingleton<MainWindow>();
@@ -103,6 +104,7 @@ namespace Hawkeye.App
 
             services.GetRequiredService<OverlayManager>().Start();
             services.GetRequiredService<Hawkeye.App.Services.Streaming.StreamServer>().Start();
+            services.GetRequiredService<UpdateService>().Start();
         }
 
         private static bool TryStartCapture(IPacketService packets)
@@ -138,6 +140,10 @@ namespace Hawkeye.App
                 ], TimeSpan.FromSeconds(3));
                 services.GetRequiredService<IPacketService>().Stop();
                 services.GetRequiredService<SystemStatsService>().Dispose();
+                // A downloaded update installs as Hawkeye closes (no-op if a click already launched it).
+                var updates = services.GetRequiredService<UpdateService>();
+                if (updates.ReadyVersion is not null) updates.LaunchInstaller(restart: false);
+                updates.Dispose();
                 services.GetRequiredService<Hawkeye.App.Services.Streaming.StreamServer>().Dispose();
                 await AppHost.StopAsync(TimeSpan.FromSeconds(2));
             }
