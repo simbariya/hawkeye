@@ -209,7 +209,29 @@ public sealed class PvpTests
         }
     }
 
+    [Theory]
+    [InlineData("Triniel EU", "eu-triniel")]
+    [InlineData("Kaisinel (EU)", "eu-kaisinel")]
+    [InlineData("Siel NA East", "nae-siel")]
+    [InlineData("siel (NA West)", "naw-siel")]
+    [InlineData("Israphel Asia", "as-israphel")]
+    [InlineData("Marchutan South America", "la-marchutan")]
+    [InlineData("eu-triniel", "eu-triniel")]
+    [InlineData("Triniel", null)]
+    [InlineData("", null)]
+    public void EnemyServerSetting_BecomesTheShugoSlug(string typed, string? slug) => Assert.Equal(slug, ShugoLinks.Slug(typed));
+
     [Fact]
+    public void ProfileLinks_KnownIdsFirst_ThenTheSetting()
+    {
+        var known = new PvpEvent(DateTime.Now, PvpEventKind.Death, "Bravo", "XY", 2303, 0, "", 0);
+        Assert.Equal("https://shugo.gg/character/global/eu-triniel/Bravo", ShugoLinks.For(known, "Siel NA East"));
+        var unknown = known with { ServerId = 9999, Name = "Zoë" };
+        Assert.Equal("https://shugo.gg/character/global/nae-siel/Zo%C3%AB", ShugoLinks.For(unknown, "Siel NA East"));
+        Assert.Null(ShugoLinks.For(unknown, ""));
+    }
+
+        [Fact]
     public void Off_CountsNothing_AndResetStartsAgain()
     {
         var (_, pvp, _, _) = Setup();

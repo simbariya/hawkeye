@@ -85,6 +85,12 @@ namespace Hawkeye.Engine.Settings
         public bool TrackerAlwaysVisible { get; set; } = false;
         public List<TrackedSkill> TrackedSkills { get; set; } = new();
 
+        /// <summary>
+        /// The server you fight in PvP, as typed ("Triniel EU"); turns into shugo.gg profile links for players whose
+        /// server id Hawkeye does not know yet (see ShugoLinks).
+        /// </summary>
+        public string PvpEnemyServer { get; set; } = "";
+
         /// <summary>Download new releases from GitHub and install them when Hawkeye closes (or on click).</summary>
         public bool AutoUpdate { get; set; } = true;
 

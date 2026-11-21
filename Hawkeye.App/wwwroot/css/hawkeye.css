@@ -288,6 +288,20 @@ html, body {
 
     .hs-add input:focus { border-color: var(--accent); }
 
+/* Enemy server (PvP): same look as the add-skill box, sized for a server name */
+.hs-text {
+    width: 150px;
+    box-sizing: border-box;
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+}
+
+    .hs-text:focus { border-color: var(--accent); }
+
 .hs-results {
     display: flex;
     flex-direction: column;

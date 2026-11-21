@@ -38,7 +38,7 @@
         }
         @foreach (var e in shown)
         {
-            var link = ShugoLinks.For(e.Name, e.ServerId);
+            var link = ShugoLinks.For(e, Settings.Current.PvpEnemyServer);
             <div class="pv-row">
                 <span class="pv-when">@e.At.ToString("HH:mm:ss", CultureInfo.InvariantCulture)</span>
                 <span class="pv-icon" title="@e.ClassName" style="@(e.ClassId != 0 ? $"background-image:url('images/classes/{e.ClassId}.png')" : "")"></span>
@@ -58,7 +58,7 @@
                 }
                 else
                 {
-                    <span class="pv-link is-off" title="Server not known yet (id @e.ServerId)"></span>
+                    <span class="pv-link is-off" title="Set Enemy server in Settings for profile links"></span>
                 }
             </div>
         }

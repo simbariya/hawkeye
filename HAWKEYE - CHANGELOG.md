@@ -12,8 +12,9 @@ Added (PvP mode, owner's asks):
 - Kills, deaths and assists are clickable, live and in saved sessions: a PvP window lists who it was
   (time, class icon when they used a skill in view, name, legion for killers, combat power when known).
 - **Profile** opens a player's shugo.gg page in a popup inside the overlay, with Open in browser.
-  Needs the server's shugo address; the game sends server ids (yours 1304, enemies 2303 in the
-  owner's session) and only ids listed in `ShugoLinks` get a link.
+  The game sends server ids, not names. Built in, confirmed on shugo.gg: 1304 = Kaisinel EU,
+  2303 = Triniel EU (same ids for every player). For anyone else: Settings > PvP > Enemy server
+  ("Triniel EU", "Siel NA East", ...); everyone in a PvP list is an enemy, so that one is enough.
 - Death messages now keep the killer's server id; victims of your kills and assists get the enemy
   server learned from enemy killers.
 

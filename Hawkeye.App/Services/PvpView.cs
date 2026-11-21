@@ -34,22 +34,4 @@ namespace Hawkeye.App.Services
             Changed?.Invoke();
         }
     }
-
-    /// <summary>
-    /// shugo.gg profile links: https://shugo.gg/character/global/{region}-{server}/{name} (format read off the site,
-    /// 2026-11-21). The game sends numeric server ids (e.g. 1304, 2303) that Hawkeye cannot name yet, so a link is
-    /// only made for ids listed here. Fill in from a real profile link of a player on that server.
-    /// </summary>
-    public static class ShugoLinks
-    {
-        public static readonly Dictionary<int, string> ServerSlugs = new()
-        {
-            // [1304] = "eu-xxxx",   // fill in once confirmed
-        };
-
-        public static string? For(string name, int serverId) =>
-            string.IsNullOrWhiteSpace(name) || !ServerSlugs.TryGetValue(serverId, out var slug)
-                ? null
-                : $"https://shugo.gg/character/global/{slug}/{Uri.EscapeDataString(name)}";
-    }
 }

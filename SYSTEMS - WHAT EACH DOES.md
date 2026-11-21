@@ -215,8 +215,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   list (who each kill/death/assist was about) to `PvpHistory` (`%AppData%\Hawkeye\pvp-sessions.json`,
   temp-file save, flushed on exit). History window has Fights / PvP tabs. `PvpPage` lists the events
   for the live session or a saved one (`PvpView` says which). `ProfileWindow` shows a shugo.gg profile
-  in its own web view with its own data folder (`%LocalAppData%\Hawkeye\ProfileBrowser`); links only for
-  server ids in `ShugoLinks.ServerSlugs`. The profile popup is not mirrored on stream.
+  in its own web view with its own data folder (`%LocalAppData%\Hawkeye\ProfileBrowser`). Links:
+  `Engine/Services/Pvp/ShugoLinks` (known server ids first, else the `PvpEnemyServer` setting turned
+  into a slug like `eu-triniel`). The profile popup is not mirrored on stream.
 - **Messages:** layouts in the protocol skill and `PvpParser`.
 
 ## 7. Settings window

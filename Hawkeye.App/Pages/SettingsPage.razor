@@ -80,6 +80,14 @@
             </SettingRow>
         }
 
+        <div class="hs-section">PVP</div>
+        <SettingRow Title="Enemy server" Description="@EnemyServerHint">
+            <ValueSlot>
+                <input type="text" class="hs-text" placeholder="e.g. Triniel EU" value="@S.PvpEnemyServer"
+                       @onchange="e => Settings.Update(s => s.PvpEnemyServer = e.Value?.ToString()?.Trim() ?? string.Empty)" />
+            </ValueSlot>
+        </SettingRow>
+
         <div class="hs-section">STATUS LINE</div>
         <SettingRow Title="Ping" Description="Your latency to the game server">
             <ValueSlot><ToggleSwitch Checked="S.ShowPing" CheckedChanged="v => Settings.Update(s => s.ShowPing = v)" /></ValueSlot>
@@ -271,4 +279,14 @@
         var t = s.TrackedSkills.FirstOrDefault(x => x.SkillId == skillId);
         if (t is not null) t.Mode = mode;
     });
+
+    private string EnemyServerHint
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(S.PvpEnemyServer)) return "For shugo.gg profile links in PvP lists: server name and region";
+            var slug = Hawkeye.Engine.Services.Pvp.ShugoLinks.Slug(S.PvpEnemyServer);
+            return slug is null ? "Add the region: EU, NA East, NA West, SA or Asia" : $"Profile links go to shugo.gg/.../{slug}/";
+        }
+    }
 }
