@@ -19,12 +19,15 @@ namespace Hawkeye.App.Services
             _ => "Monolith",
         };
 
-        /// <summary>Row height and gap in px; must match --row-h / --row-gap in meter.css.</summary>
-        public static (int Row, int Gap) RowMetrics(Look look) => look switch
+        /// <summary>
+        /// Row height, gap and the rows box's total vertical padding in px; must match --row-h, --row-gap and
+        /// --well-pad (x2) in meter.css.
+        /// </summary>
+        public static (int Row, int Gap, int Pad) RowMetrics(Look look) => look switch
         {
-            Look.Aurora => (20, 6),
-            Look.Graphite => (27, 0),
-            _ => (26, 2),
+            Look.Aurora => (20, 6, 0),
+            Look.Graphite => (27, 0, 0),
+            _ => (26, 2, 8),   // Monolith: rows sit in a recessed well with 4px top and bottom
         };
     }
 }

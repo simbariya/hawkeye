@@ -23,16 +23,25 @@ html, body {
 /* ---------- the three looks (Settings > Look): palettes for Settings, History, Extras and the analysis window.
    The meter's own look lives in css/meter.css. The page root carries theme-monolith / theme-aurora / theme-graphite. ---------- */
 .theme-monolith {
-    --w-panel: rgba(9, 9, 10, 0.97);
-    --w-panel-2: #121215;
-    --w-line: rgba(255, 255, 255, 0.08);
-    --w-border: rgba(255, 255, 255, 0.12);
-    --w-text: #E9EAEE;
-    --w-dim: #80848F;
-    --w-accent: #7FE0FF;
-    --w-accent-2: #7FE0FF;
-    --w-bar: rgba(255, 255, 255, 0.10);
+    /* matte and layered like the meter: warm charcoal, faint grain, soft light from the top-left */
+    --w-panel: #171615;
+    --w-panel-2: rgba(0, 0, 0, 0.22);
+    --w-line: rgba(255, 245, 230, 0.07);
+    --w-border: rgba(255, 245, 230, 0.08);
+    --w-text: #ECE8E1;
+    --w-dim: #8F8B85;
+    --w-accent: #8CCFDF;
+    --w-accent-2: #8CCFDF;
+    --w-bar: rgba(236, 232, 225, 0.10);
     --w-font: "Segoe UI Variable Display", "Segoe UI", sans-serif;
+}
+
+.theme-monolith.hs, .theme-monolith.hh, .theme-monolith.hx, .theme-monolith.hd {
+    background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .045 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+        radial-gradient(ellipse 80% 60% at 6% 0%, rgba(255, 238, 214, 0.05), transparent 60%),
+        linear-gradient(180deg, #1A1918, #141413);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 14px 34px -12px rgba(0, 0, 0, 0.75);
 }
 
 .theme-aurora {

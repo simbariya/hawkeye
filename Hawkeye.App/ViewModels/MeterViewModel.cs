@@ -62,8 +62,8 @@ namespace Hawkeye.App.ViewModels
         {
             get
             {
-                var (row, gap) = Looks.RowMetrics(settings.Current.Look);
-                return FitRows * row + (FitRows - 1) * gap;
+                var (row, gap, pad) = Looks.RowMetrics(settings.Current.Look);
+                return FitRows * row + (FitRows - 1) * gap + pad;
             }
         }
 
