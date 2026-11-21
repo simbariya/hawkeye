@@ -13,6 +13,9 @@ error. Format and rules: `hawkeye-docs-and-writing` section 3.
 - Extras note shortened to: "Log in with each alt to get its latest verified Odyle. Current values
   may not be fully accurate."
 - 3 new tests (45 total).
+- **Fix: a fight could be lost from History when closing Hawkeye.** History and the Odyle list are
+  written in the background; Hawkeye now waits for those writes before exiting. Found by GitHub's
+  test run (slower machine: 23 of 50 history files written when the test looked).
 
 ## v0.2.4 (2026-11-21)
 

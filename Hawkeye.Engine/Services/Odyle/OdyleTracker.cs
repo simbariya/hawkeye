@@ -134,7 +134,7 @@ namespace Hawkeye.Engine.Services.Odyle
                 if (c is null || c.ClassId == classId) return;
                 c.ClassId = classId;
             }
-            _ = Task.Run(Save);
+            QueueSave();
             ThreadPool.QueueUserWorkItem(_ => Changed?.Invoke(this, EventArgs.Empty));
         }
 
@@ -148,7 +148,7 @@ namespace Hawkeye.Engine.Services.Odyle
             int classId = entities.CurrentUserClassId;
             if (classId != 0) c.ClassId = classId;
             logger.LogInformation("[ODYLE] {Name}: {Current} (+{Pool}) / {Cap}", name, current, pool, OdyleParser.Cap);
-            _ = Task.Run(Save);
+            QueueSave();
             ThreadPool.QueueUserWorkItem(_ => Changed?.Invoke(this, EventArgs.Empty));
         }
 
@@ -168,14 +168,27 @@ namespace Hawkeye.Engine.Services.Odyle
         }
 
         private readonly Lock saveGate = new();
+        private Task lastSave = Task.CompletedTask;
+
+        private void QueueSave()
+        {
+            lock (saveGate) lastSave = lastSave.ContinueWith(_ => Save(), TaskScheduler.Default);
+        }
+
+        /// <summary>Waits until the latest save has been written (call before the app exits).</summary>
+        public Task FlushAsync()
+        {
+            lock (saveGate) return lastSave;
+        }
 
         /// <summary>
         /// Writes the LATEST list, one save at a time. (Handing each save its own copy let two quick saves finish
-        /// in the wrong order and leave the older list on disk; a test caught it.)
+        /// in the wrong order and leave the older list on disk; a test caught it.) Saves run one after another
+        /// (QueueSave chains them), so Save takes no save lock of its own: holding one here while taking `gate`
+        /// deadlocked against Store, which holds `gate` and queues a save.
         /// </summary>
         private void Save()
         {
-            lock (saveGate)
             try
             {
                 List<CharacterOdyle> list;

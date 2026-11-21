@@ -84,7 +84,7 @@ public sealed class OdyleTests : IDisposable
         Assert.Equal(("AltB", 250, 345), (list[1].Name, list[1].Current, list[1].Pool));
         Assert.Equal("alta", odyle.Current!.Name);
 
-        Thread.Sleep(300); // saved off the packet thread
+        odyle.FlushAsync().Wait(); // saved off the packet thread
         var reloaded = new OdyleTracker(new EntityTracker(), path, clock: () => clock);
         Assert.Equal(2, reloaded.Characters.Count);
     }

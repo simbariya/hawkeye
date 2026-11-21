@@ -130,6 +130,12 @@ namespace Hawkeye.App
             {
                 var services = AppHost.Services;
                 services.GetRequiredService<CombatSessionManager>().CompleteActiveSessions();
+                // The fight just closed is written to History in the background: wait for it (and for the
+                // Odyle list) before exiting, or it can be lost (found by CI 2026-11-21).
+                Task.WaitAll([
+                    services.GetRequiredService<Hawkeye.Engine.Services.History.IEncounterHistory>().FlushAsync(),
+                    services.GetRequiredService<Hawkeye.Engine.Services.Odyle.OdyleTracker>().FlushAsync(),
+                ], TimeSpan.FromSeconds(3));
                 services.GetRequiredService<IPacketService>().Stop();
                 services.GetRequiredService<SystemStatsService>().Dispose();
                 services.GetRequiredService<Hawkeye.App.Services.Streaming.StreamServer>().Dispose();

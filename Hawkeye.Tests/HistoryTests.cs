@@ -61,8 +61,6 @@ public sealed class HistoryTests : IDisposable
             IsCritical = crit,
         });
 
-    private static void WaitForFiles() => Thread.Sleep(300); // files are written off the packet thread
-
     [Fact]
     public void YourFinishedFight_GoesToHistory_WithTheSkillBreakdown()
     {
@@ -135,7 +133,7 @@ public sealed class HistoryTests : IDisposable
 
         var best = history.Recent[3];
         history.KeepForever(best.Id);
-        WaitForFiles();
+        history.FlushAsync().Wait();
 
         var reloaded = new EncounterHistory(dir);
         Assert.Equal(EncounterHistory.MaxRecent, reloaded.Recent.Count);

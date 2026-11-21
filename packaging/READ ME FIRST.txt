@@ -1,0 +1,46 @@
+HAWKEYE {VERSION}
+A small DPS meter for Aion 2, made by Simba (twitch.tv/drake22x)
+
+
+SETTING IT UP
+
+1. Install Npcap from https://npcap.com and tick "Install Npcap in WinPcap API-compatible Mode".
+2. If this is the small zip, also install the free .NET 10 Desktop Runtime (x64) from
+   https://dotnet.microsoft.com/download/dotnet/10.0
+   (the bigger win-x64 zip already has it inside).
+3. Unzip this folder somewhere you can write to, like Documents. Not Program Files.
+4. Run Hawkeye.exe and log into the game.
+
+If Windows says it protected your PC, click "More info" and then "Run anyway". The app isn't signed yet.
+
+
+GOOD TO KNOW
+
+The meter only counts bosses and training dummies, not trash mobs.
+
+Click anyone on the meter to see their skills. The clock button on the left side opens your last
+50 fights, and the star keeps a fight forever. The four-squares button shows Odyle for all your
+characters. Log in with each alt once so Hawkeye can read it.
+
+The gear opens Settings: the look, opacity, what shows on the bottom line, the dummy mode, the skill
+tracker and streamer mode for OBS.
+
+To add skill timers, open Settings, type a skill name under Skill tracker, choose Cooldown or Buff,
+then drag its icon where you want it while Settings is open.
+
+FPS needs admin. Click "FPS: run as admin" on the meter and it restarts itself.
+
+Play in Borderless or Windowed mode or the overlay won't show on top of the game.
+
+Hawkeye only listens to network traffic. It never reads or changes the game's memory and never sends
+input to the game, but any third-party tool with an online game is at your own risk.
+
+
+IF SOMETHING GOES WRONG
+
+Send Simba the newest file from %AppData%\Hawkeye\logs (paste that into the Explorer address bar).
+Deleting %AppData%\Hawkeye\settings.json resets all settings.
+
+
+Free software under GPL-3.0 (see LICENSE.txt), based on RATmeter by Kuroukihime.
+Source: https://github.com/simbariya/hawkeye

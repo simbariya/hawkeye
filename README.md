@@ -1,48 +1,45 @@
 # Hawkeye
 
-Made by **Simba** · [twitch.tv/drake22x](https://twitch.tv/drake22x) · Support: *Ko-fi link coming soon*
+A small DPS meter for Aion 2, made by Simba ([twitch.tv/drake22x](https://twitch.tv/drake22x)).
 
-Source: https://github.com/simbariya/hawkeye
+I wanted a meter that stays out of the way. One compact window with everyone's DPS, your ping and FPS
+underneath, and your own skill timers sitting wherever you're actually looking instead of down at the
+bottom of the screen.
 
-A damage meter overlay for Aion 2 (global servers): a small always-on-top meter with exact DPS per
-player, plus draggable skill and buff timer icons you can put wherever your eyes already are.
+A few other things ended up in there too:
 
-Hawkeye reads the game's network traffic with Npcap. It never reads or changes the game's memory
-and never sends input to the game. Using any third-party tool with an online game is at your own
-risk under that game's terms.
+- click anyone on the meter to see their damage broken down skill by skill
+- your last 50 boss fights are kept, and you can star the good ones to keep forever
+- Odyle for all your characters in one list
+- a training dummy mode, timed (1, 2 or 3 minutes) or start/stop
+- a streamer mode that puts the meter and your timers into OBS as one browser source
 
-## What it shows
+There are three looks to pick from in settings. Monolith is the default.
 
-- **Meter**: one bar per player, exact DPS ("137,985/s"), fight timer, you highlighted in teal.
-- **Status line** (each part can be switched off): ping, game FPS, system CPU and RAM.
-- **Skill tracker**: up to 10 skills, each its own icon. Per skill, follow either its **cooldown**
-  (dark sweep and countdown until ready) or its **buff** (countdown while up, red pulsing frame when
-  it runs out so you know to reapply). Open Settings to drag the icons anywhere.
+## Setup
 
-## Install and run
+1. Install [Npcap](https://npcap.com) and tick "Install Npcap in WinPcap API-compatible Mode" during setup.
+2. Download the latest zip from [Releases](https://github.com/simbariya/hawkeye/releases) and unzip it
+   somewhere you can write to (not Program Files).
+   The `win-x64` zip has everything in it. The `small` zip is a fraction of the size but needs the free
+   [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) installed first.
+3. Run Hawkeye.exe and log into the game.
 
-1. Install [Npcap](https://npcap.com) with **"Install Npcap in WinPcap API-compatible Mode"** ticked.
-2. Unzip `Hawkeye-<version>-win-x64.zip` somewhere you can write to (not Program Files). No .NET
-   install needed; it is bundled.
-3. Run `Hawkeye.exe`, then start or log into the game. It finds the game traffic by itself.
-4. Optional: click "FPS: run as admin" on the meter to see the game's FPS.
+FPS only shows when Hawkeye runs as admin. Click "FPS: run as admin" on the meter and it restarts itself.
 
-Settings are saved in `%AppData%\Hawkeye\settings.json`, logs in `%AppData%\Hawkeye\logs`.
+Hawkeye only listens to network traffic through Npcap. It doesn't touch the game's memory and never sends
+input to the game, but any third-party tool with an online game is at your own risk.
 
-## Build from source
+## Building it yourself
 
-Needs the .NET 10 SDK on Windows.
+You'll need the .NET 10 SDK.
 
 ```
 dotnet build Hawkeye.slnx
 dotnet test --project Hawkeye.Tests/Hawkeye.Tests.csproj
 ```
 
-The app is `Hawkeye.App` (outputs `Hawkeye.exe`), the packet engine is `Hawkeye.Engine`, game data
-is `Hawkeye.Core`.
+## Credits
 
-## Credits and licence
-
-Hawkeye is based on [RATmeter](https://github.com/Kuroukihime/AIon2-Dps-Meter) by Kuroukihime,
-whose packet capture and decoding engine it builds on. Like RATmeter, Hawkeye is licensed under the
-GNU General Public License v3.0; see `LICENSE`.
+The network capture and packet decoding started out as [RATmeter](https://github.com/Kuroukihime/AIon2-Dps-Meter)
+by Kuroukihime. Like RATmeter, Hawkeye is licensed under GPL-3.0 (see LICENSE).

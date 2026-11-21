@@ -25,6 +25,9 @@ namespace Hawkeye.Engine.Services.History
         /// <summary>Removes a fight from the saved folder.</summary>
         void DeleteSaved(Guid id);
 
+        /// <summary>Waits until every file write started so far has finished (call before the app exits).</summary>
+        Task FlushAsync();
+
         event EventHandler? Changed;
     }
 
@@ -44,6 +47,7 @@ namespace Hawkeye.Engine.Services.History
         private readonly Lock gate = new();
         private List<EncounterSnapshot> recent = new();
         private List<EncounterSnapshot> saved = new();
+        private readonly List<Task> pendingWrites = new();
 
         public event EventHandler? Changed;
 
@@ -81,11 +85,16 @@ namespace Hawkeye.Engine.Services.History
                 if (dropped.Count > 0) recent = recent.Take(MaxRecent).ToList();
             }
 
-            _ = Task.Run(() =>
+            var write = Task.Run(() =>
             {
                 Write(recentDir, encounter);
                 foreach (var old in dropped) TryDelete(FilePath(recentDir, old));
             });
+            lock (gate)
+            {
+                pendingWrites.RemoveAll(t => t.IsCompleted);
+                pendingWrites.Add(write);
+            }
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -118,6 +127,13 @@ namespace Hawkeye.Engine.Services.History
             }
             TryDelete(FilePath(savedDir, gone));
             Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        public Task FlushAsync()
+        {
+            Task[] waiting;
+            lock (gate) waiting = pendingWrites.ToArray();
+            return Task.WhenAll(waiting);
         }
 
         // ------------------------------------------------------------------ files
