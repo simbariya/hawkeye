@@ -1,0 +1,87 @@
+---
+name: hawkeye-build-and-run
+description: >
+  The Hawkeye dev environment and every command: build, test, run, run as administrator, where
+  settings and logs live, publishing a single exe for the owner, git and the public fork, and how
+  to stop a test instance safely. Load when setting up, building, running, packaging, or committing.
+  Does NOT cover what to verify (hawkeye-validation-and-qa) or whether a change is allowed
+  (hawkeye-change-control).
+---
+
+# Hawkeye Build and Run
+
+As of v0.1.2, 2026-11-21.
+
+## 1. Environment
+
+- Windows 11, .NET 10 SDK 10.0.404 at `C:\Program Files\dotnet` (installed with
+  `winget install Microsoft.DotNet.SDK.10`). Use the full path in Bash if `dotnet` is not on PATH:
+  `"/c/Program Files/dotnet/dotnet"`.
+- Npcap installed (WinPcap API-compatible Mode). WebView2 runtime (ships with Windows 11).
+- Repo: `C:\Users\Bison\Documents\Aion 2 DPS meter\my-meter`, branch `skill-tracker`.
+  Remotes: `origin` = `https://github.com/simbariya/AIon2-Dps-Meter` (the owner's PUBLIC fork),
+  `upstream` = `https://github.com/Kuroukihime/AIon2-Dps-Meter` (RATmeter).
+- The owner's previous meter (reference only, do not modify):
+  `C:\Users\Bison\Documents\Aion 2 DPS meter\Aion2DpsMeter-v1.11.3.320-win-x64\`.
+
+## 2. Commands
+
+```
+dotnet build Hawkeye.slnx
+dotnet test --project Hawkeye.Tests/Hawkeye.Tests.csproj
+Hawkeye.App\bin\Debug\net10.0-windows10.0.20348.0\Hawkeye.exe
+```
+
+- Run as administrator for FPS: right-click `Hawkeye.exe` > Run as administrator.
+- Stop a test instance: `Get-Process Hawkeye | Stop-Process -Force`. Never stop other processes by
+  name (the game `AION2.exe` and the owner's tools may be running).
+- A clean build has no package warnings (the old `NU1903` SQLite advisory went with the history
+  removal, checked 2026-11-20). The few remaining compiler warnings are in inherited engine code.
+
+## 3. Where things live at runtime
+
+| What | Where |
+|---|---|
+| Settings | `%AppData%\Hawkeye\settings.json` |
+| Logs | `%AppData%\Hawkeye\logs\hawkeye-YYYYMMDD.txt` (7 kept) |
+| Skill icon cache | `IconCache\Skills\` next to the exe |
+| Packet recordings | `PacketLogs\` (only when `RecordPackets` is true) |
+
+## 4. Packaging a zip to share (proven 2026-11-21, v0.1.2)
+
+Output goes OUTSIDE the repo, to `C:\Users\Bison\Documents\Aion 2 DPS meter\release\`.
+
+```
+dotnet publish Hawkeye.App/Hawkeye.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o "<release>\Hawkeye"
+```
+
+Then, in `<release>\Hawkeye`:
+1. Delete the three `Microsoft.Web.WebView2.*.xml` files (developer docs from the package).
+2. Copy the repo `LICENSE` in as `LICENSE.txt` (GPL: every copy handed out carries it).
+3. Keep `READ ME FIRST.txt` (setup for a non-technical friend: Npcap, SmartScreen, admin for FPS,
+   borderless mode, where the logs are). Update its version line.
+4. If you test-launched it, delete the `IconCache` folder it created.
+5. Zip the `Hawkeye` folder as `Hawkeye-<version>-win-x64.zip` (about 70 MB; 172 MB unzipped,
+   because .NET is bundled so the friend installs nothing but Npcap).
+
+Result: `Hawkeye.exe`, `GameData\`, `wwwroot\`, `Hawkeye.staticwebassets.endpoints.json`,
+`LICENSE.txt`, `READ ME FIRST.txt`. Verified by launching it beside the owner's running copy: it
+started, locked onto the game traffic and synchronized. Note: a second instance logs to
+`hawkeye-YYYYMMDD_001.txt` because the first holds the day's log open.
+
+**GPL:** anyone given the zip must be able to get the source. The README points to the public fork,
+so the fork must hold the matching code (push, on the owner's word) before the zip is shared widely.
+Not code-signed: SmartScreen warns on first run ("More info" > "Run anyway").
+
+## 5. Git
+
+- Commit identity (repo-local config, given by the owner 2026-11-21): name `Simba`, email as set in
+  `git config user.email`. It is public in the history once pushed.
+- Commit per batch; message says what changed and why; end with the session's attribution lines.
+- Before ANY push: `git diff --cached` scanned for names, emails, keys, captures, settings, logs,
+  screenshots. The fork is public. Push only on the owner's explicit word.
+
+## CHANGES
+
+- 2026-11-20: written for v0.1.0.
+- 2026-11-21: section 4 rewritten with the proven zip recipe; git identity set.

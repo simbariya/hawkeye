@@ -372,3 +372,12 @@ combat-history.db
 combat-history.db-shm
 combat-history.db-wal
 appsettings.user.json
+
+# Hawkeye: secrets and local captures never go in the repo (the GitHub fork is PUBLIC)
+.env
+.env.*
+.secrets/
+PacketLogs/
+*.pcap
+*.pcapng
+__pycache__/

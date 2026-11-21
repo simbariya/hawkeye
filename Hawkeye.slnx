@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Hawkeye.Core/Hawkeye.Core.csproj" />
+  <Project Path="Hawkeye.Engine/Hawkeye.Engine.csproj" />
+  <Project Path="Hawkeye.App/Hawkeye.App.csproj" />
+  <Project Path="Hawkeye.Tests/Hawkeye.Tests.csproj" />
+</Solution>

@@ -1,0 +1,210 @@
+﻿@page "/settings"
+@using System.Globalization
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.Core.GameData.Services
+@using Hawkeye.Core.Models
+@using Hawkeye.Engine.Settings
+@inject ISettingsService Settings
+@inject OverlayManager Overlays
+
+<div class="hs">
+    <header class="hs-header" @onmousedown="Overlays.DragSettings">
+        <img class="hs-logo" src="images/hawkeye.png" alt="" draggable="false" />
+        <span class="hs-title">HAWKEYE · SETTINGS</span>
+        <button type="button" class="hs-close" title="Close" @onclick="Overlays.CloseSettings" @onmousedown:stopPropagation="true">✕</button>
+    </header>
+
+    <div class="hs-body">
+        <div class="hs-section">WINDOW</div>
+        <SettingRow Title="Opacity" Description="How solid the meter is (10 to 100%)">
+            <ValueSlot>
+                <div class="hs-slider">
+                    <input type="range" min="10" max="100" step="1" value="@OpacityPercent" @oninput="OnOpacity" />
+                    <span>@OpacityPercent%</span>
+                </div>
+            </ValueSlot>
+        </SettingRow>
+
+        <div class="hs-section">METER</div>
+        <SettingRow Title="Total damage" Description="Each player's total damage next to their DPS, and the whole fight's total">
+            <ValueSlot><ToggleSwitch Checked="S.ShowTotalDamage" CheckedChanged="v => Settings.Update(s => s.ShowTotalDamage = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Deaths" Description="How many times each player died on this boss, over every pull since its last kill">
+            <ValueSlot><ToggleSwitch Checked="S.ShowDeaths" CheckedChanged="v => Settings.Update(s => s.ShowDeaths = v)" /></ValueSlot>
+        </SettingRow>
+
+        <div class="hs-section">TRAINING DUMMY</div>
+        <SettingRow Title="Mode" Description="Timed: starts on your first hit and stops by itself. Start/Stop: use the button on the meter">
+            <ValueSlot>
+                <div class="hs-mode">
+                    <button type="button" class="@(S.DummyMode == DummyMode.Timed ? "is-on" : "")"
+                            @onclick="() => Settings.Update(s => s.DummyMode = DummyMode.Timed)">Timed</button>
+                    <button type="button" class="@(S.DummyMode == DummyMode.StartStop ? "is-on" : "")"
+                            @onclick="() => Settings.Update(s => s.DummyMode = DummyMode.StartStop)">Start/Stop</button>
+                </div>
+            </ValueSlot>
+        </SettingRow>
+        @if (S.DummyMode == DummyMode.Timed)
+        {
+            <SettingRow Title="Length" Description="How long a timed run lasts. Hit the dummy again after a 10 s pause to start a new run">
+                <ValueSlot>
+                    <div class="hs-mode">
+                        @foreach (var m in new[] { 1, 2, 3 })
+                        {
+                            <button type="button" class="@(S.DummyMinutes == m ? "is-on" : "")"
+                                    @onclick="() => Settings.Update(s => s.DummyMinutes = m)">@m min</button>
+                        }
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+        }
+
+        <div class="hs-section">STATUS LINE</div>
+        <SettingRow Title="Ping" Description="Your latency to the game server">
+            <ValueSlot><ToggleSwitch Checked="S.ShowPing" CheckedChanged="v => Settings.Update(s => s.ShowPing = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="FPS" Description="Game frame rate. Needs Hawkeye to run as administrator">
+            <ValueSlot><ToggleSwitch Checked="S.ShowFps" CheckedChanged="v => Settings.Update(s => s.ShowFps = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="CPU" Description="Whole-system CPU use">
+            <ValueSlot><ToggleSwitch Checked="S.ShowCpu" CheckedChanged="v => Settings.Update(s => s.ShowCpu = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="RAM" Description="Whole-system memory in use">
+            <ValueSlot><ToggleSwitch Checked="S.ShowRam" CheckedChanged="v => Settings.Update(s => s.ShowRam = v)" /></ValueSlot>
+        </SettingRow>
+
+        <div class="hs-section">SKILL TRACKER</div>
+        <SettingRow Title="Enabled" Description="Show each tracked skill as its own icon. While this window is open, drag the icons where you want them">
+            <ValueSlot><ToggleSwitch Checked="S.TrackerEnabled" CheckedChanged="v => Settings.Update(s => s.TrackerEnabled = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Always show" Description="Off: icons only appear during a boss or training dummy fight (and while this window is open). On: always on screen">
+            <ValueSlot><ToggleSwitch Checked="S.TrackerAlwaysVisible" CheckedChanged="v => Settings.Update(s => s.TrackerAlwaysVisible = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Icon size" Description="24 to 96 px">
+            <ValueSlot>
+                <div class="hs-slider">
+                    <input type="range" min="24" max="96" step="1" value="@IconSize" @oninput="OnIconSize" />
+                    <span>@(IconSize)px</span>
+                </div>
+            </ValueSlot>
+        </SettingRow>
+
+        <div class="hs-tracked">
+            @foreach (var t in S.TrackedSkills.ToList())
+            {
+                var skill = GameDataProvider.Instance.GetSkillOrDefault(t.SkillId);
+                <div class="hs-tracked-row">
+                    <span class="hs-skill-icon">
+                        @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
+                    </span>
+                    <span class="hs-skill-name" title="@skill.Name">@skill.Name</span>
+                    <div class="hs-mode">
+                        <button type="button" class="@(t.Mode == TrackMode.Cooldown ? "is-on" : "")" title="Track its cooldown"
+                                @onclick="() => SetMode(t.SkillId, TrackMode.Cooldown)">Cooldown</button>
+                        <button type="button" class="@(t.Mode == TrackMode.Buff ? "is-on" : "")" title="Track the buff it gives, so you know when to reapply"
+                                @onclick="() => SetMode(t.SkillId, TrackMode.Buff)">Buff</button>
+                    </div>
+                    <button type="button" class="hs-remove" title="Stop tracking" @onclick="() => Remove(t.SkillId)">✕</button>
+                </div>
+            }
+
+            @if (S.TrackedSkills.Count < MaxTracked)
+            {
+                <div class="hs-add">
+                    <input type="text" placeholder="+ Add a skill: type its name…" value="@query" @oninput="e => query = e.Value?.ToString() ?? string.Empty" />
+                </div>
+                @if (!string.IsNullOrWhiteSpace(query))
+                {
+                    <div class="hs-results">
+                        @foreach (var skill in SearchResults)
+                        {
+                            <button type="button" class="hs-result" @onclick="() => Add(skill.Id)">
+                                <span class="hs-skill-icon">
+                                    @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
+                                </span>
+                                <span class="hs-skill-name">@skill.Name</span>
+                            </button>
+                        }
+                        @if (!SearchResults.Any())
+                        {
+                            <div class="hs-empty">No skills found</div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="hs-actions">
+            <button type="button" class="hs-button" @onclick="Overlays.PreviewTimers">Test timers</button>
+            <span class="hs-hint">Runs a fake timer on every icon so you can check the look and placement.</span>
+        </div>
+    </div>
+
+    <footer class="hs-footer">
+        <span class="hs-credit">Hawkeye by @Branding.Author</span>
+        <a class="hs-link hs-link--twitch" href="@Branding.TwitchUrl" target="_blank" title="Watch on Twitch">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 1 1.5 3.6V14h3.3v1.8h1.9L8.5 14h2.7l3.6-3.6V1H2.5zm11 8.8-2.2 2.2H8l-1.8 1.8V12H3.3V2.3h10.2v7.5zM10.9 4.6v3.9H9.6V4.6h1.3zm-3.5 0v3.9H6.1V4.6h1.3z" /></svg>
+            @Branding.TwitchName
+        </a>
+        @if (string.IsNullOrEmpty(Branding.SupportUrl))
+        {
+            <span class="hs-link hs-link--support is-soon" title="Support link coming soon">♥ Support (soon)</span>
+        }
+        else
+        {
+            <a class="hs-link hs-link--support" href="@Branding.SupportUrl" target="_blank" title="Support Hawkeye on Ko-fi">♥ Support</a>
+        }
+    </footer>
+</div>
+
+@code {
+    private const int MaxTracked = 10;
+    private string query = string.Empty;
+
+    private HawkeyeSettings S => Settings.Current;
+    private int OpacityPercent => (int)Math.Round(S.Opacity * 100);
+    private int IconSize => (int)Math.Round(S.TrackerIconSize);
+
+    private static readonly List<Skill> AllSkills = GameDataProvider.Instance.Skills.Skills
+        .Where(kv => kv.Key > 10_000_000)
+        .Select(kv => kv.Value)
+        .OrderBy(s => s.Name)
+        .ToList();
+
+    private IEnumerable<Skill> SearchResults => AllSkills
+        .Where(s => S.TrackedSkills.All(t => t.SkillId != s.Id))
+        .Where(s => s.Name.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
+        .Take(30);
+
+    private static string Initial(string name) => name.Length > 0 ? name[..1].ToUpperInvariant() : "?";
+
+    private void OnOpacity(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var pct))
+            Settings.Update(s => s.Opacity = Math.Clamp(pct, 10, 100) / 100.0);
+    }
+
+    private void OnIconSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var px))
+            Settings.Update(s => s.TrackerIconSize = Math.Clamp(px, 24, 96));
+    }
+
+    private void Add(int skillId)
+    {
+        Settings.Update(s =>
+        {
+            if (s.TrackedSkills.Count < MaxTracked && s.TrackedSkills.All(t => t.SkillId != skillId))
+                s.TrackedSkills.Add(new TrackedSkill { SkillId = skillId });
+        });
+        query = string.Empty;
+    }
+
+    private void Remove(int skillId) => Settings.Update(s => s.TrackedSkills.RemoveAll(t => t.SkillId == skillId));
+
+    private void SetMode(int skillId, TrackMode mode) => Settings.Update(s =>
+    {
+        var t = s.TrackedSkills.FirstOrDefault(x => x.SkillId == skillId);
+        if (t is not null) t.Mode = mode;
+    });
+}

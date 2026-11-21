@@ -1,0 +1,313 @@
+/* Shared styles for every Hawkeye page. The meter's own look lives in Pages/MeterPage.razor.css. */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: #E6E8EC;
+    font-family: "Segoe UI", Arial, sans-serif;
+    overflow: hidden;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+}
+
+*, *::before, *::after {
+    border-radius: 0 !important; /* square corners, everywhere */
+}
+
+/* =========================================================
+   Settings window
+   ========================================================= */
+.hs {
+    --panel: #21232E;
+    --panel-2: #191B24;
+    --line: #2E3140;
+    --border: #9B8172;
+    --text: #E6E8EC;
+    --dim: #8A8F9C;
+    --accent: #DE893A;
+    --accent-2: #3FB292;
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    user-select: none;
+}
+
+.hs-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    cursor: move;
+}
+
+.hs-logo {
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+}
+
+.hs-title {
+    flex: 1 1 auto;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #808080;
+}
+
+.hs-close {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #EDE6D6;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+    .hs-close:hover { background: rgba(255, 255, 255, 0.1); }
+
+.hs-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 4px 12px 12px;
+}
+
+.hs-section {
+    margin: 14px 0 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+}
+
+/* ---------- a label + control row ---------- */
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.setting-row__text {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.setting-row__title { color: var(--text); font-weight: 600; }
+.setting-row__desc { color: var(--dim); font-size: 11px; margin-top: 1px; }
+.setting-row__control { flex: 0 0 auto; }
+
+/* ---------- on/off switch ---------- */
+.toggle-switch {
+    position: relative;
+    width: 38px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    cursor: pointer;
+}
+
+.toggle-switch__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: var(--dim);
+    transition: left 0.12s ease;
+}
+
+.toggle-switch.is-on { background: var(--accent-2); border-color: var(--accent-2); }
+.toggle-switch.is-on .toggle-switch__thumb { left: 22px; background: #FFFFFF; }
+
+/* ---------- slider ---------- */
+.hs-slider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .hs-slider input { width: 130px; accent-color: var(--accent); }
+    .hs-slider span { width: 40px; text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+/* ---------- tracked skills ---------- */
+.hs-tracked {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hs-tracked-row,
+.hs-result {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+}
+
+.hs-skill-icon {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #141827;
+    font-weight: 700;
+}
+
+    .hs-skill-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+.hs-skill-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hs-mode {
+    display: flex;
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+}
+
+    .hs-mode button {
+        padding: 3px 8px;
+        border: none;
+        background: transparent;
+        color: var(--dim);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+        .hs-mode button.is-on { background: var(--accent); color: #111; font-weight: 700; }
+
+.hs-remove {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+}
+
+    .hs-remove:hover { color: #FF4D4D; }
+
+.hs-add input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+}
+
+    .hs-add input:focus { border-color: var(--accent); }
+
+.hs-results {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.hs-result {
+    width: 100%;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .hs-result:hover { border-color: var(--accent); }
+
+.hs-empty { color: var(--dim); padding: 6px; }
+
+.hs-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.hs-button {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .hs-button:hover { background: var(--accent); color: #111; }
+
+.hs-hint { color: var(--dim); font-size: 11px; }
+
+/* ---------- footer: credit, Twitch, support ---------- */
+.hs-footer {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-top: 1px solid var(--line);
+    background: var(--panel-2);
+    font-size: 11px;
+}
+
+.hs-credit {
+    flex: 1 1 auto;
+    color: var(--dim);
+}
+
+.hs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+    .hs-link svg { width: 12px; height: 12px; fill: currentColor; }
+
+.hs-link--twitch { background: #9146FF; color: #FFFFFF; }
+.hs-link--twitch:hover { background: #A970FF; }
+
+.hs-link--support { background: #29ABE0; color: #FFFFFF; }
+.hs-link--support:hover { background: #4FC0EC; }
+
+.hs-link--support.is-soon {
+    background: transparent;
+    border: 1px dashed var(--dim);
+    color: var(--dim);
+    cursor: default;
+}

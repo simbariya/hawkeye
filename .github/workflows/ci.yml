@@ -20,10 +20,10 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore AionDpsMeter.slnx
+        run: dotnet restore Hawkeye.slnx
 
       - name: Tests
-        run: dotnet test AionDpsMeter.slnx --no-restore
+        run: dotnet test Hawkeye.slnx --no-restore
 
       - name: Build
-        run: dotnet build AionDpsMeter.slnx --no-restore
+        run: dotnet build Hawkeye.slnx --no-restore

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.20348.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+    <AssemblyName>Hawkeye</AssemblyName>
+    <RootNamespace>Hawkeye.App</RootNamespace>
+    <Product>Hawkeye</Product>
+    <Version>0.1.2</Version>
+    <ApplicationIcon>hawkeye.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.23" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hawkeye.Core\Hawkeye.Core.csproj" />
+    <ProjectReference Include="..\Hawkeye.Engine\Hawkeye.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="hawkeye.ico" />
+  </ItemGroup>
+
+</Project>

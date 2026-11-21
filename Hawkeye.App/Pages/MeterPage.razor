@@ -1,0 +1,105 @@
+@page "/"
+@using Hawkeye.App.Services
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.App.ViewModels
+@using Hawkeye.Engine.Services.Session
+@using Hawkeye.Engine.Settings
+@using System.Globalization
+@implements IDisposable
+@inject CombatSessionManager Sessions
+@inject SystemStatsService Stats
+@inject ISettingsService Settings
+@inject OverlayManager Overlays
+
+@*
+    The meter. Colours live at the top of MeterPage.razor.css.
+    The logo sits on the panel's top-left corner, half outside the frame (owner's reference look).
+    The window is resized from invisible strips on the right and bottom edges; there is no grip.
+*@
+<div class="shell">
+    <img class="meter-logo" src="images/hawkeye-emblem.png" alt="" draggable="false" @onmousedown="() => vm!.BeginDrag()" />
+
+    <div class="meter">
+        <div class="meter-header" @onmousedown="() => vm!.BeginDrag()">
+            <span class="meter-target" title="@vm!.TargetName">@vm.TargetName</span>
+            @if (vm.ShowDummyButton)
+            {
+                <button type="button" class="meter-run @(vm.DummyRunning ? "is-running" : "")"
+                        title="@(vm.DummyRunning ? "Stop the dummy run and keep its numbers" : "Clear the dummy numbers and start counting from your next hit")"
+                        @onclick="() => vm.ToggleDummyRun()" @onmousedown:stopPropagation="true">@(vm.DummyRunning ? "STOP" : "START")</button>
+            }
+            <span class="meter-timer">@(vm.DummyWaiting ? "ready" : vm.Duration)</span>
+            <button type="button" class="meter-btn meter-btn--settings" title="Settings"
+                    @onclick="() => vm.OpenSettings()" @onmousedown:stopPropagation="true">⚙</button>
+            <button type="button" class="meter-btn meter-btn--close" title="Close Hawkeye"
+                    @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
+        </div>
+
+        @if (vm.StatusItems.Count > 0)
+        {
+            <div class="meter-status" @onmousedown="() => vm.BeginDrag()">
+                @foreach (var item in vm.StatusItems)
+                {
+                    @if (item.Clickable)
+                    {
+                        <span class="@item.Css is-clickable" title="@item.Title"
+                              @onclick="() => vm.OnStatusClick(item)" @onmousedown:stopPropagation="true">@item.Text</span>
+                    }
+                    else
+                    {
+                        <span class="@item.Css" title="@item.Title">@item.Text</span>
+                    }
+                }
+            </div>
+        }
+
+        @if ((vm.ShowTotals && vm.FightTotal.Length > 0) || (vm.ShowDeaths && vm.FightDeaths > 0))
+        {
+            <div class="meter-summary" @onmousedown="() => vm.BeginDrag()">
+                @if (vm.ShowTotals && vm.FightTotal.Length > 0)
+                {
+                    <span title="Total damage done to this target">Total <b>@vm.FightTotal</b></span>
+                }
+                @if (vm.ShowDeaths && vm.FightDeaths > 0)
+                {
+                    <span class="summary-deaths" title="Deaths on this boss, all pulls since its last kill">Deaths <b>@vm.FightDeaths</b></span>
+                }
+            </div>
+        }
+
+        <div class="meter-rows" @onmousedown="() => vm.BeginDrag()">
+            @foreach (var p in vm.Players)
+            {
+                <div class="meter-row @(p.IsUser ? "is-me" : "")" title="@p.Detail">
+                    <div class="meter-fill" style="width:@(Math.Clamp(p.BarPercent, 0, 100).ToString("0.##", CultureInfo.InvariantCulture))%"></div>
+                    <div class="meter-icon" style="background-image:url('images/classes/@(p.ClassId).png')"></div>
+                    <span class="meter-name">@p.Name</span>
+                    @if (vm.ShowDeaths && p.Deaths > 0)
+                    {
+                        <span class="meter-deaths" title="Died @(p.Deaths)x on this boss">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1C4.1 1 1.5 3.6 1.5 7c0 2 .9 3.5 2.3 4.4V14h2v-1.5h1.2V14h2v-1.5h1.2V14h2v-2.6c1.4-.9 2.3-2.4 2.3-4.4C14.5 3.6 11.9 1 8 1zM5.3 9.2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.4 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>@p.Deaths
+                        </span>
+                    }
+                    @if (vm.ShowTotals)
+                    {
+                        <span class="meter-total">@p.Total</span>
+                    }
+                    <span class="meter-dps">@(p.Dps)/s</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="resize resize--right" @onmousedown="@(() => vm!.BeginResize("right"))"></div>
+    <div class="resize resize--bottom" @onmousedown="@(() => vm!.BeginResize("bottom"))"></div>
+    <div class="resize resize--corner" @onmousedown="@(() => vm!.BeginResize("corner"))"></div>
+</div>
+
+@code {
+    private MeterViewModel? vm;
+
+    protected override void OnInitialized() =>
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, () => InvokeAsync(StateHasChanged));
+
+    public void Dispose() => vm?.Dispose();
+}
