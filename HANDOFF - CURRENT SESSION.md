@@ -65,3 +65,14 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - NEXT in game: exactly one `[ME]` line or none per run; meter stays on your fight; edge resize;
   FPS click; a wipe shows deaths; dummy START/STOP; icons appear on the first boss hit.
 - Still nothing committed; git identity still not given.
+
+## CHECKPOINT (2026-11-21, after packaging) - supersedes the v0.1.2 one
+
+- Git identity given (repo-local): Simba. First commit `4702a6e` on `skill-tracker`, LOCAL ONLY,
+  NOT pushed. The 3 Korathia-derived skills are kept out of git via `.git/info/exclude`.
+- Friend zip: `C:\Users\Bison\Documents\Aion 2 DPS meter\release\Hawkeye-0.1.2-win-x64.zip`
+  (69.7 MB, .NET bundled). Launch-tested: locked onto game traffic.
+- "Logo too big" (owner, after restarting): they ran the Debug folder that could not be rebuilt
+  while Hawkeye was open, so old meter markup met new CSS; `--logo-size` was undefined there and
+  the image showed at its natural 128 px. Debug output rebuilt 00:43; awaiting the owner's look.
+- GPL: before the zip goes beyond one friend, push the source so the README's source link holds.
