@@ -151,6 +151,25 @@ public sealed class TrackerIdentityTests : IDisposable
     }
 
     [Fact]
+    public void Recast_RestartsTheBuff_EvenWhenTheGameSendsNoBuffMessage()
+    {
+        // I11: some recasts of Marking Shot came with no buff message at all.
+        entities.SetSessionPlayerName(Me, "Owner", 0, isUser: true);
+        Cast(Me, MarkingShot, 8350);
+        Buff(onEntity: Me, caster: 161, MarkingShot, 15000);   // first cast: the game says 15 s
+        buffs.Clear();                                          // as if it ran out
+
+        Cast(Me, MarkingShot, 8350);                            // recast, no buff message follows
+        var t = buffs.Get(MarkingShot);
+        Assert.NotNull(t);
+        Assert.Equal(15000, t.Duration.TotalMilliseconds);
+
+        buffs.Clear();
+        Cast(Other, MarkingShot, 8350);                         // someone else's cast does nothing
+        Assert.Null(buffs.Get(MarkingShot));
+    }
+
+    [Fact]
     public void YourCastStartsTheCooldownTimer_OnceYouAreKnown()
     {
         TwoEchoes(Me);

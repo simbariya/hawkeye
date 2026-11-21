@@ -29,6 +29,43 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
 
         public void Process(Packet packet)
         {
+            string? skipped = null;
+            try
+            {
+                skipped = TryProcess(packet);
+            }
+            catch (Exception ex)
+            {
+                skipped = "read failed: " + ex.Message;
+                throw;
+            }
+            finally
+            {
+                if (skipped is not null) LogIfTracked(packet, skipped);
+            }
+        }
+
+        /// <summary>
+        /// A tracked buff that never reaches the icon is invisible otherwise (I11). When a buff message is
+        /// dropped, look for any tracked skill id in its raw bytes (stored as id x 10, little-endian) and,
+        /// if one is there, log the whole message so the variant can be decoded.
+        /// </summary>
+        private void LogIfTracked(Packet packet, string reason)
+        {
+            var data = packet.Data;
+            for (int i = 0; i + 4 <= data.Length; i++)
+            {
+                uint raw = BitConverter.ToUInt32(data, i);
+                if (raw < 10 || !sessionManager.IsTrackedSkill((int)(raw / 10))) continue;
+                logger.LogInformation("[BUFF-SKIP] tracked skill {SkillId} in a dropped buff message ({Reason}) at byte {Offset}: {Hex}",
+                    raw / 10, reason, i, Convert.ToHexString(data));
+                return;
+            }
+        }
+
+        /// <summary>Returns null when the buff was passed on, or why it was dropped.</summary>
+        private string? TryProcess(Packet packet)
+        {
             var r = new PacketReader(packet.Data);
 
             r.ReadVarInt(); //len
@@ -40,11 +77,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             r.ReadVarInt(); //unknown
             var buffId =(int)r.ReadU32() / 10;
 
-            if (!gameData.IsBuff(buffId)) return;
+            if (!gameData.IsBuff(buffId)) return $"id {buffId} not a known buff, type {type}";
             var skill = gameData.GetSkillOrDefault(buffId);
 
             var durationMs = r.ReadU32();
-            if (durationMs < 100 || durationMs > MaxReasonableBuffDurationMs) return;
+            if (durationMs < 100 || durationMs > MaxReasonableBuffDurationMs) return $"duration {durationMs} ms out of range, type {type}";
 
             r.Skip(4); //unknown data
 
@@ -67,7 +104,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
                 CasterId = casterId,
             };
 
+            if (sessionManager.IsTrackedSkill(skill.Id))
+                logger.LogInformation("[BUFF] tracked {Name} message type {Type} on {EntityId} for {Ms} ms", skill.Name, type, entityId, durationMs);
+
             sessionManager.ProcessBuffEvent(buffEvent);
+            return null;
         }
 
        

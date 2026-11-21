@@ -323,7 +323,8 @@ namespace Hawkeye.App.Views
         {
             var s = Math.Max(0, timeLeft.TotalSeconds);
             if (s >= 60) return $"{Math.Ceiling(s / 60).ToString(CultureInfo.InvariantCulture)}m";
-            if (s >= 10) return Math.Ceiling(s).ToString(CultureInfo.InvariantCulture);
+            // Whole seconds, like the game's own buff bar; one decimal only in the last 2 seconds (owner, 2026-11-21).
+            if (s >= 2) return Math.Ceiling(s).ToString(CultureInfo.InvariantCulture);
             return s.ToString("0.0", CultureInfo.InvariantCulture);
         }
 

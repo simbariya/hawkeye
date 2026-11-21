@@ -57,8 +57,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   and bottom edges and the bottom-right corner (no grip). The cut-out logo
   (`wwwroot/images/hawkeye-emblem.png`, cut from `branding/hawkeye-logo.png`) sits over the
   panel's top-left corner. Header: target name, dummy START/STOP (Start/Stop mode only), fight
-  timer ("ready" while waiting for your first hit), Settings, Close. Optional status line, optional
-  summary line (fight total, deaths). One row per player, sorted by damage, bar relative to the top
+  timer ("ready" while waiting for your first hit), Settings, Close. Optional status line AT THE
+  BOTTOM (v0.1.3), optional summary line (fight total, deaths). One row per player, sorted by damage, bar relative to the top
   player, eased so it glides; optional skull + deaths and total damage. Hover a row for exact damage,
   share and deaths.
 - **Settings:** `Opacity`, `ShowTotalDamage` (off), `ShowDeaths` (on),
@@ -92,6 +92,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   missed it: a guess from two of your casts that each START a cooldown within 2 s (the cooldown
   list is also re-sent regularly, so a plain update proves nothing: I10). Until known, buffs for
   tracked skills are accepted from anyone. Log lines: `[ME]`, `[TRACK]`, `[SEEN]`.
+- **Recast fallback** (v0.1.3, I11): your cast of a skill whose buff was seen on you restarts the
+  buff timer at its last seen length; the real buff message corrects it. Log `[TRACK] buff ...
+  restarted from your cast`, `[BUFF]`, `[BUFF-SKIP]`.
+- **Countdown:** whole seconds, one decimal in the last 2 s.
 - **Buff mode** reads only buffs ON you (the game's caster field is a fixed 161 for these, so "by
   you" never matches). Your Marking Shot buff is 10 s; other rangers' are 15 s.
 - **When the icons show:** by default only during a boss or dummy fight

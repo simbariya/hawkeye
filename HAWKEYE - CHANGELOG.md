@@ -3,6 +3,27 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.1.3 (2026-11-21)
+
+Fixed:
+- **Marking Shot sometimes did not renew on recast (I11).** The log showed 8 recasts in a row
+  (00:48:58 to 00:50:01) where the game sent no buff message Hawkeye could read, then they came
+  back. Every other recast was followed by a 15 s buff. Root cause of the gap not yet known: buff
+  messages that do not fit the expected layout are dropped silently. Fix now: when you cast a
+  skill whose buff Hawkeye has seen on you, the buff icon restarts at that buff's last length; the
+  real buff message, when it comes, restarts it with the exact value. Plus `[BUFF-SKIP]` log lines
+  (raw bytes) for any dropped buff message holding a tracked skill id, and `[BUFF]` lines with the
+  message type for tracked buffs, so the next session shows the variant.
+
+Changed:
+- **Countdown shows whole seconds** ("8", "7"...) and one decimal only in the last 2 seconds.
+- **Status line moved to the bottom** of the meter.
+- **Meter a little smaller:** rows 20 px (were 22), names and DPS 13.5 px (were 15), smaller
+  header, buttons, summary and logo (40 px, was 46).
+- **No scrollbar on the meter** (the rows still scroll with the mouse wheel). Settings has a thin
+  dark scrollbar instead of the Windows one.
+- 1 new test (23 total).
+
 ## v0.1.2 (2026-11-21)
 
 The owner's second session: buffs and the crash fix confirmed working in game ("those work just

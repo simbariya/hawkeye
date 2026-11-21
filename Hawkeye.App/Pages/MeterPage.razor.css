@@ -20,8 +20,8 @@
     --death: #FF6B6B;
     --run-start: #3FB292;
     --run-stop: #D9534F;
-    --logo-size: 46px;
-    --logo-overhang: 10px;   /* how far the logo sticks out past the frame */
+    --logo-size: 40px;
+    --logo-overhang: 9px;   /* how far the logo sticks out past the frame */
     --outline: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 1px #000;
 
     position: relative;
@@ -63,7 +63,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    min-height: 34px;
+    min-height: 30px;
     /* the logo covers the left of the header */
     padding-left: calc(var(--logo-size) - var(--logo-overhang) - 2px);
     cursor: move;
@@ -72,7 +72,7 @@
 .meter-target {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1.1;
     color: var(--header-text);
@@ -85,23 +85,23 @@
 
 .meter-timer {
     flex: 0 0 auto;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--header-text);
     text-shadow: var(--outline);
     font-variant-numeric: tabular-nums;
-    margin-right: 6px;
+    margin-right: 4px;
 }
 
 .meter-btn {
     flex: 0 0 auto;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     border: none;
     background: transparent;
-    font-size: 17px;
-    line-height: 22px;
+    font-size: 15px;
+    line-height: 20px;
     cursor: pointer;
 }
 
@@ -138,13 +138,13 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 10px;
-    margin: 2px 0 6px 14px;
-    padding: 3px 8px;
+    gap: 8px;
+    margin: 6px 0 0 14px;
+    padding: 2px 8px;
     background: rgba(0, 0, 0, 0.22);
     border-top: 1px solid rgba(155, 129, 114, 0.25);
     border-bottom: 1px solid rgba(155, 129, 114, 0.25);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--header-text);
     font-variant-numeric: tabular-nums;
@@ -154,7 +154,7 @@
 }
 
 .status-ping {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
     text-shadow: var(--outline);
 }
@@ -174,9 +174,9 @@
 .meter-summary {
     display: flex;
     justify-content: space-between;
-    margin: 0 0 6px 14px;
+    margin: 0 0 5px 14px;
     padding: 0 8px;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--header-text);
     font-variant-numeric: tabular-nums;
     cursor: move;
@@ -191,22 +191,28 @@
 
 /* ---------- player rows ---------- */
 .meter-rows {
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     padding-left: 14px;
     overflow-y: auto;
     min-height: 0;
     cursor: move;
+    scrollbar-width: none;   /* still scrolls with the mouse wheel, no bar */
+}
+
+.meter-rows::-webkit-scrollbar {
+    display: none;
 }
 
 .meter-row {
     position: relative;
-    flex: 0 0 22px;
-    height: 22px;
+    flex: 0 0 20px;
+    height: 20px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     padding: 0 6px 0 4px;
     background: var(--track);
     overflow: hidden;
@@ -235,8 +241,8 @@
 }
 
 .meter-icon {
-    flex: 0 0 20px;
-    height: 20px;
+    flex: 0 0 18px;
+    height: 18px;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -244,7 +250,7 @@
 
 .meter-name,
 .meter-dps {
-    font-size: 15px;
+    font-size: 13.5px;
     font-weight: 600;
     text-shadow: var(--outline);
     white-space: nowrap;
@@ -263,22 +269,22 @@
     display: inline-flex;
     align-items: center;
     gap: 1px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--death);
     text-shadow: var(--outline);
 }
 
 .meter-deaths svg {
-    width: 12px;
-    height: 12px;
+    width: 11px;
+    height: 11px;
     fill: var(--death);
     filter: drop-shadow(0 0 1px #000);
 }
 
 .meter-total {
     flex: 0 0 auto;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--total);
     text-shadow: var(--outline);

@@ -386,6 +386,14 @@ namespace Hawkeye.Engine.Services.Session
 
         private bool IsTracked(int skillId) => trackedIds.Contains(skillId);
 
+        /// <summary>For the packet readers' diagnostics: is this skill id on the tracker?</summary>
+        public bool IsTrackedSkill(int skillId) => trackedIds.Contains(skillId);
+
+        // Last length seen for each buff that landed on you, by buff id. The game sometimes sends no buff
+        // message when you recast (I11), so your own cast of that skill restarts the timer with this length;
+        // the real buff message, when it does come, restarts it again with the exact value.
+        private readonly ConcurrentDictionary<int, (TimeSpan Duration, string Name, string Icon)> lastBuffOnYou = new();
+
         public void RegisterSkillCastEvent(SkillCastEvent skillCastEvent)
         {
             var now = DateTime.UtcNow;
@@ -397,6 +405,20 @@ namespace Hawkeye.Engine.Services.Session
                 logger.LogInformation("[TRACK] cast {Name} ({SkillId}) by {EntityId} (you: {Mine}) cooldown {Ms} ms",
                     skillCastEvent.Name, skillCastEvent.SkillId, skillCastEvent.EntityId, mine, (int)skillCastEvent.Cd.TotalMilliseconds);
             if (!mine) return;
+
+            if (lastBuffOnYou.TryGetValue(skillCastEvent.SkillId, out var buff))
+            {
+                buffEventTracker.Register(new TimedEvent
+                {
+                    Name = buff.Name,
+                    IconUrl = buff.Icon,
+                    Duration = buff.Duration,
+                    Id = (uint)skillCastEvent.SkillId,
+                });
+                if (IsTracked(skillCastEvent.SkillId))
+                    logger.LogInformation("[TRACK] buff {Name} restarted from your cast ({Ms} ms, last length seen)",
+                        buff.Name, (int)buff.Duration.TotalMilliseconds);
+            }
 
             skillCdEventTracker.Register(new TimedEvent()
             {
@@ -443,6 +465,8 @@ namespace Hawkeye.Engine.Services.Session
             // Until Hawkeye knows who you are, a TRACKED buff is accepted from anyone rather than ignored.
             bool accept = onMe || byMe || (tracked && !meKnown);
             if (!accept) return;
+            if (onMe)
+                lastBuffOnYou[buffEvent.BuffId] = (TimeSpan.FromMilliseconds(buffEvent.DurationMs), buffEvent.BuffName, buffEvent.BuffIcon ?? string.Empty);
             buffEventTracker.Register(new TimedEvent()
             {
                 Name = buffEvent.BuffName,

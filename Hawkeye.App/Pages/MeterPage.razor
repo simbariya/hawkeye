@@ -35,24 +35,6 @@
                     @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
         </div>
 
-        @if (vm.StatusItems.Count > 0)
-        {
-            <div class="meter-status" @onmousedown="() => vm.BeginDrag()">
-                @foreach (var item in vm.StatusItems)
-                {
-                    @if (item.Clickable)
-                    {
-                        <span class="@item.Css is-clickable" title="@item.Title"
-                              @onclick="() => vm.OnStatusClick(item)" @onmousedown:stopPropagation="true">@item.Text</span>
-                    }
-                    else
-                    {
-                        <span class="@item.Css" title="@item.Title">@item.Text</span>
-                    }
-                }
-            </div>
-        }
-
         @if ((vm.ShowTotals && vm.FightTotal.Length > 0) || (vm.ShowDeaths && vm.FightDeaths > 0))
         {
             <div class="meter-summary" @onmousedown="() => vm.BeginDrag()">
@@ -88,6 +70,25 @@
                 </div>
             }
         </div>
+
+        @* Status line sits at the bottom of the panel (owner, 2026-11-21). *@
+        @if (vm.StatusItems.Count > 0)
+        {
+            <div class="meter-status" @onmousedown="() => vm.BeginDrag()">
+                @foreach (var item in vm.StatusItems)
+                {
+                    @if (item.Clickable)
+                    {
+                        <span class="@item.Css is-clickable" title="@item.Title"
+                              @onclick="() => vm.OnStatusClick(item)" @onmousedown:stopPropagation="true">@item.Text</span>
+                    }
+                    else
+                    {
+                        <span class="@item.Css" title="@item.Title">@item.Text</span>
+                    }
+                }
+            </div>
+        }
     </div>
 
     <div class="resize resize--right" @onmousedown="@(() => vm!.BeginResize("right"))"></div>

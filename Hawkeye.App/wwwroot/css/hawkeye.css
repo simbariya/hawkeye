@@ -20,6 +20,13 @@ html, body {
     border-radius: 0 !important; /* square corners, everywhere */
 }
 
+/* No default Windows scrollbars anywhere: thin, dark, square, only where a page must scroll. */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #4A4D5C; }
+::-webkit-scrollbar-thumb:hover { background: #9B8172; }
+::-webkit-scrollbar-button { display: none; }
+
 /* =========================================================
    Settings window
    ========================================================= */

@@ -76,3 +76,13 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   while Hawkeye was open, so old meter markup met new CSS; `--logo-size` was undefined there and
   the image showed at its natural 128 px. Debug output rebuilt 00:43; awaiting the owner's look.
 - GPL: before the zip goes beyond one friend, push the source so the README's source link holds.
+
+## CHECKPOINT (2026-11-21, v0.1.3) - supersedes the ones above
+
+- Owner: buff sometimes not renewing (I11, worked around, cause open), whole-second countdown,
+  status line to the bottom, no scrollbar, meter a bit smaller. All done; 23/23 tests.
+- Packages: `..\release\Hawkeye-0.1.3-small.zip` (11.8 MB, needs .NET 10 Desktop Runtime).
+  Older 0.1.2 zips and folders are stale; the owner's running copy (elevated, pid 19572 at 00:47)
+  is the 0.1.2 small build from `..\release\Hawkeye-small`.
+- NEXT in game: after a session, grep the log for `[BUFF-SKIP]` and `[BUFF]` types near any
+  recast that got no `[TRACK] buff` line, to decode the I11 variant.

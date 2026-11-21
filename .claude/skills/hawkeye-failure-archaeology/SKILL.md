@@ -23,6 +23,7 @@ description: >
 | I8 | Closing a window from its own button crashed Hawkeye | FIXED v0.1.1 |
 | I9 | Buffs ignored because Hawkeye did not know who you are | FIXED v0.1.1, confirmed by the owner 2026-11-21 |
 | I10 | The I9 guess flipped "you" to other rangers | FIXED v0.1.2, awaiting in-game proof |
+| I11 | Some Marking Shot recasts brought no buff message | WORKED AROUND v0.1.3, cause OPEN |
 
 ## The incidents in full
 
@@ -132,7 +133,24 @@ description: >
 - **Lesson:** a fallback heuristic must never override a fact, and "only X sends Y" claims about
   the protocol need checking against a log, not assuming. Log the evidence for every guess.
 
-Next free number: **I11**.
+### I11 - Some Marking Shot recasts brought no buff message (worked around v0.1.3, cause OPEN)
+
+- **Symptom:** "sometimes the buff doesn't renew when I reapply it", while the game's own buff bar did.
+- **Evidence:** log 2026-11-21 `_002`: 20 of your Marking Shot casts, 12 buff messages. All 8 misses
+  in one run, 00:48:58 to 00:50:01, including recasts AFTER the 15 s buff had run out, so it is not
+  a "refresh while up" rule. No decode errors for `0x382A/B` in that window (only the usual
+  `0x3804`). The earlier session showed the same pattern (8 of 34).
+- **Known weakness:** `BuffPacketProcessor` reads one fixed layout and silently drops messages whose
+  id is not a known buff or whose duration is out of range; the caster always reads "161", so the
+  layout is only partly understood.
+- **Workaround:** your cast of a skill whose buff was seen on you restarts the buff timer at the
+  last seen length (`lastBuffOnYou` in `CombatSessionManager`). Test:
+  `Recast_RestartsTheBuff_EvenWhenTheGameSendsNoBuffMessage`.
+- **To find the cause:** look for `[BUFF-SKIP]` lines (dropped message with a tracked id, raw hex)
+  and the `type` in `[BUFF]` lines around a cast that got no `[TRACK] buff` line. If neither
+  appears, the buff came on another opcode.
+
+Next free number: **I12**.
 
 ## CHANGES
 
