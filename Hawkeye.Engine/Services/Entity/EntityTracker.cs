@@ -279,6 +279,10 @@ namespace Hawkeye.Engine.Services.Entity
         public int CurrentUserClassId =>
             (int)(sessionPlayers.Values.FirstOrDefault(p => p.IsUser && p.Name == currentUserName)?.CharacterClass?.Id ?? 0);
 
+        /// <summary>Your character's class name, if known (empty otherwise).</summary>
+        public string CurrentUserClassName =>
+            sessionPlayers.Values.FirstOrDefault(p => p.IsUser && p.Name == currentUserName)?.CharacterClass?.Name ?? "";
+
         private void SetCurrentUser(string name)
         {
             bool isNew = name != currentUserName;

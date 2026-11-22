@@ -22,4 +22,7 @@ public static class PacketOpcodes
     public const ushort CounterUpdate = 0x610C;       // 0C 61  (one counter changed, e.g. Odyle spent)
     public const ushort ItemCount = 0x561B;           // 1B 56  (an item's count changed; AP is an item)
     public const ushort RankPoints = 0xE273;          // 73 E2  (your rank points total)
+    public const ushort Inventory = 0x5611;           // 11 56  (login inventory: [key][u64 count] records, AP among them)
+    public const ushort OwnRanking = 0x8D57;          // 57 8D  (your line in a PvP ranking)
+    public const ushort RankingTable = 0x8D55;        // 55 8D  (a PvP ranking table, top 500)
 }

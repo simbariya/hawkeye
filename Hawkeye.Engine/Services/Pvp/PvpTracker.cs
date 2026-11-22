@@ -41,6 +41,17 @@ namespace Hawkeye.Engine.Services.Pvp
         private int ownServer, enemyServer;
         private readonly List<KillEvent> recentKills = new();   // waiting for the AP they may bring
 
+        // The last few login inventories (0x5611): your AP total at login, read when the first AP change names its key.
+        private readonly List<byte[]> inventories = new();
+        private const int InventoriesKept = 4;
+
+        // Rankings (2026-11-22): your own line per ranking (0 = overall, other = your class) and the last table of each.
+        private readonly Dictionary<int, RankRow> ownRanks = new();
+        private readonly Dictionary<int, RankList> rankTables = new();
+        private DateTime? nextRankUpdate;
+        private RankStanding? standing;      // worked out again only after a change (the meter asks 30 times a second)
+        private bool standingStale = true;
+
         public bool Active { get; private set; }
         public DateTime StartedAt { get; private set; }
         public int Kills { get; private set; }
@@ -65,6 +76,7 @@ namespace Hawkeye.Engine.Services.Pvp
             this.entities = entities;
             this.totals = totals;
             this.logger = (ILogger?)logger ?? NullLogger.Instance;
+            entities.CurrentUserNamed += OnCharacterNamed;
         }
 
         /// <summary>Switch PvP mode on or off. The numbers start from zero the first time and on <see cref="Reset"/>.</summary>
@@ -114,6 +126,9 @@ namespace Hawkeye.Engine.Services.Pvp
             Changed?.Invoke(this, EventArgs.Empty);
             return ended;
         }
+
+        /// <summary>Your class name for the rank line ("Ranger"), empty if not known yet.</summary>
+        public string ClassName => entities.CurrentUserClassName;
 
         /// <summary>The enemy side's server id as last seen on an enemy killer; 0 until then.</summary>
         public int EnemyServer { get { lock (gate) return enemyServer; } }
@@ -186,12 +201,32 @@ namespace Hawkeye.Engine.Services.Pvp
             if (changed) Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void OnApTotal(long total)
+        /// <summary>A login inventory (0x5611). Kept so the first AP change can find the AP total you logged in with.</summary>
+        public void OnInventory(byte[] data)
+        {
+            lock (gate)
+            {
+                inventories.Add(data);
+                if (inventories.Count > InventoriesKept) inventories.RemoveAt(0);
+            }
+        }
+
+        /// <param name="key">The inventory key AP is filed under (from the same message), to find the login total.</param>
+        public void OnApTotal(long total, uint? key = null)
         {
             bool changed = false;
             lock (gate)
             {
                 var t = now();
+                if (lastAp is null && key is { } k)
+                {
+                    for (int i = inventories.Count - 1; i >= 0 && lastAp is null; i--)
+                        if (PvpParser.FindCount(inventories[i], k) is { } atLogin && atLogin <= total)
+                        {
+                            lastAp = atLogin;   // exact: what you logged in with
+                            logger.LogInformation("[PVP] AP compared with the login total (+{Gain})", total - atLogin);
+                        }
+                }
                 if (lastAp is null && totals?.Get(entities.CurrentUserName)?.Ap is { } remembered
                     && total > remembered && total - remembered <= MaxApJumpFromMemory)
                 {
@@ -246,9 +281,82 @@ namespace Hawkeye.Engine.Services.Pvp
                     changed = true;
                 }
                 lastRank = total;
+                changed |= ownRanks.Count > 0;   // points to the next rank moved
+                standingStale = true;
             }
             totals?.Remember(entities.CurrentUserName, rank: total);
             if (changed) Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Your own ranking line (0x8D57), sent at login and with each hourly update. Its rank points are also your
+        /// starting total, so the first kill's rank points count exactly.
+        /// </summary>
+        public void OnOwnRank(RankList list)
+        {
+            if (list.Rows.Count == 0) return;
+            lock (gate)
+            {
+                var row = list.Rows[0];
+                ownRanks[list.Category] = row;
+                standingStale = true;
+                if (list.NextUpdate is { } next) nextRankUpdate = next;
+                if (lastRank is null)
+                {
+                    lastRank = row.Points;
+                    logger.LogInformation("[PVP] rank points at login {Points:N0}", row.Points);
+                }
+            }
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>A whole ranking table (0x8D55, the top 500), sent at login and, we assume, with each hourly update.</summary>
+        public void OnRankTable(RankList list)
+        {
+            lock (gate)
+            {
+                rankTables[list.Category] = list;
+                standingStale = true;
+                if (list.NextUpdate is { } next) nextRankUpdate = next;
+            }
+            logger.LogInformation("[PVP] ranking table {Category}: {Rows} rows", list.Category, list.Rows.Count);
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Your class rank (or the overall one if no class line came), with points to the next rank worked out
+        /// against the last table; null before the game sent your ranking line.
+        /// </summary>
+        public RankStanding? Standing
+        {
+            get
+            {
+                lock (gate)
+                {
+                    if (!standingStale) return standing;
+                    standingStale = false;
+                    int category = ownRanks.Keys.Where(c => c != 0).DefaultIfEmpty(-1).Max();
+                    if (category < 0 && ownRanks.ContainsKey(0)) category = 0;
+                    if (category < 0) return standing = null;
+                    var own = ownRanks[category];
+                    int? overall = category != 0 && ownRanks.TryGetValue(0, out var o) ? o.Rank : null;
+                    return standing = RankMath.Standing(own, category, lastRank ?? own.Points,
+                        rankTables.GetValueOrDefault(category), overall, nextRankUpdate);
+                }
+            }
+        }
+
+        // A different character: their totals and rankings start over (the login messages for them follow).
+        private void OnCharacterNamed(string name)
+        {
+            lock (gate)
+            {
+                lastAp = lastRank = null;
+                ownRanks.Clear();
+                rankTables.Clear();
+                standingStale = true;
+            }
+            Changed?.Invoke(this, EventArgs.Empty);
         }
     }
 }

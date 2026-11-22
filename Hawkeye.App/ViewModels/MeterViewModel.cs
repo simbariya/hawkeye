@@ -79,6 +79,22 @@ namespace Hawkeye.App.ViewModels
         public int Assists => pvp.Assists;
         public string ApGained => Signed(pvp.ApGained);
         public string RankGained => Signed(pvp.RankGained);
+        // Rank line (2026-11-22): your class rank and the rank points still needed to pass the one above.
+        public bool HasRank => rankLabel.Length > 0;
+        public string RankLabel => rankLabel;
+        public string RankNext => rankNext;
+        public string RankTip => rankTip;
+        private string rankLabel = "", rankNext = "", rankTip = "";
+
+        private string RankKey()
+        {
+            if (pvp.Standing is not { } s) { rankLabel = rankNext = rankTip = ""; return ""; }
+            rankLabel = RankWords.Label(s, pvp.ClassName);
+            rankNext = RankWords.Next(s);
+            rankTip = RankWords.Tip(s);
+            return rankLabel + rankNext + rankTip;
+        }
+
         private static string Signed(long v) => (v > 0 ? "+" : "") + v.ToString("N0", CultureInfo.InvariantCulture);
 
         /// <summary>Saves this PvP session to the PvP history (if anything happened) and starts a fresh one.</summary>
@@ -175,7 +191,7 @@ namespace Hawkeye.App.ViewModels
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}";
             if (key != stateKey)
             {
                 Duration = duration;

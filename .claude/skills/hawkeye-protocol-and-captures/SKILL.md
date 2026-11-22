@@ -120,6 +120,18 @@ character's numbers and the stream was searched for them.
 - **Per-kill gains are NOT sent** (2026-11-21: 8 kills and 4 deaths, every message within 1 s searched for
   the AP and rank gained as u16/u32/u64/varint/signed: nothing). Only totals (0x561B, 0xE273). The login
   data probably holds the totals: record a login to find them.
+- **Login totals (2026-11-22, recorded login, owner's screen as ground truth):**
+  - **Inventory 0x5611** (26 KB at login): records `[..][u32 key][u64 count]..`, no item ids. AP's key
+    (0x37703323 on the owner's main, same both days) is also in every AP item-count message at offset 14,
+    right before the count. Login AP 362,815 found this way.
+  - **Your ranking line 0x8D57:** `[len][op][00 00][u8 type][u8 category][row][u32 ?][u64 next update]`.
+    type 1 = PvP (0x15 dungeon, 0x03 boss rankings use the same message with other text); category 0 =
+    overall (owner 342), 4 = Ranger (owner 78). Sent ~7 s after loading in and again with the table.
+  - **Ranking table 0x8D55** (59 KB): `[len][op][00 00][u8 type][u8 category][u16 ?][row x 500][u64 next
+    update][u32 ?]`. Row: `[u32 rank][u32 ?][u16 0][u16 server id][name][legion][10 bytes][u8 class]
+    [u64 rank points][len + {"kill_count":N,"death_count":N,"assist_count":N}][8 zero][u32 ?][u32 ?]`.
+    Servers 1301 to 1323 in the EU Ranger table. Next update = ms since 1970 UTC (13:28 on the day: the
+    hourly recalculation). Opening the ranking window also sends a table.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

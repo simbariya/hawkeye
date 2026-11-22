@@ -47,7 +47,8 @@
         shell._rows = el('div', 'meter-rows', meter);
         shell._pvp = el('div', 'meter-pvp', meter);
         shell._pvp.innerHTML = '<div class="pvp-kda"><div><b class="k"></b><span>Kills</span></div><div><b class="d"></b><span>Deaths</span></div><div><b class="a"></b><span>Assists</span></div></div>' +
-            '<div class="pvp-gain"><span>AP</span><b class="ap"></b></div><div class="pvp-gain"><span>Rank points</span><b class="rp"></b></div>';
+            '<div class="pvp-gain"><span>AP</span><b class="ap"></b></div><div class="pvp-gain"><span>Rank points</span><b class="rp"></b></div>' +
+            '<div class="pvp-rank"><span class="st"></span><b class="nx"></b></div>';
         meter.insertBefore(shell._pvp, shell._rows);
         shell._status = el('div', 'meter-status', meter);
         return shell;
@@ -75,6 +76,9 @@
             setText(meterEl._pvp.querySelector('.a'), String(m.pvp.assists));
             setText(meterEl._pvp.querySelector('.ap'), m.pvp.ap);
             setText(meterEl._pvp.querySelector('.rp'), m.pvp.rank);
+            meterEl._pvp.querySelector('.pvp-rank').style.display = m.pvp.standing ? '' : 'none';
+            setText(meterEl._pvp.querySelector('.st'), m.pvp.standing || '');
+            setText(meterEl._pvp.querySelector('.nx'), m.pvp.toNext || '');
         }
         meterEl._timer.className = 'meter-timer' + (m.fromHistory ? ' is-last' : '');
 

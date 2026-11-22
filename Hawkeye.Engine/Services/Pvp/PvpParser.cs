@@ -50,6 +50,30 @@ namespace Hawkeye.Engine.Services.Pvp
             return BitConverter.ToUInt32(d, 6) == ApItemId ? BitConverter.ToUInt32(d, 18) : null;
         }
 
+        /// <summary>
+        /// The key your inventory files AP under (u32 at 14 of an AP item-count message, right before the count).
+        /// The login inventory (0x5611) has no item ids, only these keys: [key][u64 count]. Found 2026-11-22:
+        /// key 0x37703323 on the owner's main in both days' AP messages, and in the login inventory followed by his
+        /// exact AP (362,815).
+        /// </summary>
+        public static uint? ParseApKey(byte[] d)
+        {
+            if (d.Length != 44 || BitConverter.ToUInt32(d, 6) != ApItemId) return null;
+            return BitConverter.ToUInt32(d, 14);
+        }
+
+        /// <summary>The count filed under this key in an inventory message, or null if the key is not in it.</summary>
+        public static long? FindCount(byte[] inventory, uint key)
+        {
+            for (int i = 0; i + 12 <= inventory.Length; i++)
+            {
+                if (BitConverter.ToUInt32(inventory, i) != key) continue;
+                ulong count = BitConverter.ToUInt64(inventory, i + 4);
+                if (count < 1_000_000_000_000) return (long)count;
+            }
+            return null;
+        }
+
         /// <summary>The rank points total.</summary>
         public static long? ParseRankTotal(byte[] d) => d.Length == 12 ? BitConverter.ToUInt32(d, 4) : null;
 

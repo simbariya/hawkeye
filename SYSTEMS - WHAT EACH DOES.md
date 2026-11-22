@@ -227,7 +227,15 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **First kill (v0.2.14):** `PvpTotalsStore` remembers AP and rank totals per character; the first
   change after a start compares with them within `PvpTracker.MaxApJumpFromMemory` /
   `MaxRankJumpFromMemory` / `MaxRankDropFromMemory`.
-- **Messages:** layouts in the protocol skill and `PvpParser`.
+- **First kill exact (v0.2.16):** `PvpTracker.OnInventory` keeps the last 4 login inventories
+  (0x5611); the first AP change carries AP's inventory key (`PvpParser.ParseApKey`), which finds the
+  login total there (`FindCount`). Rank points start from your ranking line (0x8D57). A new character
+  name (`EntityTracker.CurrentUserNamed`) clears the totals and rankings.
+- **Rank line (v0.2.16):** `PvpRankingParser` reads your line (0x8D57) and the class top 500 (0x8D55);
+  `PvpTracker.Standing` (cached until something changes) uses `RankMath.Standing`: your live points
+  against the last table, ties not passed. `RankWords` makes the text for the meter (`.pvp-rank`) and
+  the stream page (`standing`, `toNext` in `/state.meter.pvp`). Category 0 = overall, other = class.
+- **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
 
 ## 7. Settings window
 

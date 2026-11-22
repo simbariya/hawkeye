@@ -3,6 +3,29 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.16 (2026-11-22, not released yet)
+
+Added (owner: "xx rank points until next rank, display current rank"):
+- **Rank line in the PvP panel:** your class rank and the rank points still needed to pass the
+  player above, e.g. "Ranger rank 78" and "21 RP to 77". It moves with every kill and death. When
+  your live points already beat the one above it says "(next 77)" and aims at the next one. Hover
+  for overall rank, lifetime kills / deaths / assists and when ranks update next. Also on the
+  stream page.
+- **First kill exact:** the AP you logged in with is read from the login inventory, the rank
+  points from your ranking line, so the first kill after logging in counts exactly. The remembered
+  totals from v0.2.14 stay as the fallback (Hawkeye started after logging in).
+- A different character starts its totals and ranking over.
+
+How it was found (recorded login, 2026-11-22, checked against the owner's screen): the game sends
+your ranking line (0x8D57: rank, rank points, lifetime K/D/A as text, server, next update time) for
+the overall and the class ranking, and the whole class top 500 (0x8D55) about 30 s after loading
+in. Every row and the owner's own numbers matched (row 78 = him, 5,008,920 points, 1459 / 947 /
+1730). The login inventory (0x5611) files AP under a key, not an item id; the AP change message
+carries the same key right before the count, so the first AP change finds the login total.
+Assumed, not yet seen: the game resends the table with each hourly update (opening the ranking
+window also makes it send one). Dungeon and boss rankings use the same messages and are skipped.
+84 tests (7 new, made-up names).
+
 ## v0.2.15 (2026-11-21)
 
 Added:

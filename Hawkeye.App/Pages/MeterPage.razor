@@ -92,6 +92,10 @@
                 </div>
                 <div class="pvp-gain"><span>AP</span><b>@vm.ApGained</b></div>
                 <div class="pvp-gain"><span>Rank points</span><b>@vm.RankGained</b></div>
+                @if (vm.HasRank)
+                {
+                    <div class="pvp-rank" title="@vm.RankTip"><span>@vm.RankLabel</span><b>@vm.RankNext</b></div>
+                }
                 <button type="button" class="pvp-end" title="Save this session to PvP history and start a new one"
                         @onclick="() => vm.EndPvpSession()" @onmousedown:stopPropagation="true">End session</button>
             </div>
