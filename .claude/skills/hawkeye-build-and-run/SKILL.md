@@ -90,6 +90,10 @@ COMException 0x8007139F (window stays blank, logged as "Unhandled UI error"). La
 `WEBVIEW2_USER_DATA_FOLDER` set to a scratch folder. The test window opens exactly over the owner's
 meter (shared settings), so warn the owner first; they may click it.
 
+**Release command: always pass `-R simbariya/hawkeye`.** Without it `gh` picked the old fork's upstream
+(2026-11-22: "Failed to create release, workflow scope may be required", and `gh release list` showed
+RATmeter's v1.11.x releases). Verify after: `gh api repos/simbariya/hawkeye/releases/latest`.
+
 **GPL:** anyone given the zip must be able to get the source. The README points to the public fork,
 so the fork must hold the matching code (push, on the owner's word) before the zip is shared widely.
 Not code-signed: SmartScreen warns on first run ("More info" > "Run anyway").

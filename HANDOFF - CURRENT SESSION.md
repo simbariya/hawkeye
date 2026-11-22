@@ -198,3 +198,13 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   the PvP ranking in game. Confirmed 14:13: opening the PvP ranking sends 0x8D55 type 1 (class top
   500) and both 0x8D57 lines (recording `rank-open`).
 - Still open: target combat power / gear score (needs one target's exact numbers).
+
+## CHECKPOINT (2026-11-22 afternoon, v0.2.16 live) - supersedes the ones above
+
+- v0.2.16 released on the owner's word ("push it"): PvP rank line (dims after the hourly update; open
+  the PvP ranking in game to refresh), exact first-kill AP/rank from login data, fight history 100,
+  History > PvP > Select, update check every 30 min while open. Packaged exe started clean before
+  release (only the expected streamer-port warning from the owner's running copy). 86 tests.
+- Not yet seen live in the app: the rank line and first-kill numbers with 0.2.16 itself running at a
+  login (the parsers were replayed against recordings with every number matching).
+- Still open: target combat power / gear score (needs one target's exact numbers).
