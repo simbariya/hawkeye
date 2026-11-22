@@ -218,3 +218,12 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - Flaky: UpdateInstallerTests.WaitsForTheAppToExit failed again right after a build ("old exe" still
   there); passed on rerun. Its wait is too tight for a busy disk: widen it if it fails a third time.
 - Still open: target combat power / gear score; Theostone alerts on the stream page.
+
+## CHECKPOINT (2026-11-22 afternoon, v0.2.17 live) - supersedes the ones above
+
+- v0.2.17 released on the owner's word ("push it"): Theostone alerts + rank line always shown. Packaged
+  exe started clean (streamer-port warning only, from the owner's running copy). 90 tests.
+- The owner's copy is on 0.2.16, so it should offer 0.2.17 within 30 minutes (first live use of the
+  new periodic check).
+- Not seen live yet: Theostone alerts in a fight; the rank line with 0.2.17 at a login.
+- Still open: target combat power / gear score; Theostone alerts on the stream page.

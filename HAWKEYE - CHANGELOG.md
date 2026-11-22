@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.17 (2026-11-22, not released yet)
+## v0.2.17 (2026-11-22)
 
 Added (owner: "a subtle pop up when Theostone procs ... and same when it procs on me"):
 - **Theostone alerts:** a small strip over the top of the meter for 3.5 s. "THEOSTONE Tassin's
