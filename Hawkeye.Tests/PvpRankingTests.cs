@@ -131,6 +131,27 @@ public sealed class PvpRankingTests
         Assert.Equal(78, pvp.Standing!.Rank);
     }
 
+    /// <summary>History > PvP > Select (owner 2026-11-22: clear the test sessions): several go in one save.</summary>
+    [Fact]
+    public void PvpHistory_DeletesSeveralAtOnce()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"hawkeye-pvp-{Guid.NewGuid():N}.json");
+        try
+        {
+            var start = new DateTime(2026, 11, 22, 12, 0, 0);
+            var sessions = Enumerable.Range(0, 4).Select(i => new PvpSession(Guid.NewGuid(), start.AddHours(i), start.AddHours(i).AddMinutes(5),
+                "Alpha", i, 0, 0, 0, 0, [])).ToList();
+            var history = new PvpHistory(file);
+            sessions.ForEach(history.Add);
+            history.Delete([sessions[0].Id, sessions[2].Id]);
+            history.FlushAsync().Wait();
+
+            var left = new PvpHistory(file).Sessions.Select(s => s.Id).Order().ToList();
+            Assert.Equal(new[] { sessions[1].Id, sessions[3].Id }.Order(), left);
+        }
+        finally { File.Delete(file); }
+    }
+
     [Fact]
     public void AnotherCharacter_StartsItsTotalsOver()
     {

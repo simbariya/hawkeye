@@ -12,7 +12,8 @@
 @inject PvpView PvpView
 
 @*
-    Fight history: kept-forever fights first, then the last 50 fights you took part in (oldest drop off).
+    Fight history: kept-forever fights first, then the last 100 fights you took part in (oldest drop off).
+    PvP tab: Select ticks sessions to delete together (owner 2026-11-22: clear the test sessions).
     Click a fight for its combat analysis.
 *@
 <div class="hh @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
@@ -21,6 +22,11 @@
         <button type="button" class="hh-tab @(!pvpTab ? "is-on" : "")" @onclick="() => pvpTab = false" @onmousedown:stopPropagation="true">Fights</button>
         <button type="button" class="hh-tab @(pvpTab ? "is-on" : "")" @onclick="() => pvpTab = true" @onmousedown:stopPropagation="true">PvP</button>
         <span class="hh-spacer"></span>
+        @if (pvpTab && pvpSessions.Count > 0)
+        {
+            <button type="button" class="hh-tool @(selecting ? "is-on" : "")" title="Tick sessions to delete several at once"
+                    @onclick="ToggleSelect" @onmousedown:stopPropagation="true">@(selecting ? "Done" : "Select")</button>
+        }
         <button type="button" class="hh-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(HistoryPage))" @onmousedown:stopPropagation="true">✕</button>
     </header>
 
@@ -33,7 +39,13 @@
             }
             @foreach (var s in pvpSessions)
             {
-                <div class="hh-row hh-pvp" @onclick="() => OpenPvp(s)" title="See who you killed, died to and helped with">
+                bool ticked = picked.Contains(s.Id);
+                <div class="hh-row hh-pvp @(selecting ? "is-selecting" : "") @(ticked ? "is-picked" : "")"
+                     @onclick="() => RowClick(s)" title="@(selecting ? "Tick to delete" : "See who you killed, died to and helped with")">
+                    @if (selecting)
+                    {
+                        <span class="hh-tick">@(ticked ? "✓" : "")</span>
+                    }
                     <span class="hh-when">@s.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)</span>
                     <span class="hh-target" title="@s.Character">@s.Character</span>
                     <span class="hh-dur">@Dur(s.Duration)</span>
@@ -45,6 +57,16 @@
                 </div>
             }
         </div>
+        @if (selecting)
+        {
+            <div class="hh-bar">
+                <button type="button" class="hh-tool" @onclick="PickAll">@(picked.Count == pvpSessions.Count ? "Tick none" : "Tick all")</button>
+                <span class="hh-spacer"></span>
+                <button type="button" class="hh-tool is-danger" disabled="@(picked.Count == 0)" @onclick="DeletePicked">
+                    Delete @picked.Count @(picked.Count == 1 ? "session" : "sessions")
+                </button>
+            </div>
+        }
     }
     else
     {
@@ -100,6 +122,37 @@
         recent = History.Recent.ToList();
         saved = History.Saved.ToList();
         pvpSessions = PvpHistory.Sessions.ToList();
+        picked.IntersectWith(pvpSessions.Select(s => s.Id));
+        if (pvpSessions.Count == 0) selecting = false;
+    }
+
+    private bool selecting;
+    private readonly HashSet<Guid> picked = new();
+
+    private void ToggleSelect()
+    {
+        selecting = !selecting;
+        picked.Clear();
+    }
+
+    private void RowClick(Hawkeye.Engine.Services.Pvp.PvpSession s)
+    {
+        if (!selecting) { OpenPvp(s); return; }
+        if (!picked.Remove(s.Id)) picked.Add(s.Id);
+    }
+
+    private void PickAll()
+    {
+        if (picked.Count == pvpSessions.Count) picked.Clear();
+        else foreach (var s in pvpSessions) picked.Add(s.Id);
+    }
+
+    private void DeletePicked()
+    {
+        if (picked.Count == 0) return;
+        PvpHistory.Delete(picked.ToList());
+        picked.Clear();
+        selecting = false;
     }
 
     private void OpenPvp(Hawkeye.Engine.Services.Pvp.PvpSession s)

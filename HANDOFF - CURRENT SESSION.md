@@ -189,7 +189,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 ## CHECKPOINT (2026-11-22 midday, v0.2.15 live, 0.2.16 local) - supersedes the ones above
 
 - Local, NOT pushed: 0.2.16 = rank line in the PvP panel (class rank, RP to the next rank, hover:
-  overall rank, lifetime K/D/A, next update) + exact first-kill AP/rank from the login data. 84 tests.
+  overall rank, lifetime K/D/A, next update) + exact first-kill AP/rank from the login data; fight
+  history 100 (was 50); History > PvP > Select to delete several sessions. 85 tests.
   Parsers replayed against the owner's recorded login (scratchpad `login-1122`, never in git): every
   number matched. Not yet seen live in the app: needs a login with 0.2.16 running.
 - Assumption to check: the game resends the ranking table (0x8D55) with each hourly update. A second

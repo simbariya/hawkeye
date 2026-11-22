@@ -144,7 +144,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   `EncounterHistory`). A fight is saved when it ends if you took part (or you are not known yet):
   `CombatSessionManager.RecordEncounter`, called by `TargetEntry` on completion, by `StopDummyRun`,
   and by `CompleteActiveSessions` on exit (`TargetCombatSession.Recorded` stops doubles). Files:
-  `%AppData%\Hawkeye\history\*.json` (newest 50; older files deleted) and `history\saved\*.json`
+  `%AppData%\Hawkeye\history\*.json` (newest 100 since v0.2.16, was 50; older files deleted) and `history\saved\*.json`
   (kept forever). They hold other players' names: never in git.
 - **Which fight the meter shows:** your open fight; else, once you are known, your last fight from
   history (`IEncounterHistory.LastOwn`); someone else's fight never. Only before Hawkeye knows you
@@ -219,7 +219,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   stream page draws the same panel from `/state.meter.pvp`.
 - **Sessions (v0.2.13):** End session (`PvpTracker.EndSession`) hands a `PvpSession` with its `PvpEvent`
   list (who each kill/death/assist was about) to `PvpHistory` (`%AppData%\Hawkeye\pvp-sessions.json`,
-  temp-file save, flushed on exit). History window has Fights / PvP tabs. `PvpPage` lists the events
+  temp-file save, flushed on exit). History window has Fights / PvP tabs; the PvP tab's Select (v0.2.16) ticks sessions and deletes them
+  with one save (`PvpHistory.Delete(ids)`). `PvpPage` lists the events
   for the live session or a saved one (`PvpView` says which). `ProfileWindow` shows a shugo.gg profile
   in its own web view with its own data folder (`%LocalAppData%\Hawkeye\ProfileBrowser`). Links:
   `Engine/Services/Pvp/ShugoLinks` (known server ids first, else the `PvpEnemyServer` setting turned

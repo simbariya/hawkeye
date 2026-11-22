@@ -32,13 +32,13 @@ namespace Hawkeye.Engine.Services.History
     }
 
     /// <summary>
-    /// The last 50 fights you took part in, plus any you chose to keep forever. One JSON file per fight:
-    /// %AppData%\Hawkeye\history\*.json (recent, oldest deleted past 50) and history\saved\*.json (never deleted
+    /// The last 100 fights you took part in, plus any you chose to keep forever. One JSON file per fight:
+    /// %AppData%\Hawkeye\history\*.json (recent, oldest deleted past 100) and history\saved\*.json (never deleted
     /// by Hawkeye). Thread-safe: the packet thread adds, the UI reads. Files are written off the packet thread.
     /// </summary>
     public sealed class EncounterHistory : IEncounterHistory
     {
-        public const int MaxRecent = 50;
+        public const int MaxRecent = 100;   // 50 until v0.2.16 (owner: "expand the history to 100 fights")
         private static readonly JsonSerializerOptions Json = new() { WriteIndented = false };
 
         private readonly string recentDir;

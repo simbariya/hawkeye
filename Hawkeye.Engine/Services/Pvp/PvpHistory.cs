@@ -88,11 +88,14 @@ namespace Hawkeye.Engine.Services.Pvp
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Delete(Guid id)
+        public void Delete(Guid id) => Delete([id]);
+
+        /// <summary>Deletes several sessions with one save (History > PvP > Select; owner 2026-11-22: clear test sessions).</summary>
+        public void Delete(IReadOnlyCollection<Guid> ids)
         {
             lock (gate)
             {
-                if (sessions.RemoveAll(s => s.Id == id) == 0) return;
+                if (sessions.RemoveAll(s => ids.Contains(s.Id)) == 0) return;
                 QueueSave();
             }
             Changed?.Invoke(this, EventArgs.Empty);

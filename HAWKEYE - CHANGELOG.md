@@ -15,6 +15,9 @@ Added (owner: "xx rank points until next rank, display current rank"):
   points from your ranking line, so the first kill after logging in counts exactly. The remembered
   totals from v0.2.14 stay as the fallback (Hawkeye started after logging in).
 - A different character starts its totals and ranking over.
+- **Fight history keeps 100 fights** (was 50; owner asked). Kept-forever fights are unchanged.
+- **History > PvP > Select:** tick sessions (or Tick all) and delete them together, for clearing
+  test sessions. The ✕ on each row still deletes one.
 
 How it was found (recorded login, 2026-11-22, checked against the owner's screen): the game sends
 your ranking line (0x8D57: rank, rank points, lifetime K/D/A as text, server, next update time) for
@@ -24,7 +27,7 @@ in. Every row and the owner's own numbers matched (row 78 = him, 5,008,920 point
 carries the same key right before the count, so the first AP change finds the login total.
 Assumed, not yet seen: the game resends the table with each hourly update (opening the ranking
 window also makes it send one). Dungeon and boss rankings use the same messages and are skipped.
-84 tests (7 new, made-up names).
+85 tests (8 new, made-up names).
 
 ## v0.2.15 (2026-11-21)
 

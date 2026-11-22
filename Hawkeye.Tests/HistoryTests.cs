@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Hawkeye.Tests;
 
 /// <summary>
-/// Fight history (owner 2026-11-21): the last 50 of YOUR fights, a kept-forever folder, and someone else's
+/// Fight history (owner 2026-11-21): the last 100 of YOUR fights (50 until v0.2.16), a kept-forever folder, and someone else's
 /// fight never replacing yours on the meter.
 /// </summary>
 public sealed class HistoryTests : IDisposable
@@ -124,12 +124,12 @@ public sealed class HistoryTests : IDisposable
     }
 
     [Fact]
-    public void KeepsTheLast50_KeptForeverSurvives_AndItAllReloadsFromDisk()
+    public void KeepsTheLast100_KeptForeverSurvives_AndItAllReloadsFromDisk()
     {
-        for (int i = 0; i < 55; i++)
+        for (int i = 0; i < EncounterHistory.MaxRecent + 5; i++)
             history.Add(new EncounterSnapshot { TargetName = $"Fight {i}", StartedAt = t0.AddMinutes(i) });
         Assert.Equal(EncounterHistory.MaxRecent, history.Recent.Count);
-        Assert.Equal("Fight 54", history.Recent[0].TargetName);
+        Assert.Equal($"Fight {EncounterHistory.MaxRecent + 4}", history.Recent[0].TargetName);
 
         var best = history.Recent[3];
         history.KeepForever(best.Id);

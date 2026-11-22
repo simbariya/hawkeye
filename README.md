@@ -9,7 +9,7 @@ bottom of the screen.
 A few other things ended up in there too:
 
 - click anyone on the meter to see their damage broken down skill by skill
-- your last 50 boss fights are kept, and you can star the good ones to keep forever
+- your last 100 boss fights are kept, and you can star the good ones to keep forever
 - Odyle for all your characters in one list
 - a training dummy mode, timed (1, 2 or 3 minutes) or start/stop
 - a streamer mode that puts the meter and your timers into OBS as one browser source
