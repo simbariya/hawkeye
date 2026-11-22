@@ -197,7 +197,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   started before the clear; the meter stays blank until your next fight.
 - **Auto-update:** `Services/UpdateService.cs` (app) + `Engine/Services/Updates/` (`ReleaseInfo`:
   latest-release JSON, version compare, asset choice; `UpdateInstaller`: the install batch script).
-  GitHub API `releases/latest`, User-Agent "Hawkeye-Updater", no personal data sent. Self-contained
+  GitHub API `releases/latest`, User-Agent "Hawkeye-Updater", no personal data sent. Checked 20 s
+  after start, then every 30 minutes while open (v0.2.16; was 6 hours); a newer release replaces a
+  downloaded one that is not installed yet. Self-contained
   builds (compile constant SELF_CONTAINED, set by the csproj when `SelfContained` is true) fetch
   `Hawkeye-<ver>-win-x64.zip`, others `Hawkeye-<ver>-small.zip`: NEVER rename release assets.
   Downloads go to %LocalAppData%\Hawkeye\updates (older ones cleaned at start). Install: batch file

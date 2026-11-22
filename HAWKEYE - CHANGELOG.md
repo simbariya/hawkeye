@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.16 (2026-11-22, not released yet)
+## v0.2.16 (2026-11-22)
 
 Added (owner: "xx rank points until next rank, display current rank"):
 - **Rank line in the PvP panel:** your class rank and the rank points still needed to pass the
@@ -16,6 +16,8 @@ Added (owner: "xx rank points until next rank, display current rank"):
   totals from v0.2.14 stay as the fallback (Hawkeye started after logging in).
 - A different character starts its totals and ranking over.
 - **Fight history keeps 100 fights** (was 50; owner asked). Kept-forever fights are unchanged.
+- **Updates found while Hawkeye is open:** it now checks every 30 minutes (was every 6 hours), and
+  a newer release replaces one already downloaded but not installed yet (owner asked).
 - **History > PvP > Select:** tick sessions (or Tick all) and delete them together, for clearing
   test sessions. The ✕ on each row still deletes one.
 

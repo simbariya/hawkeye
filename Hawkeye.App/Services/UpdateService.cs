@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Hawkeye.App.Services
 {
     /// <summary>
-    /// Auto-update from GitHub releases (owner, 2026-11-21). Checks at start and every 6 hours; if a newer release
+    /// Auto-update from GitHub releases (owner, 2026-11-21). Checks 20 s after start and every 30 minutes while open (6 hours until v0.2.16; owner: "periodically checks for updates"); if a newer release
     /// has the zip matching this copy (full or small), downloads and unpacks it to %LocalAppData%\Hawkeye\updates.
     /// Then "Update x.y.z ready" shows on the meter: clicking it restarts into the new version; closing Hawkeye
     /// installs it for next time. Installing = a small batch file that waits for Hawkeye to exit, copies the new
@@ -23,7 +23,7 @@ namespace Hawkeye.App.Services
 #else
         public const bool SelfContained = false;
 #endif
-        private static readonly TimeSpan CheckEvery = TimeSpan.FromHours(6);
+        private static readonly TimeSpan CheckEvery = TimeSpan.FromMinutes(30);   // GitHub allows 60 unsigned checks an hour
 
         private readonly ISettingsService settings;
         private readonly ILogger<UpdateService> logger;
@@ -76,7 +76,7 @@ namespace Hawkeye.App.Services
 
         public async Task CheckAsync()
         {
-            if (!settings.Current.AutoUpdate || ReadyVersion is not null) return;
+            if (!settings.Current.AutoUpdate || launched) return;
             if (Interlocked.Exchange(ref busy, 1) == 1) return;
             try
             {
@@ -86,6 +86,7 @@ namespace Hawkeye.App.Services
                 var json = await http.GetStringAsync(ReleaseInfo.LatestUrl);
                 var release = ReleaseInfo.FromGitHubJson(json);
                 if (release is null || !release.IsUpdateFor(CurrentVersion, SelfContained)) return;
+                if (ReadyVersion is { } ready && release.Version <= ready) return;   // already downloaded; a newer one replaces it
 
                 var asset = ReleaseInfo.AssetName(release.Version, SelfContained);
                 var target = Path.Combine(updatesDir, release.Version.ToString(3));
