@@ -190,10 +190,11 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 
 - Local, NOT pushed: 0.2.16 = rank line in the PvP panel (class rank, RP to the next rank, hover:
   overall rank, lifetime K/D/A, next update) + exact first-kill AP/rank from the login data; fight
-  history 100 (was 50); History > PvP > Select to delete several sessions. 85 tests.
+  history 100 (was 50); History > PvP > Select to delete several sessions. 86 tests.
   Parsers replayed against the owner's recorded login (scratchpad `login-1122`, never in git): every
   number matched. Not yet seen live in the app: needs a login with 0.2.16 running.
-- Assumption to check: the game resends the ranking table (0x8D55) with each hourly update. A second
-  recording (`rank-hour`, to ~13:57) spans the 13:28 update: search it for 0x8D55 / 0x8D57 after 13:28.
-  If nothing came, the line keeps the login table until the owner opens the ranking window.
+- Checked: the game does NOT resend the ranking at the hourly update (recording `rank-hour` spans
+  13:28 to 13:56: only rank point totals came). The line dims after the update time and says to open
+  the PvP ranking in game. Not yet seen: whether opening the PvP tab of that window sends 0x8D55
+  type 1 (the owner opened the dungeon and boss tabs, which sent theirs).
 - Still open: target combat power / gear score (needs one target's exact numbers).

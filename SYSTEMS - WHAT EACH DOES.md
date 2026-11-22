@@ -236,6 +236,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   `PvpTracker.Standing` (cached until something changes) uses `RankMath.Standing`: your live points
   against the last table, ties not passed. `RankWords` makes the text for the meter (`.pvp-rank`) and
   the stream page (`standing`, `toNext` in `/state.meter.pvp`). Category 0 = overall, other = class.
+  The game sends rankings only at login and when the in-game ranking window is opened (not at the
+  hourly update, checked 2026-11-22), so past `NextUpdate` the line dims (`RankWords.IsOld`, `.is-old`).
 - **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
 
 ## 7. Settings window

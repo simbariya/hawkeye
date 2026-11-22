@@ -182,6 +182,7 @@
     border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11px; white-space: nowrap; }
 .pvp-rank span { opacity: 0.65; overflow: hidden; text-overflow: ellipsis; }
 .pvp-rank b { font-weight: 400; font-variant-numeric: tabular-nums; opacity: 0.9; }
+.pvp-rank.is-old { opacity: 0.45; }   /* ranks recalculated since; refresh by opening the PvP ranking in game */
 .pvp-gain b { font-size: 14px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--accent, #8CCFDF); }
 .status-update { color: var(--accent, #8CCFDF); font-weight: 600; }
 .is-clickable { cursor: pointer; text-decoration: underline dotted; }

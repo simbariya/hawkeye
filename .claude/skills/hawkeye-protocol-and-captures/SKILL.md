@@ -131,7 +131,8 @@ character's numbers and the stream was searched for them.
     update][u32 ?]`. Row: `[u32 rank][u32 ?][u16 0][u16 server id][name][legion][10 bytes][u8 class]
     [u64 rank points][len + {"kill_count":N,"death_count":N,"assist_count":N}][8 zero][u32 ?][u32 ?]`.
     Servers 1301 to 1323 in the EU Ranger table. Next update = ms since 1970 UTC (13:28 on the day: the
-    hourly recalculation). Opening the ranking window also sends a table.
+    hourly recalculation). NOT resent at the hourly update (recorded across 13:28 to 13:56, 2026-11-22:
+    nothing). Sent at login and when the ranking window is opened (that window also sends type 0x15 / 0x03).
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

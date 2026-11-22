@@ -85,7 +85,7 @@ public sealed class PvpRankingTests
         Assert.Equal((3, 2, 21L), (s.Projected, s.NextRank, s.PointsToNext));
         Assert.Equal("Ranger rank 3", RankWords.Label(s, "Ranger"));
         Assert.Equal("21 RP to 2", RankWords.Next(s));
-        Assert.Contains("Overall rank 342", RankWords.Tip(s));
+        Assert.Contains("Overall rank 342", RankWords.Tip(s, DateTime.Now));
 
         var tie = RankMath.Standing(Me, 4, 5_008_940, Owners(), null, null);      // a tie is not a pass
         Assert.Equal((3, 1L), (tie.Projected, tie.PointsToNext));
@@ -96,6 +96,18 @@ public sealed class PvpRankingTests
 
         var top = RankMath.Standing(Me, 4, 7_000_000, Owners(), null, null);
         Assert.Equal("Top spot", RankWords.Next(top));
+    }
+
+    /// <summary>The game does not resend the ranking at the hourly update (recorded 2026-11-22): say so once it passed.</summary>
+    [Fact]
+    public void AfterTheHourlyUpdate_TheLineSaysItIsOld()
+    {
+        var update = new DateTime(2026, 11, 22, 13, 28, 5);
+        var s = RankMath.Standing(Me, 4, 5_008_920, Owners(), null, update);
+        Assert.False(RankWords.IsOld(s, update.AddMinutes(-1)));
+        Assert.Contains("next at 13:28", RankWords.Tip(s, update.AddMinutes(-1)));
+        Assert.True(RankWords.IsOld(s, update.AddSeconds(1)));
+        Assert.Contains("Open the PvP ranking in game", RankWords.Tip(s, update.AddSeconds(1)));
     }
 
     [Fact]

@@ -84,14 +84,19 @@ namespace Hawkeye.App.ViewModels
         public string RankLabel => rankLabel;
         public string RankNext => rankNext;
         public string RankTip => rankTip;
+        /// <summary>The hourly recalculation has passed since the ranking came: shown dimmed until it is refreshed.</summary>
+        public bool RankOld => rankOld;
         private string rankLabel = "", rankNext = "", rankTip = "";
+        private bool rankOld;
 
         private string RankKey()
         {
-            if (pvp.Standing is not { } s) { rankLabel = rankNext = rankTip = ""; return ""; }
+            if (pvp.Standing is not { } s) { rankLabel = rankNext = rankTip = ""; rankOld = false; return ""; }
+            var now = DateTime.Now;
             rankLabel = RankWords.Label(s, pvp.ClassName);
             rankNext = RankWords.Next(s);
-            rankTip = RankWords.Tip(s);
+            rankOld = RankWords.IsOld(s, now);
+            rankTip = RankWords.Tip(s, now);
             return rankLabel + rankNext + rankTip;
         }
 

@@ -144,13 +144,22 @@ namespace Hawkeye.Engine.Services.Pvp
             return s.Projected == 1 ? "Top spot" : "";
         }
 
-        public static string Tip(RankStanding s)
+        /// <summary>
+        /// True once the game's hourly recalculation has passed since the ranking was sent. The game does NOT send
+        /// the new ranking by itself (recorded across the 13:28 update on 2026-11-22: nothing came); it comes at
+        /// login or when you open the PvP ranking in game.
+        /// </summary>
+        public static bool IsOld(RankStanding s, DateTime now) => s.NextUpdate is { } at && now >= at;
+
+        public static string Tip(RankStanding s, DateTime now)
         {
             var parts = new List<string>();
+            if (IsOld(s, now))
+                parts.Add($"Ranks were recalculated at {s.NextUpdate:HH:mm}, so this is from the update before. Open the PvP ranking in game to refresh it.");
             if (s.OverallRank is { } o) parts.Add($"Overall rank {o}.");
             parts.Add($"Lifetime: {N(s.LifetimeKills)} kills, {N(s.LifetimeDeaths)} deaths, {N(s.LifetimeAssists)} assists.");
-            parts.Add(s.NextUpdate is { } at ? $"Ranks update hourly, next at {at:HH:mm}." : "Ranks update hourly.");
-            if (s.TableSize > 0) parts.Add($"Points to the next rank are counted against the last update (top {s.TableSize}).");
+            if (!IsOld(s, now)) parts.Add(s.NextUpdate is { } at ? $"Ranks update hourly, next at {at:HH:mm}." : "Ranks update hourly.");
+            if (s.TableSize > 0) parts.Add($"Points to the next rank are counted against the last ranking (top {s.TableSize}).");
             return string.Join(" ", parts);
         }
     }
