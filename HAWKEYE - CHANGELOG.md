@@ -3,6 +3,18 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.18 (2026-11-22, not released yet)
+
+Fixed (owner: "game sends updated rank details only once it has updated every hour, doesn't send it
+after that when you open again"):
+- **Rank remembered across restarts.** The game sends your ranking once per hourly update, so a
+  Hawkeye restarted mid-hour (an update install, say) showed "Rank unknown" and opening Abyss Rank
+  could not help. The last ranking is now kept per character (`pvp-totals.json`) and shown at start
+  (the last character played until the game names you).
+- **"Rank reached" says when it becomes official** ("official at 15:28") instead of asking you to
+  open Abyss Rank, which sends nothing until the next update. After that time it asks again.
+- 91 tests (1 new: the ranking survives a restart).
+
 ## v0.2.17 (2026-11-22)
 
 Added (owner: "a subtle pop up when Theostone procs ... and same when it procs on me"):

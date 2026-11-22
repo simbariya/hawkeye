@@ -77,6 +77,42 @@ namespace Hawkeye.Engine.Services.Pvp
             this.totals = totals;
             this.logger = (ILogger?)logger ?? NullLogger.Instance;
             entities.CurrentUserNamed += OnCharacterNamed;
+            LoadRanking(null);   // the last character played, until the game names who you are
+        }
+
+        // The ranking remembered for this character (null = the last one played), shown until the game sends a new one.
+        private void LoadRanking(string? character)
+        {
+            var saved = totals?.Get(character);
+            lock (gate)
+            {
+                ownRanks.Clear();
+                rankTables.Clear();
+                nextRankUpdate = null;
+                if (saved?.OwnRanks is { Count: > 0 } ranks)
+                {
+                    foreach (var (category, row) in ranks) ownRanks[category] = row;
+                    if (saved.RankTable is { } table) rankTables[table.Category] = table;
+                    nextRankUpdate = saved.RankNextUpdate;
+                }
+                standingStale = true;
+            }
+        }
+
+        private void SaveRanking()
+        {
+            if (totals is null) return;
+            Dictionary<int, RankRow> ranks;
+            RankList? table;
+            DateTime? next;
+            lock (gate)
+            {
+                ranks = new(ownRanks);
+                int category = ownRanks.Keys.Where(c => c != 0).DefaultIfEmpty(0).Max();
+                table = rankTables.GetValueOrDefault(category);
+                next = nextRankUpdate;
+            }
+            totals.RememberRanking(entities.CurrentUserName, ranks, table, next);
         }
 
         /// <summary>Switch PvP mode on or off. The numbers start from zero the first time and on <see cref="Reset"/>.</summary>
@@ -307,6 +343,7 @@ namespace Hawkeye.Engine.Services.Pvp
                     logger.LogInformation("[PVP] rank points at login {Points:N0}", row.Points);
                 }
             }
+            SaveRanking();
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -320,6 +357,7 @@ namespace Hawkeye.Engine.Services.Pvp
                 if (list.NextUpdate is { } next) nextRankUpdate = next;
             }
             logger.LogInformation("[PVP] ranking table {Category}: {Rows} rows", list.Category, list.Rows.Count);
+            SaveRanking();
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -346,16 +384,15 @@ namespace Hawkeye.Engine.Services.Pvp
             }
         }
 
-        // A different character: their totals and rankings start over (the login messages for them follow).
+        // A different character: their totals start over (the login messages for them follow) and their remembered
+        // ranking shows until the game sends a new one.
         private void OnCharacterNamed(string name)
         {
             lock (gate)
             {
                 lastAp = lastRank = null;
-                ownRanks.Clear();
-                rankTables.Clear();
-                standingStale = true;
             }
+            LoadRanking(name);
             Changed?.Invoke(this, EventArgs.Empty);
         }
     }

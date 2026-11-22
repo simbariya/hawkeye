@@ -19,6 +19,13 @@ namespace Hawkeye.Engine.Services.Pvp
             public long? Ap { get; set; }
             public long? Rank { get; set; }
             public DateTime SeenAt { get; set; }
+
+            // The last ranking the game sent for this character (v0.2.17). The game sends it once per hourly update
+            // (owner, 2026-11-22: opening Abyss Rank again in the same hour sends nothing), so a Hawkeye started
+            // mid-hour would otherwise have no rank until the next update.
+            public Dictionary<int, RankRow>? OwnRanks { get; set; }
+            public RankList? RankTable { get; set; }
+            public DateTime? RankNextUpdate { get; set; }
         }
 
         private sealed class FileShape
@@ -71,6 +78,22 @@ namespace Hawkeye.Engine.Services.Pvp
                 if (ap is not null) t.Ap = ap;
                 if (rank is not null) t.Rank = rank;
                 t.SeenAt = DateTime.Now;
+                data.Last = character;
+                var json = JsonSerializer.Serialize(data, Json);
+                lastSave = lastSave.ContinueWith(_ => Save(json), TaskScheduler.Default);
+            }
+        }
+
+        /// <summary>Keeps the last ranking for this character (your lines per ranking, the class table, next update).</summary>
+        public void RememberRanking(string? character, IReadOnlyDictionary<int, RankRow> ownRanks, RankList? table, DateTime? nextUpdate)
+        {
+            if (string.IsNullOrEmpty(character)) return;
+            lock (gate)
+            {
+                if (!data.Characters.TryGetValue(character, out var t)) data.Characters[character] = t = new Totals();
+                t.OwnRanks = ownRanks.ToDictionary(kv => kv.Key, kv => kv.Value);
+                if (table is not null) t.RankTable = table;
+                t.RankNextUpdate = nextUpdate;
                 data.Last = character;
                 var json = JsonSerializer.Serialize(data, Json);
                 lastSave = lastSave.ContinueWith(_ => Save(json), TaskScheduler.Default);

@@ -147,7 +147,7 @@ namespace Hawkeye.Engine.Services.Pvp
         /// <summary>
         /// True once the game's hourly recalculation has passed since the ranking was sent. The game does NOT send
         /// the new ranking by itself (recorded across the 13:28 update on 2026-11-22: nothing came); it comes at
-        /// login or when you open the PvP ranking in game.
+        /// login, and once per update when you open the Abyss Rank page (owner: opening it again sends nothing).
         /// </summary>
         public static bool IsOld(RankStanding s, DateTime now) => s.NextUpdate is { } at && now >= at;
 
@@ -167,13 +167,15 @@ namespace Hawkeye.Engine.Services.Pvp
         {
             if (s is null)
                 return new RankLine("Rank unknown", OpenRankPage,
-                    "The game sends your rank when you log in or open the Abyss Rank page.", LineState.Unknown);
+                    "The game sends your rank when you log in, and once after each hourly rank update when you open the Abyss Rank page. Opening it again in the same hour sends nothing.", LineState.Unknown);
             string what = s.Category == 0 ? "Overall rank" : className.Length > 0 ? $"{className} rank" : "Class rank";
             string tip = Tip(s, now);
             if (s.Projected is { } p && p < s.Rank)
             {
                 string next = Next(s);
-                return new RankLine($"{what} {p} reached", OpenRankPage,
+                // The game recalculates hourly and sends the new rank once after that: nothing to open before then.
+                string right = s.NextUpdate is { } at && now < at ? $"official at {at:HH:mm}" : OpenRankPage;
+                return new RankLine($"{what} {p} reached", right,
                     (next.Length > 0 ? $"{next} after that. " : "") + tip, LineState.Reached);
             }
             if (IsOld(s, now))

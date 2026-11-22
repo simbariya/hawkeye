@@ -72,6 +72,31 @@ public sealed class TheostoneAndRankLineTests : IDisposable
     private static readonly RankRow Own = new(3, 1304, "Alpha", "", 4, 5_008_920, 1459, 947, 1730);
     private static readonly DateTime Update = new(2026, 11, 22, 15, 28, 5);
 
+    /// <summary>
+    /// The game sends the ranking once per hourly update (owner, 2026-11-22), so a restarted Hawkeye (e.g. after
+    /// installing an update) must show the remembered one instead of "Rank unknown" for the rest of the hour.
+    /// </summary>
+    [Fact]
+    public void Ranking_SurvivesARestart()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"hawkeye-totals-{Guid.NewGuid():N}.json");
+        try
+        {
+            var entities = new EntityTracker();
+            entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
+            var store = new PvpTotalsStore(file);
+            var pvp = new PvpTracker(entities, null, store);
+            pvp.OnOwnRank(new RankList(4, [Own], Update));
+            pvp.OnRankTable(Table with { NextUpdate = Update });
+            store.FlushAsync().Wait();
+
+            var again = new PvpTracker(new EntityTracker(), null, new PvpTotalsStore(file));   // name not known yet
+            var s = again.Standing!;
+            Assert.Equal((3, 21L, Update), (s.Rank, s.PointsToNext!.Value, s.NextUpdate!.Value));
+        }
+        finally { File.Delete(file); }
+    }
+
     [Fact]
     public void RankLine_Unknown_Live_Reached_Old()
     {
@@ -82,7 +107,9 @@ public sealed class TheostoneAndRankLineTests : IDisposable
         Assert.Equal(("Ranger rank 3", "21 RP to 2", RankWords.LineState.Live), (live.Left, live.Right, live.State));
 
         var reached = RankWords.Line(RankMath.Standing(Own, 4, 5_009_000, Table, null, Update), "Ranger", Update.AddMinutes(-5));
-        Assert.Equal(("Ranger rank 2 reached", RankWords.OpenRankPage, RankWords.LineState.Reached), (reached.Left, reached.Right, reached.State));
+        Assert.Equal(("Ranger rank 2 reached", "official at 15:28", RankWords.LineState.Reached), (reached.Left, reached.Right, reached.State));
+        var reachedLater = RankWords.Line(RankMath.Standing(Own, 4, 5_009_000, Table, null, Update), "Ranger", Update.AddMinutes(1));
+        Assert.Equal(RankWords.OpenRankPage, reachedLater.Right);
 
         var old = RankWords.Line(RankMath.Standing(Own, 4, 5_008_920, Table, null, Update), "Ranger", Update.AddMinutes(1));
         Assert.Equal(("Ranger rank 3", RankWords.OpenRankPage, RankWords.LineState.Old), (old.Left, old.Right, old.State));

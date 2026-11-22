@@ -241,7 +241,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   The game sends rankings only at login and when the in-game ranking window is opened (not at the
   hourly update, checked 2026-11-22), so past `NextUpdate` the line dims (`RankWords.IsOld`, `.is-old`).
   Since v0.2.17 the line is always there: `RankWords.Line` gives Unknown / Live / Old / Reached, the
-  last three nudging "open Abyss Rank".
+  last three nudging "open Abyss Rank". The game sends the ranking once per hourly update (reopening the
+  page in the same hour sends nothing), so since v0.2.18 the last one is kept per character in
+  `pvp-totals.json` (`PvpTotalsStore.RememberRanking`) and loaded at start and on a character switch;
+  "reached" shows "official at HH:mm" until the update.
 - **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
 
 ## 6g. Theostone alerts (v0.2.17)

@@ -227,3 +227,11 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   new periodic check).
 - Not seen live yet: Theostone alerts in a fight; the rank line with 0.2.17 at a login.
 - Still open: target combat power / gear score; Theostone alerts on the stream page.
+
+## CHECKPOINT (2026-11-22 afternoon, v0.2.17 live, 0.2.18 local) - supersedes the ones above
+
+- Local, NOT pushed: 0.2.18 = ranking remembered per character across restarts (the game sends it once
+  per hourly update), "reached" shows "official at HH:mm". 91 tests. Plus the docs commit "v0.2.17
+  released".
+- Not seen live yet: Theostone alerts in a fight; the remembered rank after a restart.
+- Still open: target combat power / gear score; Theostone alerts on the stream page.
