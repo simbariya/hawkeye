@@ -16,6 +16,7 @@
 @inject Hawkeye.Engine.Services.Pvp.PvpTracker Pvp
 @inject Hawkeye.Engine.Services.Pvp.PvpHistory PvpHistory
 @inject PvpView PvpView
+@inject Hawkeye.Engine.Services.Theostone.TheostoneAlerts Theostones
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
@@ -82,6 +83,21 @@
                     @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
         </div>
 
+        @* Theostone procs (v0.2.17): a small strip over the top of the meter for a few seconds. *@
+        @if (vm.Theostones.Count > 0)
+        {
+            <div class="theo-alerts">
+                @foreach (var p in vm.Theostones)
+                {
+                    <div class="theo-alert @(p.Yours ? "is-yours" : "is-on-you")" @key="p.Name + p.Yours">
+                        <span class="theo-tag">@(p.Yours ? "THEOSTONE" : "HIT BY")</span>
+                        <span class="theo-name">@MeterViewModel.ProcText(p)</span>
+                        <b class="theo-dmg">@MeterViewModel.ProcAmount(p)</b>
+                    </div>
+                }
+            </div>
+        }
+
         @if (vm.PvpMode)
         {
             <div class="meter-pvp" @onmousedown="() => vm.BeginDrag()">
@@ -92,10 +108,7 @@
                 </div>
                 <div class="pvp-gain"><span>AP</span><b>@vm.ApGained</b></div>
                 <div class="pvp-gain"><span>Rank points</span><b>@vm.RankGained</b></div>
-                @if (vm.HasRank)
-                {
-                    <div class="pvp-rank @(vm.RankOld ? "is-old" : "")" title="@vm.RankTip"><span>@vm.RankLabel</span><b>@vm.RankNext</b></div>
-                }
+                <div class="pvp-rank @vm.RankClass" title="@vm.Rank.Tip"><span>@vm.Rank.Left</span><b>@vm.Rank.Right</b></div>
                 <button type="button" class="pvp-end" title="Save this session to PvP history and start a new one"
                         @onclick="() => vm.EndPvpSession()" @onmousedown:stopPropagation="true">End session</button>
             </div>
@@ -158,7 +171,7 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, PvpHistory, PvpView, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, PvpHistory, PvpView, Theostones, () => InvokeAsync(StateHasChanged));
 
     // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
     private double downX, downY;

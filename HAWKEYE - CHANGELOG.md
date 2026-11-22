@@ -3,6 +3,24 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.17 (2026-11-22, not released yet)
+
+Added (owner: "a subtle pop up when Theostone procs ... and same when it procs on me"):
+- **Theostone alerts:** a small strip over the top of the meter for 3.5 s. "THEOSTONE Tassin's
+  Command 12.4K" when yours procs; a red "HIT BY Mahisha's Wrath from Bravo 8.1K" when someone's hits
+  you. A multi-hit proc is one alert ("x2"); at most 3 at once. Settings > PvP: two switches, both on.
+  Procs are ordinary damage hits with a Theostone skill code; in the owner's recorded PvP session his
+  own procced 10 times and enemies' hit him 16 times (12 different stones). Damage-free Theostones
+  (pure buffs, if any) do not alert.
+
+Changed (owner: "have the line always there"):
+- **Rank line always shown in PvP mode.** No ranking yet: "Rank unknown | open Abyss Rank". After
+  the hourly recalculation: "Ranger rank 78 | open Abyss Rank" (points to the next rank move to the
+  hover). Your points passed the one above since the ranking came: "Ranger rank 77 reached | open
+  Abyss Rank", in the accent colour.
+- 90 tests (4 new). The update installer test failed once more straight after a build (copy slower
+  than its wait) and passed on the rerun.
+
 ## v0.2.16 (2026-11-22)
 
 Added (owner: "xx rank points until next rank, display current rank"):

@@ -7,6 +7,7 @@ using Hawkeye.Engine.PacketProcessing.Shared;
 using Hawkeye.Engine.PacketProcessing.Shared.Exceptions;
 using Hawkeye.Engine.Services.Entity;
 using Hawkeye.Engine.Services.Session;
+using Hawkeye.Engine.Services.Theostone;
 using Microsoft.Extensions.Logging;
 
 namespace Hawkeye.Engine.PacketProcessing.Processors
@@ -19,13 +20,15 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         private readonly EntityTracker entityTracker;
         private readonly CombatSessionManager sessionManager;
         private readonly ILogger<DamagePacketProcessor> logger;
+        private readonly TheostoneAlerts? theostones;
 
-        public DamagePacketProcessor(EntityTracker entityTracker, CombatSessionManager sessionManager, ILogger<DamagePacketProcessor> logger)
+        public DamagePacketProcessor(EntityTracker entityTracker, CombatSessionManager sessionManager, ILogger<DamagePacketProcessor> logger, TheostoneAlerts? theostones = null)
         {
             this.entityTracker = entityTracker ?? throw new ArgumentNullException(nameof(entityTracker));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.gameData = GameDataProvider.Instance;
             this.sessionManager = sessionManager;
+            this.theostones = theostones;
         }
 
       
@@ -38,7 +41,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
                 return;
             }
 
-            var playerDamage = BuildPlayerDamage(parsed.Data!);
+            var d = parsed.Data!;
+            if (theostones is not null && gameData.IsTheostone(d.SkillCode))
+                theostones.OnHit(d.ActorId, d.TargetId, gameData.GetSkillOrDefault(d.SkillCode).Name, d.Damage);   // before the player check below drops unknown attackers
+
+            var playerDamage = BuildPlayerDamage(d);
             if (playerDamage != null)
                 sessionManager.ProcessDamageEvent(playerDamage);
         }

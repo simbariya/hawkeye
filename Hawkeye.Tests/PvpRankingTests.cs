@@ -107,7 +107,7 @@ public sealed class PvpRankingTests
         Assert.False(RankWords.IsOld(s, update.AddMinutes(-1)));
         Assert.Contains("next at 13:28", RankWords.Tip(s, update.AddMinutes(-1)));
         Assert.True(RankWords.IsOld(s, update.AddSeconds(1)));
-        Assert.Contains("Open the PvP ranking in game", RankWords.Tip(s, update.AddSeconds(1)));
+        Assert.Contains("Open the Abyss Rank page in game", RankWords.Tip(s, update.AddSeconds(1)));
     }
 
     [Fact]

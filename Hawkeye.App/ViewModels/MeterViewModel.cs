@@ -46,6 +46,16 @@ namespace Hawkeye.App.ViewModels
         private readonly PvpTracker pvp;
         private readonly PvpHistory pvpHistory;
         private readonly PvpView pvpView;
+        private readonly Hawkeye.Engine.Services.Theostone.TheostoneAlerts theostones;
+
+        /// <summary>Theostone procs to flash on the meter (yours, and others' hitting you), oldest first.</summary>
+        public IReadOnlyList<Hawkeye.Engine.Services.Theostone.TheostoneProc> Theostones { get; private set; } = [];
+
+        public static string ProcText(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
+            p.Yours || p.From.Length == 0 ? p.Name : $"{p.Name} from {p.From}";
+
+        public static string ProcAmount(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
+            (p.Damage > 0 ? Compact(p.Damage, shortThousands: true) : "") + (p.Hits > 1 ? $" x{p.Hits}" : "");
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
@@ -79,25 +89,26 @@ namespace Hawkeye.App.ViewModels
         public int Assists => pvp.Assists;
         public string ApGained => Signed(pvp.ApGained);
         public string RankGained => Signed(pvp.RankGained);
-        // Rank line (2026-11-22): your class rank and the rank points still needed to pass the one above.
-        public bool HasRank => rankLabel.Length > 0;
-        public string RankLabel => rankLabel;
-        public string RankNext => rankNext;
-        public string RankTip => rankTip;
-        /// <summary>The hourly recalculation has passed since the ranking came: shown dimmed until it is refreshed.</summary>
-        public bool RankOld => rankOld;
-        private string rankLabel = "", rankNext = "", rankTip = "";
-        private bool rankOld;
+        // Rank line (2026-11-22): always shown in PvP mode. Your class rank and the rank points still needed to pass
+        // the one above, or a nudge to open the Abyss Rank page (no ranking yet, ranks recalculated, or rank reached).
+        public RankWords.RankLine Rank { get; private set; }
+        public string RankClass => Rank.State switch
+        {
+            RankWords.LineState.Live => "",
+            RankWords.LineState.Reached => "is-reached",
+            _ => "is-old",
+        };
+
+        private string TheostoneKey()
+        {
+            Theostones = theostones.Showing;
+            return string.Join(",", Theostones.Select(p => $"{p.At.Ticks}{p.Hits}"));
+        }
 
         private string RankKey()
         {
-            if (pvp.Standing is not { } s) { rankLabel = rankNext = rankTip = ""; rankOld = false; return ""; }
-            var now = DateTime.Now;
-            rankLabel = RankWords.Label(s, pvp.ClassName);
-            rankNext = RankWords.Next(s);
-            rankOld = RankWords.IsOld(s, now);
-            rankTip = RankWords.Tip(s, now);
-            return rankLabel + rankNext + rankTip;
+            Rank = RankWords.Line(pvp.Standing, pvp.ClassName, DateTime.Now);
+            return Rank.Left + Rank.Right + Rank.Tip;
         }
 
         private static string Signed(long v) => (v > 0 ? "+" : "") + v.ToString("N0", CultureInfo.InvariantCulture);
@@ -143,7 +154,8 @@ namespace Hawkeye.App.ViewModels
         private EncounterSnapshot? shown;
 
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
-            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, PvpTracker pvp, PvpHistory pvpHistory, PvpView pvpView, Func<Task> redraw)
+            OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, PvpTracker pvp, PvpHistory pvpHistory, PvpView pvpView,
+            Hawkeye.Engine.Services.Theostone.TheostoneAlerts theostones, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
@@ -154,6 +166,7 @@ namespace Hawkeye.App.ViewModels
             this.pvp = pvp;
             this.pvpHistory = pvpHistory;
             this.pvpView = pvpView;
+            this.theostones = theostones;
             this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();
@@ -196,7 +209,7 @@ namespace Hawkeye.App.ViewModels
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}|{TheostoneKey()}";
             if (key != stateKey)
             {
                 Duration = duration;

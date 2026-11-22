@@ -79,6 +79,12 @@ namespace Hawkeye.Engine.Settings
         /// <summary>Show how many times each player died on this boss (all pulls since its last kill).</summary>
         public bool ShowDeaths { get; set; } = true;
 
+        /// <summary>Flash a small alert on the meter when your Theostone procs (v0.2.17).</summary>
+        public bool TheostoneAlertsYours { get; set; } = true;
+
+        /// <summary>Flash a small red alert on the meter when someone's Theostone hits you (v0.2.17).</summary>
+        public bool TheostoneAlertsOnYou { get; set; } = true;
+
         // ---- training dummy ----
         public DummyMode DummyMode { get; set; } = DummyMode.Timed;
         /// <summary>Length of a Timed dummy run: 1, 2 or 3 minutes.</summary>

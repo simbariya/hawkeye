@@ -151,11 +151,44 @@ namespace Hawkeye.Engine.Services.Pvp
         /// </summary>
         public static bool IsOld(RankStanding s, DateTime now) => s.NextUpdate is { } at && now >= at;
 
+        public const string OpenRankPage = "open Abyss Rank";
+
+        /// <summary>What the rank line shows: always something in PvP mode (owner, 2026-11-22).</summary>
+        public enum LineState { Unknown, Live, Old, Reached }
+
+        public readonly record struct RankLine(string Left, string Right, string Tip, LineState State);
+
+        /// <summary>
+        /// The whole line. No ranking yet: asks you to open the Abyss Rank page. Live: "Ranger rank 78 | 21 RP to 77".
+        /// Your points passed the one above since the ranking came: "Ranger rank 77 reached | Open Abyss Rank to update".
+        /// The hourly recalculation passed: "Ranger rank 78 | Open Abyss Rank to update".
+        /// </summary>
+        public static RankLine Line(RankStanding? s, string className, DateTime now)
+        {
+            if (s is null)
+                return new RankLine("Rank unknown", OpenRankPage,
+                    "The game sends your rank when you log in or open the Abyss Rank page.", LineState.Unknown);
+            string what = s.Category == 0 ? "Overall rank" : className.Length > 0 ? $"{className} rank" : "Class rank";
+            string tip = Tip(s, now);
+            if (s.Projected is { } p && p < s.Rank)
+            {
+                string next = Next(s);
+                return new RankLine($"{what} {p} reached", OpenRankPage,
+                    (next.Length > 0 ? $"{next} after that. " : "") + tip, LineState.Reached);
+            }
+            if (IsOld(s, now))
+            {
+                string next = Next(s);
+                return new RankLine($"{what} {s.Rank}", OpenRankPage, (next.Length > 0 ? $"{next}. " : "") + tip, LineState.Old);
+            }
+            return new RankLine($"{what} {s.Rank}", Next(s), tip, LineState.Live);
+        }
+
         public static string Tip(RankStanding s, DateTime now)
         {
             var parts = new List<string>();
             if (IsOld(s, now))
-                parts.Add($"Ranks were recalculated at {s.NextUpdate:HH:mm}, so this is from the update before. Open the PvP ranking in game to refresh it.");
+                parts.Add($"Ranks were recalculated at {s.NextUpdate:HH:mm}, so this is from the update before. Open the Abyss Rank page in game to refresh it.");
             if (s.OverallRank is { } o) parts.Add($"Overall rank {o}.");
             parts.Add($"Lifetime: {N(s.LifetimeKills)} kills, {N(s.LifetimeDeaths)} deaths, {N(s.LifetimeAssists)} assists.");
             if (!IsOld(s, now)) parts.Add(s.NextUpdate is { } at ? $"Ranks update hourly, next at {at:HH:mm}." : "Ranks update hourly.");

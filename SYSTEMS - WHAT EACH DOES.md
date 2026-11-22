@@ -240,7 +240,19 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   the stream page (`standing`, `toNext` in `/state.meter.pvp`). Category 0 = overall, other = class.
   The game sends rankings only at login and when the in-game ranking window is opened (not at the
   hourly update, checked 2026-11-22), so past `NextUpdate` the line dims (`RankWords.IsOld`, `.is-old`).
+  Since v0.2.17 the line is always there: `RankWords.Line` gives Unknown / Live / Old / Reached, the
+  last three nudging "open Abyss Rank".
 - **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
+
+## 6g. Theostone alerts (v0.2.17)
+
+- **Does:** `Engine/Services/Theostone/TheostoneAlerts`. `DamagePacketProcessor` hands every hit with a
+  Theostone skill code (`GameDataProvider.IsTheostone`) to `OnHit` before its own player check (so an
+  unknown attacker still alerts). Yours (actor is you) or on you (target is you) only; same stone and
+  direction within 1.5 s merge; shown 3.5 s; at most 3.
+- **Shows:** `.theo-alerts` strip over the top of the meter (`MeterPage.razor`, `meter.css`), from
+  `MeterViewModel.Theostones`. Not on the stream page yet.
+- **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou` (both on), in Settings > PvP.
 
 ## 7. Settings window
 

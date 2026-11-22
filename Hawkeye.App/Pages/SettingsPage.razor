@@ -88,6 +88,13 @@
             </ValueSlot>
         </SettingRow>
 
+        <SettingRow Title="Theostone: yours" Description="A small alert on the meter when your Theostone procs">
+            <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsYours" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsYours = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Theostone: on you" Description="A small red alert when someone's Theostone hits you">
+            <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsOnYou" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsOnYou = v)" /></ValueSlot>
+        </SettingRow>
+
         <div class="hs-section">STATUS LINE</div>
         <SettingRow Title="Ping" Description="Your latency to the game server">
             <ValueSlot><ToggleSwitch Checked="S.ShowPing" CheckedChanged="v => Settings.Update(s => s.ShowPing = v)" /></ValueSlot>

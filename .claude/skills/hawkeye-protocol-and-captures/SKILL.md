@@ -135,6 +135,10 @@ character's numbers and the stream was searched for them.
     nothing). Sent at login and when the ranking window is opened (that window also sends type 0x15 / 0x03).
     Confirmed 14:13 the same day: opening the PvP ranking sent the class table plus both own lines
     (overall 343, Ranger 78, 5,007,520 points, deaths 948 after one death), next update 14:28.
+- **Theostone procs = damage hits (0x3804)** with a Theostone skill code (93 in skills.json, 30000171 to
+  30012371; damage packets carry the 7-digit form, e.g. 3000018). Owner's PvP recording 2026-11-21: his own
+  procced 10 times, enemies' hit him 16 times. The stones also appear in 0x3645 player announcements and
+  some in 0x382B buffs (not used).
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

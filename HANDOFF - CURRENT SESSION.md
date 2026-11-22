@@ -208,3 +208,13 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - Not yet seen live in the app: the rank line and first-kill numbers with 0.2.16 itself running at a
   login (the parsers were replayed against recordings with every number matching).
 - Still open: target combat power / gear score (needs one target's exact numbers).
+
+## CHECKPOINT (2026-11-22 afternoon, v0.2.16 live, 0.2.17 local) - supersedes the ones above
+
+- Local, NOT pushed: 0.2.17 = Theostone alerts (yours / hitting you, Settings > PvP) + rank line always
+  shown with "open Abyss Rank" nudges. Also the unpushed docs commit about `gh release -R`. 90 tests.
+- Not seen live: the alerts in a real fight (the decode path is the one that already credits Theostone
+  damage in fights; the recording shows both directions).
+- Flaky: UpdateInstallerTests.WaitsForTheAppToExit failed again right after a build ("old exe" still
+  there); passed on rerun. Its wait is too tight for a busy disk: widen it if it fails a third time.
+- Still open: target combat power / gear score; Theostone alerts on the stream page.
