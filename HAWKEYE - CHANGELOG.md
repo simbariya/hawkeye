@@ -3,6 +3,27 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.19 (2026-11-22, not released yet)
+
+Added (owner: "make Theostone pop out customizable and draggable ... make sure all of that is
+capturable by the overlay"; "Theostones that do a negative debuff, like blind for 6 sec, should remain
+as a popup until the effect is gone, either naturally or by potting it"):
+- **Theostone alerts in their own box, anywhere on screen** (default). While Settings is open it
+  shows a dashed outline with two sample alerts: drag it, the spot is saved. Click-through
+  otherwise. Settings > PvP: where (Anywhere / On meter), size (S, M, L, XL), how long a proc
+  alert stays (2, 3.5, 5 s).
+- **Debuffs on you stay until they end:** a Theostone debuff (silence, blind...) shows its time
+  left and a red bar running down, and goes the moment the game says it ended: ran out or cleansed
+  (a potion). The hit that brought it merges into the same alert.
+- **On stream:** streamer mode draws the alerts at the same spot (or over the meter), same look,
+  same countdown.
+
+How it was found (owner's PvP recording, 2026-11-21): a Theostone debuff on you is a buff message
+(0x382A, type 19) with its duration and an instance number; the removal message 0x382C names that
+instance: a 3 s debuff removed at 3.03 s (reason 0, ran out), a 20 s one at 9.4 s and a 4 s one
+at 1.4 s (reason 7, cleansed). Hawkeye's buff reader used to drop these (not tracker skills).
+94 tests (3 new, with the real messages: no names in them).
+
 ## v0.2.18 (2026-11-22)
 
 Fixed (owner: "game sends updated rank details only once it has updated every hour, doesn't send it

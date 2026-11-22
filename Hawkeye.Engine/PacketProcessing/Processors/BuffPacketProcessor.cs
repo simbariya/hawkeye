@@ -4,6 +4,7 @@ using Hawkeye.Core.Models;
 using Hawkeye.Engine.PacketProcessing.Routing;
 using Hawkeye.Engine.PacketProcessing.Shared;
 using Hawkeye.Engine.Services.Session;
+using Hawkeye.Engine.Services.Theostone;
 using Microsoft.Extensions.Logging;
 
 namespace Hawkeye.Engine.PacketProcessing.Processors
@@ -18,9 +19,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         private readonly GameDataProvider gameData;
         private readonly ILogger<BuffPacketProcessor> logger;
         private readonly CombatSessionManager sessionManager;
+        private readonly TheostoneAlerts? theostones;
 
-        public BuffPacketProcessor(ILogger<BuffPacketProcessor> logger, CombatSessionManager sessionManager)
+        public BuffPacketProcessor(ILogger<BuffPacketProcessor> logger, CombatSessionManager sessionManager, TheostoneAlerts? theostones = null)
         {
+            this.theostones = theostones;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.gameData = GameDataProvider.Instance;
             this.sessionManager = sessionManager;
@@ -74,8 +77,20 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             var entityId = (int)r.ReadVarInt();
             r.ReadU8();     //unknown
             byte type = r.ReadU8();
-            r.ReadVarInt(); //unknown
+            var instance = (int)r.ReadVarInt(); // the game's number for this buff; its removal (0x382C) names it
             var buffId =(int)r.ReadU32() / 10;
+
+            // A Theostone debuff (on you, it becomes an alert until it ends). Layout from the owner's recording,
+            // 2026-11-21: [id x10][u32 duration ms][5 bytes][u64 time][caster varint]...
+            if (theostones is not null && gameData.IsTheostone(buffId))
+            {
+                uint ms = r.ReadU32();
+                int caster = 0;
+                try { r.Skip(5 + 8); caster = (int)r.ReadVarInt(); } catch (Exception) { /* caster is optional */ }
+                if (ms >= 100 && ms <= MaxReasonableBuffDurationMs)
+                    theostones.OnDebuff(entityId, instance, gameData.GetSkillOrDefault(buffId).Name, ms, caster);
+                return null;
+            }
 
             if (!gameData.IsBuff(buffId)) return $"id {buffId} not a known buff, type {type}";
             var skill = gameData.GetSkillOrDefault(buffId);

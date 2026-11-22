@@ -54,8 +54,12 @@ namespace Hawkeye.App.ViewModels
         public static string ProcText(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
             p.Yours || p.From.Length == 0 ? p.Name : $"{p.Name} from {p.From}";
 
-        public static string ProcAmount(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
-            (p.Damage > 0 ? Compact(p.Damage, shortThousands: true) : "") + (p.Hits > 1 ? $" x{p.Hits}" : "");
+        /// <summary>Debuff time left as a percentage for its bar, or -1 for a plain hit.</summary>
+        public double ProcBar(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
+            p.IsDebuff && p.Duration.TotalMilliseconds > 0 ? 100 * theostones.TimeLeft(p).TotalMilliseconds / p.Duration.TotalMilliseconds : -1;
+
+        public string ProcAmount(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
+            Hawkeye.App.Views.TheostoneAlertWindow.AmountText(p, theostones.TimeLeft(p));
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();
@@ -101,8 +105,9 @@ namespace Hawkeye.App.ViewModels
 
         private string TheostoneKey()
         {
-            Theostones = theostones.Showing;
-            return string.Join(",", Theostones.Select(p => $"{p.At.Ticks}{p.Hits}"));
+            Theostones = settings.Current.TheostonePlace == TheostonePlace.Meter ? theostones.Showing : [];
+            // Debuffs count down: redraw every tenth of a second while one shows.
+            return string.Join(",", Theostones.Select(p => $"{p.At.Ticks}{p.Hits}{(p.IsDebuff ? (int)(theostones.TimeLeft(p).TotalSeconds * 10) : 0)}"));
         }
 
         private string RankKey()

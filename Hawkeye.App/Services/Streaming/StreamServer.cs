@@ -257,6 +257,7 @@ namespace Hawkeye.App.Services.Streaming
                         }),
                     },
                     windows = BuildWindows(s),
+                    theo = BuildTheostones(s),
                     icons = !s.StreamShowIcons || !overlays.IconsVisible ? Array.Empty<object>() : overlays.IconWindows.Select(object (w) =>
                     {
                         var tracked = s.TrackedSkills.FirstOrDefault(t => t.SkillId == w.SkillId);
@@ -312,6 +313,38 @@ namespace Hawkeye.App.Services.Streaming
                 }
             }
             finally { capturing = false; }
+        }
+
+        /// <summary>
+        /// Theostone alerts for the stream (v0.2.19): where they are (their own box, or over the meter) and what
+        /// they say, so the page draws them crisp at the same spot. Null when none is showing.
+        /// </summary>
+        private object? BuildTheostones(HawkeyeSettings s)
+        {
+            if (overlays.TheostoneWindow is not { } w) return null;
+            var alerts = w.Alerts;
+            var list = alerts.Showing;
+            if (list.Count == 0) return null;
+            bool screen = s.TheostonePlace == TheostonePlace.Screen;
+            var now = DateTime.Now;
+            return new
+            {
+                where = screen ? "screen" : "meter",
+                left = w.ContentLeft,
+                top = w.ContentTop,
+                width = Hawkeye.App.Views.TheostoneAlertWindow.BaseWidth,
+                scale = screen ? w.Scale : 1.0,
+                items = list.Select(p => new
+                {
+                    yours = p.Yours,
+                    tag = Hawkeye.App.Views.TheostoneAlertWindow.TagText(p),
+                    name = MeterViewModel.ProcText(p),
+                    amount = Hawkeye.App.Views.TheostoneAlertWindow.AmountText(p, alerts.TimeLeft(p)),
+                    bar = p.IsDebuff && p.Duration.TotalMilliseconds > 0
+                        ? Math.Round(100 * alerts.TimeLeft(p).TotalMilliseconds / p.Duration.TotalMilliseconds, 1) : -1,
+                    fade = p.IsDebuff ? 1 : Math.Round(Math.Clamp((alerts.ShowFor - (now - p.At)).TotalSeconds / 0.5, 0, 1), 2),
+                }).ToArray(),
+            };
         }
 
         private object[] BuildWindows(HawkeyeSettings s)

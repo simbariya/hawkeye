@@ -141,6 +141,11 @@ character's numbers and the stream was searched for them.
   30012371; damage packets carry the 7-digit form, e.g. 3000018). Owner's PvP recording 2026-11-21: his own
   procced 10 times, enemies' hit him 16 times. The stones also appear in 0x3645 player announcements and
   some in 0x382B buffs (not used).
+- **Theostone debuffs and buff removal (2026-11-22, owner's PvP recording):** a Theostone debuff on you is
+  0x382A `[len][op][target varint][u8 1][u8 type 19][instance varint][u32 skill id x10][u32 ms][5 bytes]
+  [u64 time ms][caster varint]...`. **0x382C** = buffs ending: `[len][op][entity varint][u8 count]` then per
+  entry `[u8 reason][instance varint]...` (reason 0 ran out: 3 s debuff gone at 3.03 s; reason 7 cleansed:
+  a 20 s one at 9.4 s, a 4 s one at 1.4 s, with 11 more bytes per entry). A death removed 6 at once.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

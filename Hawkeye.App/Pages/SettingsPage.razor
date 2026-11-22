@@ -91,8 +91,43 @@
         <SettingRow Title="Theostone: yours" Description="A small alert on the meter when your Theostone procs">
             <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsYours" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsYours = v)" /></ValueSlot>
         </SettingRow>
-        <SettingRow Title="Theostone: on you" Description="A small red alert when someone's Theostone hits you">
+        <SettingRow Title="Theostone: on you" Description="A red alert when someone's Theostone hits you. A debuff (blind, silence...) stays with its time left until it ends or you cleanse it">
             <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsOnYou" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsOnYou = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Theostone: where" Description="@(S.TheostonePlace == TheostonePlace.Screen ? "Its own box: while Settings is open it shows a dashed outline you can drag anywhere" : "Over the top of the meter")">
+            <ValueSlot>
+                <div class="hs-mode">
+                    <button type="button" class="@(S.TheostonePlace == TheostonePlace.Screen ? "is-on" : "")"
+                            @onclick="() => Settings.Update(s => s.TheostonePlace = TheostonePlace.Screen)">Anywhere</button>
+                    <button type="button" class="@(S.TheostonePlace == TheostonePlace.Meter ? "is-on" : "")"
+                            @onclick="() => Settings.Update(s => s.TheostonePlace = TheostonePlace.Meter)">On meter</button>
+                </div>
+            </ValueSlot>
+        </SettingRow>
+        @if (S.TheostonePlace == TheostonePlace.Screen)
+        {
+            <SettingRow Title="Theostone: size" Description="How big the alerts are">
+                <ValueSlot>
+                    <div class="hs-mode">
+                        @foreach (var (label, v) in new[] { ("S", 0.85), ("M", 1.0), ("L", 1.25), ("XL", 1.5) })
+                        {
+                            <button type="button" class="@(Math.Abs(S.TheostoneScale - v) < 0.01 ? "is-on" : "")"
+                                    @onclick="() => Settings.Update(s => s.TheostoneScale = v)">@label</button>
+                        }
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+        }
+        <SettingRow Title="Theostone: how long" Description="How long a proc alert stays. Debuffs on you stay until they end">
+            <ValueSlot>
+                <div class="hs-mode">
+                    @foreach (var v in new[] { 2.0, 3.5, 5.0 })
+                    {
+                        <button type="button" class="@(Math.Abs(S.TheostoneSeconds - v) < 0.01 ? "is-on" : "")"
+                                @onclick="() => Settings.Update(s => s.TheostoneSeconds = v)">@v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) s</button>
+                    }
+                </div>
+            </ValueSlot>
         </SettingRow>
 
         <div class="hs-section">STATUS LINE</div>

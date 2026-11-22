@@ -10,6 +10,7 @@ public static class PacketOpcodes
     public const ushort MobSummon = 0x3641;           // 41 36
     public const ushort BuffEffectA = 0x382A;         // 2A 38
     public const ushort BuffEffectB = 0x382B;         // 2B 38
+    public const ushort BuffRemoved = 0x382C;         // 2C 38  ([entity][count][reason][instance]..., v0.2.19)
     public const ushort PlayerInfo = 0x3633;          // 33 36
     public const ushort OtherPlayersInfo = 0x3645;    // 45 36
     public const ushort GlobalSessIdLinking = 0x3620; // 20 36

@@ -247,15 +247,23 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   "reached" shows "official at HH:mm" until the update.
 - **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
 
-## 6g. Theostone alerts (v0.2.17)
+## 6g. Theostone alerts (v0.2.17, own window and debuffs v0.2.19)
 
-- **Does:** `Engine/Services/Theostone/TheostoneAlerts`. `DamagePacketProcessor` hands every hit with a
-  Theostone skill code (`GameDataProvider.IsTheostone`) to `OnHit` before its own player check (so an
-  unknown attacker still alerts). Yours (actor is you) or on you (target is you) only; same stone and
-  direction within 1.5 s merge; shown 3.5 s; at most 3.
-- **Shows:** `.theo-alerts` strip over the top of the meter (`MeterPage.razor`, `meter.css`), from
-  `MeterViewModel.Theostones`. Not on the stream page yet.
-- **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou` (both on), in Settings > PvP.
+- **Does:** `Engine/Services/Theostone/TheostoneAlerts`.
+  - Procs: `DamagePacketProcessor` hands every hit with a Theostone skill code to `OnHit` before its
+    own player check. Yours (actor is you) or on you (target is you) only; same stone and direction
+    within 1.5 s merge; shown `TheostoneSeconds`.
+  - Debuffs on you: `BuffPacketProcessor` reads Theostone ids (it used to drop them) and calls
+    `OnDebuff(target, instance, name, ms, caster)` (layout: [id x10][u32 ms][5 bytes][u64 time][caster]).
+    The alert stays until its time runs out or `BuffRemovedProcessor` (0x382C) brings a removal naming
+    its instance (`OnRemoved`; each entry is [reason][instance varint], reason 0 ran out, 7 cleansed).
+  - At most 4 at once; plain hits make room first.
+- **Shows:** `Views/TheostoneAlertWindow` (plain WPF, topmost, click-through; edit mode with Settings
+  open = dashed box, samples, drag, saved to `TheostoneLeft/Top`), created by `OverlayManager.Start`.
+  Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter. Stream page:
+  `/state.theo` (where, position, scale, items with countdown, bar and fade), drawn by `renderTheo`.
+- **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou`, `TheostonePlace` (Screen), `TheostoneScale`
+  (1), `TheostoneSeconds` (3.5), in Settings > PvP.
 
 ## 7. Settings window
 

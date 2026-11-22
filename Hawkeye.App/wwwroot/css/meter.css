@@ -312,10 +312,12 @@
 /* Theostone alerts (v0.2.17): over the top of the meter, under the header, gone after 3.5 s */
 .theo-alerts { position: absolute; top: 28px; left: var(--side, 26px); right: 6px; z-index: 5; display: flex;
     flex-direction: column; gap: 0; pointer-events: none; }
-.theo-alert { display: flex; align-items: baseline; gap: 8px; padding: 4px 8px; font-size: 12px; white-space: nowrap;
+.theo-float { position: absolute; right: auto; transform-origin: top left; }   /* stream page: own box */
+.theo-bar { position: absolute; left: 0; bottom: 0; height: 2px; background: #FF4D4D; opacity: 0.8; }   /* debuff time left */
+.theo-alert { position: relative; display: flex; align-items: baseline; gap: 8px; padding: 4px 8px; font-size: 12px; white-space: nowrap;
     overflow: hidden; background: rgb(14, 16, 20); border-left: 2px solid var(--accent, #8CCFDF);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-    animation: theo-in 0.18s ease-out, theo-out 0.5s ease-in 3s forwards; }
+    animation: theo-in 0.18s ease-out; }
 .theo-alert.is-on-you { border-left-color: #FF4D4D; background: rgb(38, 12, 14); }
 .theo-tag { font-size: 9px; letter-spacing: 1.5px; opacity: 0.6; flex: none; }
 .theo-alert.is-yours .theo-tag { color: var(--accent, #8CCFDF); opacity: 0.9; }

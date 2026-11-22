@@ -245,3 +245,12 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   2026-11-21, 36 today in the owner's copy. Those hits are skipped. Next: capture a few failing
   messages and see which layout the reader does not know.
 - Still open: target combat power / gear score; Theostone alerts on the stream page.
+
+## CHECKPOINT (2026-11-22 afternoon, v0.2.18 live, 0.2.19 local) - supersedes the ones above
+
+- Local, NOT pushed: 0.2.19 = Theostone alerts in their own draggable box (default; or on the meter),
+  size and duration settings, debuffs on you stay until they end (0x382C removal), all on the stream
+  page. 94 tests; the window rendered off-screen with the harness (scratchpad `theorender`).
+- Not seen live yet: the alert box in game, a real cleanse ending an alert, the stream page drawing it.
+- Known OLD: damage message parse errors (see the v0.2.18 checkpoint).
+- Still open: target combat power / gear score.

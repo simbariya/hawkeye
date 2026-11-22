@@ -36,6 +36,9 @@ namespace Hawkeye.App.Services.Windowing
         /// <summary>The icon windows, for streamer mode. UI thread only.</summary>
         public IReadOnlyCollection<TrackerIconWindow> IconWindows => icons.Values;
 
+        /// <summary>The Theostone alert window (v0.2.19), for streamer mode. UI thread only.</summary>
+        public TheostoneAlertWindow? TheostoneWindow { get; private set; }
+
         public OverlayManager(
             IServiceProvider services,
             ISettingsService settings,
@@ -55,6 +58,8 @@ namespace Hawkeye.App.Services.Windowing
 
         public void Start()
         {
+            TheostoneWindow = new TheostoneAlertWindow(settings, services.GetRequiredService<Hawkeye.Engine.Services.Theostone.TheostoneAlerts>());
+            TheostoneWindow.Show();
             SyncIcons();
             visibilityTimer.Start();
         }
@@ -96,6 +101,7 @@ namespace Hawkeye.App.Services.Windowing
             settingsWindow.Activated += (_, _) =>
             {
                 foreach (var icon in icons.Values) icon.BringToFront();
+                TheostoneWindow?.BringToFront();
             };
             settingsWindow.Closed += (_, _) =>
             {
@@ -246,6 +252,7 @@ namespace Hawkeye.App.Services.Windowing
         private void SetIconsEditMode(bool editMode)
         {
             foreach (var icon in icons.Values) icon.SetEditMode(editMode);
+            TheostoneWindow?.SetEditMode(editMode);
         }
 
         // ------------------------------------------------------------------ helpers

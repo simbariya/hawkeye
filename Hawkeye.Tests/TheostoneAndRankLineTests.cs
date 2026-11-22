@@ -50,7 +50,7 @@ public sealed class TheostoneAndRankLineTests : IDisposable
         var one = Assert.Single(alerts.Showing);
         Assert.Equal((2, 2_500L), (one.Hits, one.Damage));
 
-        now = now.Add(TheostoneAlerts.ShowFor);
+        now = now.Add(alerts.ShowFor);
         Assert.Empty(alerts.Showing);
     }
 
@@ -61,6 +61,63 @@ public sealed class TheostoneAndRankLineTests : IDisposable
         alerts.OnHit(Me, Mob, "Theostone: Tassin's Command", 1_000);
         alerts.OnHit(Enemy, Me, "Theostone: Mahisha's Wrath", 1_000);
         Assert.Empty(alerts.Showing);
+    }
+
+    // ---- debuffs on you: stay until they end or the game removes them (owner: "until it's gone, naturally or by potting") ----
+
+    // Real messages from the owner's PvP recording (2026-11-21); he was entity 12526 (EE 61). No names in them.
+    // Khrudgelmir's Silence on him for 4 s, instance 1383 (E7 0A), from entity 11274:
+    private const string Silence4s = "342A38EE610113E70AD3EEC901A00F0000000000005F2496FFA10100008A580115CB2D0000238BC0C5927002C678D32447";
+    // ... cleansed 1.41 s later (reason 7), together with instance 1384:
+    private const string SilenceCleansed = "252C38EE610207E70A0BEE6106D31E00636E0A0C07E80A0BEE6106D31E00636E0A0C";
+    // Vidar's Dignity 3 s, instance 952 (B8 07), ran out after 3.03 s (reason 0):
+    private const string DignityRanOut = "0D2C38EE610100B80701";
+
+    private Hawkeye.Engine.PacketProcessing.Processors.BuffPacketProcessor BuffReader()
+    {
+        var entities = new EntityTracker();
+        entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
+        var sessions = new Hawkeye.Engine.Services.Session.CombatSessionManager(entities,
+            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance, settings,
+            new Hawkeye.Engine.Services.Timed.TimedEventTracker(), new Hawkeye.Engine.Services.Timed.TimedEventTracker());
+        return new(Microsoft.Extensions.Logging.Abstractions.NullLogger<Hawkeye.Engine.PacketProcessing.Processors.BuffPacketProcessor>.Instance,
+            sessions, alerts);
+    }
+
+    private static Hawkeye.Engine.PacketProcessing.Routing.Packet Msg(string hex) => new() { Data = Convert.FromHexString(hex) };
+
+    [Fact]
+    public void Debuff_StaysUntilCleansed()
+    {
+        BuffReader().Process(Msg(Silence4s));
+        var d = Assert.Single(alerts.Showing);
+        Assert.Equal(("Khrudgelmir's Silence", 1383, TimeSpan.FromSeconds(4)), (d.Name, d.Instance, d.Duration));
+
+        now = now.AddSeconds(3.9);                                  // longer than a plain alert, still on
+        Assert.Single(alerts.Showing);
+        Assert.InRange(alerts.TimeLeft(d).TotalSeconds, 0.05, 0.15);
+
+        new Hawkeye.Engine.PacketProcessing.Processors.BuffRemovedProcessor(alerts).Process(Msg(SilenceCleansed));
+        Assert.Empty(alerts.Showing);
+    }
+
+    [Fact]
+    public void Debuff_EndsOnItsOwn_AndOtherRemovalsLeaveItAlone()
+    {
+        BuffReader().Process(Msg(Silence4s));
+        new Hawkeye.Engine.PacketProcessing.Processors.BuffRemovedProcessor(alerts).Process(Msg(DignityRanOut));   // another debuff
+        Assert.Single(alerts.Showing);
+        now = now.AddSeconds(4);
+        Assert.Empty(alerts.Showing);
+    }
+
+    [Fact]
+    public void TheHitThatBringsADebuff_IsOneAlert()
+    {
+        alerts.OnHit(Enemy, Me, "Theostone: Khrudgelmir's Silence", 3_000);
+        alerts.OnDebuff(Me, 1383, "Theostone: Khrudgelmir's Silence", 4_000, Enemy);
+        var one = Assert.Single(alerts.Showing);
+        Assert.Equal((3_000L, true, "Bravo"), (one.Damage, one.IsDebuff, one.From));
     }
 
     // ---- rank line: always there, nudges you to open Abyss Rank ----

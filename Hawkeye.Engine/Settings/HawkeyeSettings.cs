@@ -27,6 +27,13 @@ namespace Hawkeye.Engine.Settings
 
     /// <summary>How a fight on a training dummy is measured.</summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
+    /// <summary>Where Theostone alerts show (v0.2.19): their own window you can drag anywhere, or over the meter.</summary>
+    public enum TheostonePlace
+    {
+        Screen,
+        Meter,
+    }
+
     public enum DummyMode
     {
         /// <summary>Starts on your first hit and stops by itself after DummyMinutes.</summary>
@@ -84,6 +91,19 @@ namespace Hawkeye.Engine.Settings
 
         /// <summary>Flash a small red alert on the meter when someone's Theostone hits you (v0.2.17).</summary>
         public bool TheostoneAlertsOnYou { get; set; } = true;
+
+        /// <summary>Theostone alerts in their own draggable window (default) or over the meter (v0.2.19).</summary>
+        public TheostonePlace TheostonePlace { get; set; } = TheostonePlace.Screen;
+
+        /// <summary>Where the alert window sits (dragged while Settings is open); null = default spot.</summary>
+        public double? TheostoneLeft { get; set; }
+        public double? TheostoneTop { get; set; }
+
+        /// <summary>Alert size: 0.85, 1, 1.25 or 1.5.</summary>
+        public double TheostoneScale { get; set; } = 1.0;
+
+        /// <summary>How long a plain proc alert stays, seconds. Debuffs on you stay until they end.</summary>
+        public double TheostoneSeconds { get; set; } = 3.5;
 
         // ---- training dummy ----
         public DummyMode DummyMode { get; set; } = DummyMode.Timed;

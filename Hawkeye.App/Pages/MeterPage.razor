@@ -92,7 +92,11 @@
                     <div class="theo-alert @(p.Yours ? "is-yours" : "is-on-you")" @key="p.Name + p.Yours">
                         <span class="theo-tag">@(p.Yours ? "THEOSTONE" : "HIT BY")</span>
                         <span class="theo-name">@MeterViewModel.ProcText(p)</span>
-                        <b class="theo-dmg">@MeterViewModel.ProcAmount(p)</b>
+                        <b class="theo-dmg">@vm.ProcAmount(p)</b>
+                        @if (vm.ProcBar(p) is var bar && bar >= 0)
+                        {
+                            <i class="theo-bar" style="width:@(bar.ToString("0.#", CultureInfo.InvariantCulture))%"></i>
+                        }
                     </div>
                 }
             </div>

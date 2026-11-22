@@ -238,6 +238,37 @@
         });
     }
 
+    // ------------------------------------------------------------------ Theostone alerts (v0.2.19)
+    // Drawn from /state.theo: in their own box at the streamer's spot, or over the meter, same look as on screen.
+
+    var theoEl = null;
+
+    function renderTheo(t) {
+        if (!t || !t.items || !t.items.length) {
+            if (theoEl) { theoEl.remove(); theoEl = null; }
+            return;
+        }
+        var parent = t.where === 'meter' && meterEl ? meterEl.querySelector('.meter') : stage;
+        if (!theoEl || theoEl.parentNode !== parent) {
+            if (theoEl) theoEl.remove();
+            theoEl = el('div', t.where === 'meter' ? 'theo-alerts' : 'theo-alerts theo-float', parent);
+        }
+        if (t.where !== 'meter') {
+            theoEl.style.left = t.left + 'px';
+            theoEl.style.top = t.top + 'px';
+            theoEl.style.width = t.width + 'px';
+            theoEl.style.transform = 'scale(' + t.scale + ')';
+        }
+        var html = t.items.map(function (p) {
+            var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+            return '<div class="theo-alert ' + (p.yours ? 'is-yours' : 'is-on-you') + '" style="opacity:' + p.fade + '">' +
+                '<span class="theo-tag">' + esc(p.tag) + '</span><span class="theo-name">' + esc(p.name) + '</span>' +
+                '<b class="theo-dmg">' + esc(p.amount) + '</b>' +
+                (p.bar >= 0 ? '<i class="theo-bar" style="width:' + p.bar + '%"></i>' : '') + '</div>';
+        }).join('');
+        if (theoEl._html !== html) { theoEl.innerHTML = html; theoEl._html = html; }
+    }
+
     // ------------------------------------------------------------------ frame
 
     function frame() {
@@ -249,7 +280,9 @@
             renderMeter(state.meter);
             renderWindows(state.windows || []);
             renderIcons(state.icons || [], performance.now() - receivedAt);
+            renderTheo(state.theo);
         } else {
+            renderTheo(null);
             renderMeter(null);
             renderWindows([]);
             renderIcons([], 0);

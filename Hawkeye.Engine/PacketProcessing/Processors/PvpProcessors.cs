@@ -1,5 +1,6 @@
 using Hawkeye.Engine.PacketProcessing.Routing;
 using Hawkeye.Engine.Services.Pvp;
+using Hawkeye.Engine.Services.Theostone;
 
 namespace Hawkeye.Engine.PacketProcessing.Processors
 {
@@ -47,6 +48,25 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         public void Process(Packet packet)
         {
             if (PvpRankingParser.ParseTable(packet.Data) is { } list) pvp.OnRankTable(list);
+        }
+    }
+
+    /// <summary>
+    /// Buffs and debuffs ending (0x382C): [len][op][entity varint][u8 count] then per entry [u8 reason][instance
+    /// varint]... (reason 0 = ran out, 7 = cleansed, in the owner's recording). Ends Theostone debuff alerts.
+    /// </summary>
+    [PacketOpcode(PacketOpcodes.BuffRemoved)]
+    public sealed class BuffRemovedProcessor(TheostoneAlerts theostones) : IOpcodeProcessor
+    {
+        public void Process(Packet packet)
+        {
+            var r = new Hawkeye.Engine.PacketProcessing.Shared.PacketReader(packet.Data);
+            r.ReadVarInt();
+            r.ReadU16();
+            int entity = (int)r.ReadVarInt();
+            if (r.Remaining < 2) return;
+            r.ReadU8();   // count
+            theostones.OnRemoved(entity, packet.Data, r.Position);
         }
     }
 }
