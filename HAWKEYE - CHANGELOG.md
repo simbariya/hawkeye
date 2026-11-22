@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.18 (2026-11-22, not released yet)
+## v0.2.18 (2026-11-22)
 
 Fixed (owner: "game sends updated rank details only once it has updated every hour, doesn't send it
 after that when you open again"):

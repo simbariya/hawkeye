@@ -235,3 +235,13 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   released".
 - Not seen live yet: Theostone alerts in a fight; the remembered rank after a restart.
 - Still open: target combat power / gear score; Theostone alerts on the stream page.
+
+## CHECKPOINT (2026-11-22 15:00, v0.2.18 released) - supersedes the ones above
+
+- v0.2.18 released on the owner's word ("yep push it"): ranking remembered across restarts. Packaged
+  exe started clean apart from the known item below. 91 tests.
+- Known, OLD (not from 0.2.16 to 0.2.18): damage messages 0x3804 sometimes fail to parse ("Need 1 bytes
+  but only 0 remain" in DamagePacketProcessor.Parse, the inherited reader): 141 in one log on
+  2026-11-21, 36 today in the owner's copy. Those hits are skipped. Next: capture a few failing
+  messages and see which layout the reader does not know.
+- Still open: target combat power / gear score; Theostone alerts on the stream page.
