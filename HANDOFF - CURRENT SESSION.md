@@ -195,6 +195,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   number matched. Not yet seen live in the app: needs a login with 0.2.16 running.
 - Checked: the game does NOT resend the ranking at the hourly update (recording `rank-hour` spans
   13:28 to 13:56: only rank point totals came). The line dims after the update time and says to open
-  the PvP ranking in game. Not yet seen: whether opening the PvP tab of that window sends 0x8D55
-  type 1 (the owner opened the dungeon and boss tabs, which sent theirs).
+  the PvP ranking in game. Confirmed 14:13: opening the PvP ranking sends 0x8D55 type 1 (class top
+  500) and both 0x8D57 lines (recording `rank-open`).
 - Still open: target combat power / gear score (needs one target's exact numbers).

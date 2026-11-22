@@ -26,7 +26,8 @@ in. Every row and the owner's own numbers matched (row 78 = him, 5,008,920 point
 1730). The login inventory (0x5611) files AP under a key, not an item id; the AP change message
 carries the same key right before the count, so the first AP change finds the login total.
 Checked across the 13:28 update (recording to 13:56): the game does NOT resend the ranking by itself.
-It comes at login and when you open the ranking window. So once the hourly update time passes, the
+It comes at login and when you open the ranking window (confirmed: opening the PvP ranking sent the
+class top 500 and both of your lines, with your new rank and points). So once the hourly update time passes, the
 rank line dims and its hover says to open the PvP ranking in game to refresh it. Dungeon and boss rankings use the same messages and are skipped.
 86 tests (9 new, made-up names).
 

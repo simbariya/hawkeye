@@ -133,6 +133,8 @@ character's numbers and the stream was searched for them.
     Servers 1301 to 1323 in the EU Ranger table. Next update = ms since 1970 UTC (13:28 on the day: the
     hourly recalculation). NOT resent at the hourly update (recorded across 13:28 to 13:56, 2026-11-22:
     nothing). Sent at login and when the ranking window is opened (that window also sends type 0x15 / 0x03).
+    Confirmed 14:13 the same day: opening the PvP ranking sent the class table plus both own lines
+    (overall 343, Ranger 78, 5,007,520 points, deaths 948 after one death), next update 14:28.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder
