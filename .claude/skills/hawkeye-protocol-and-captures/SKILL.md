@@ -152,6 +152,8 @@ character's numbers and the stream was searched for them.
   A debuff stone sends a 0x3804 hit first; the 0x382A debuff only follows if it lands (3 Bleed and 1 Seal hits on
   the owner never did). Poison/Bleed ticks come as 0x3805 every ~2 s with the 7-digit code x100 (skill / 100).
   The owner's potion: 0x382C reason 7 naming the Poison's instance at 9.4 s of 20, ticks stopped.
+- **Theostone crits and doubles (2026-11-23):** Theostone damage hits carry the usual damage type (3 = crit) and
+  the double-damage flag: 67 of 147 hits in the owner's PvP recording were crits, 13 doubles, 7 both.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

@@ -26,6 +26,15 @@ namespace Hawkeye.Engine.Services.Theostone
             [21] = 2, [22] = 4, [23] = 10, [24] = 20,    // area (up to 4): Fire, Water, Earth, Wind
         };
 
+        /// <summary>Grade from the id: 0 Rare (green), 1 Epic (blue), 2 Unique (gold); -1 when not a Theostone id.</summary>
+        public static int Grade(int code)
+        {
+            int n = code >= 30_000_000 ? code / 10 : code;
+            if (n is < 3_000_000 or > 3_099_999) return -1;
+            int g = n / 100 % 10;
+            return g <= 2 ? g : -1;
+        }
+
         /// <summary>
         /// The tile's word for a Theostone: "Silence", "Damage 2%"... <paramref name="code"/> may be the 8-digit skill
         /// id or the 7-digit form; 0 or an unknown slot falls back to <paramref name="name"/>.

@@ -91,9 +91,9 @@
                 {
                     <div class="theo-alert @(p.Yours ? "is-yours" : "is-on-you")" @key="p.Name + p.Yours">
                         <span class="theo-tag">@Hawkeye.App.Views.TheostoneAlertWindow.TagText(p)</span>
-                        <span class="theo-name">@p.Word</span>
+                        <span class="theo-name @(p.Grade >= 0 ? $"g{p.Grade}" : "")">@p.Word</span>
                         <b class="theo-dmg">@vm.ProcMain(p)</b>
-                        <span class="theo-sub">@Hawkeye.App.Views.TheostoneAlertWindow.SubText(p)</span>
+                        <span class="theo-sub">@if (p.Flags.Length > 0) { <em class="theo-flag">@p.Flags</em> }@if (Hawkeye.App.Views.TheostoneAlertWindow.SubText(p) is { Length: > 0 } who) { <span class="theo-who">@who</span> }</span>
                         @if (vm.ProcBar(p) is var bar && bar >= 0)
                         {
                             <i class="theo-bar" style="width:@(bar.ToString("0.#", CultureInfo.InvariantCulture))%"></i>

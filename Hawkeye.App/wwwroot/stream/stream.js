@@ -261,8 +261,9 @@
         var html = t.items.map(function (p) {
             var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
             return '<div class="theo-alert ' + (p.yours ? 'is-yours' : 'is-on-you') + '" style="opacity:' + p.fade + '">' +
-                '<span class="theo-tag">' + esc(p.tag) + '</span><span class="theo-name">' + esc(p.name) + '</span>' +
-                '<b class="theo-dmg">' + esc(p.amount) + '</b><span class="theo-sub">' + esc(p.sub || '') + '</span>' +
+                '<span class="theo-tag">' + esc(p.tag) + '</span><span class="theo-name' + (p.grade >= 0 ? ' g' + p.grade : '') + '">' + esc(p.name) + '</span>' +
+                '<b class="theo-dmg">' + esc(p.amount) + '</b><span class="theo-sub">' +
+                (p.flags ? '<em class="theo-flag">' + esc(p.flags) + '</em>' : '') + (p.sub ? '<span class="theo-who">' + esc(p.sub) + '</span>' : '') + '</span>' +
                 (p.bar >= 0 ? '<i class="theo-bar" style="width:' + p.bar + '%"></i>' : '') + '</div>';
         }).join('');
         if (theoEl._html !== html) { theoEl.innerHTML = html; theoEl._html = html; }

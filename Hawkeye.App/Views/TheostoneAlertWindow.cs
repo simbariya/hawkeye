@@ -44,6 +44,13 @@ namespace Hawkeye.App.Views
         private static readonly Brush Dim = Frozen(new SolidColorBrush(Color.FromArgb(0xC0, 0xE6, 0xE8, 0xEC)));
         private static readonly FontFamily Font = new("Segoe UI");
 
+        // Grade colours for the word (owner, 2026-11-23: "of a colour of rarity, green/blue/gold"). Also in meter.css.
+        public static readonly string[] GradeHex = ["#5FD068", "#4FA8FF", "#F2C14E"];
+        private static readonly Brush[] GradeBrushes = GradeHex.Select(h => Frozen(new SolidColorBrush((Color)ColorConverter.ConvertFromString(h)))).ToArray();
+        private static readonly Brush FlagBrush = Frozen(new SolidColorBrush(Color.FromRgb(0xFF, 0xA9, 0x4D)));
+
+        private static Brush WordBrush(TheostoneProc p) => p.Grade is >= 0 and <= 2 ? GradeBrushes[p.Grade] : Text;
+
         private readonly ISettingsService settings;
         private readonly TheostoneAlerts alerts;
         private readonly StackPanel rows;
@@ -129,8 +136,8 @@ namespace Hawkeye.App.Views
         /// <summary>Two made-up alerts to place the window by.</summary>
         public static IReadOnlyList<TheostoneProc> Samples(DateTime now) =>
         [
-            new(now, true, "Traufnir's Courage", 10_400, "", 1, Label: "Damage 1%"),
-            new(now, false, "Khrudgelmir's Silence", 0, "Bravo", 0, now.AddSeconds(3.4), 1, TimeSpan.FromSeconds(4), "Silence"),
+            new(now, true, "Traufnir's Courage", 10_400, "", 1, Label: "Damage 1%", Grade: 1, Crit: true),
+            new(now, false, "Khrudgelmir's Silence", 0, "Bravo", 0, now.AddSeconds(3.4), 1, TimeSpan.FromSeconds(4), "Silence", Grade: 1),
         ];
 
         private void Refresh()
@@ -142,7 +149,7 @@ namespace Hawkeye.App.Views
             Shown = onScreen ? live : [];   // the samples are only for placing it, not for the stream
 
             double scale = Scale;
-            var key = string.Join("|", list.Select(p => $"{p.Name}{p.Yours}{p.Hits}{p.Damage}{p.IsDebuff}{p.From}")) + scale;
+            var key = string.Join("|", list.Select(p => $"{p.Name}{p.Yours}{p.Hits}{p.Damage}{p.IsDebuff}{p.From}{p.Flags}")) + scale;
             if (key != lastKey)
             {
                 lastKey = key;
@@ -175,7 +182,7 @@ namespace Hawkeye.App.Views
         private sealed record RowParts(TextBlock Main, Rectangle Bar);
 
         /// <summary>Top line of a tile: whose it is.</summary>
-        public static string TagText(TheostoneProc p) => p.Yours ? "YOURS" : "ON YOU";
+        public static string TagText(TheostoneProc p) => p.Yours ? "YOU" : "ON YOU";
 
         /// <summary>The big line: seconds left on a debuff, else the damage (empty when it did none).</summary>
         public static string MainText(TheostoneProc p, TimeSpan left) =>
@@ -199,10 +206,16 @@ namespace Hawkeye.App.Views
                 Visibility = text.Length > 0 ? Visibility.Visible : Visibility.Collapsed,
             };
             var tag = Line(TagText(p), 8.5, p.Yours ? CyanBrush : TagRed, FontWeights.SemiBold);
-            var word = Line(p.Word, 13, Text, FontWeights.SemiBold);
+            var word = Line(p.Word, 13, WordBrush(p), FontWeights.SemiBold);
             var main = Line(MainText(p, p.Until is { } u ? u - DateTime.Now : TimeSpan.Zero), 16, Text, FontWeights.Bold);
             main.Visibility = Visibility.Visible;   // keeps its room so a countdown does not jump
-            var sub = Line(SubText(p), 9, Dim, FontWeights.Normal);
+            // Small line: how it hit (CRIT / DOUBLE, orange), then the damage so far, who, or xN.
+            string subText = SubText(p);
+            var sub = Line(p.Flags.Length > 0 || subText.Length > 0 ? " " : "", 9, Dim, FontWeights.Normal);
+            sub.Inlines.Clear();
+            if (p.Flags.Length > 0) sub.Inlines.Add(new System.Windows.Documents.Run(p.Flags) { Foreground = FlagBrush, FontWeight = FontWeights.Bold });
+            if (p.Flags.Length > 0 && subText.Length > 0) sub.Inlines.Add(new System.Windows.Documents.Run("  "));
+            if (subText.Length > 0) sub.Inlines.Add(new System.Windows.Documents.Run(subText));
             var stack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             stack.Children.Add(tag); stack.Children.Add(word); stack.Children.Add(main); stack.Children.Add(sub);
 

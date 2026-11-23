@@ -339,6 +339,8 @@ namespace Hawkeye.App.Services.Streaming
                     yours = p.Yours,
                     tag = Hawkeye.App.Views.TheostoneAlertWindow.TagText(p),
                     name = p.Word,
+                    grade = p.Grade,
+                    flags = p.Flags,
                     amount = Hawkeye.App.Views.TheostoneAlertWindow.MainText(p, alerts.TimeLeft(p)),
                     sub = Hawkeye.App.Views.TheostoneAlertWindow.SubText(p),
                     bar = p.IsDebuff && p.Duration.TotalMilliseconds > 0

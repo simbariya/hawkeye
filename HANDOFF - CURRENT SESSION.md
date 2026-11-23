@@ -269,3 +269,5 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 2026-11-23 cleanup (owner asked): release folder down to 0.2.21-github\full (running copy); old RATmeter
   install folder and all bin/obj deleted (6.65 GB to 218 MB); GitHub releases v0.2.6 to v0.2.20 and their tags
   deleted, v0.2.21 is the only one. New release routine in hawkeye-build-and-run section 4.
+- 0.2.22 local, NOT pushed: tiles say YOU, word coloured by grade (green/blue/gold), CRIT / DOUBLE tags; 102 tests;
+  rendered both versions (theorender, meterpreview/tiles.html).

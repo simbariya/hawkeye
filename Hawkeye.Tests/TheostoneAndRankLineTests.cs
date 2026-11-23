@@ -166,6 +166,30 @@ public sealed class TheostoneAndRankLineTests : IDisposable
     }
 
     [Fact]
+    public void Grades_AreRareEpicUnique()
+    {
+        Assert.Equal((0, 1, 2, -1), (TheostoneKinds.Grade(30000181), TheostoneKinds.Grade(3000117), TheostoneKinds.Grade(30002171), TheostoneKinds.Grade(12345)));
+        alerts.OnHit(Me, Mob, "Theostone: Traufnir's Courage", 10_000, 3000117);
+        Assert.Equal(1, Assert.Single(alerts.Showing).Grade);    // the owner's Traufnir's Courage is Epic: blue
+    }
+
+    // In the owner's recording 67 of 147 Theostone hits were crits, 13 doubles, 7 both (his own Traufnir's Courage
+    // too: 7,994 crit double at 19:39:40).
+    [Fact]
+    public void CritAndDouble_Tag_AndAMultiHitKeepsThem()
+    {
+        alerts.OnHit(Me, Mob, "Theostone: Traufnir's Courage", 4_000, 3000117, crit: true);
+        Assert.Equal("CRIT", Assert.Single(alerts.Showing).Flags);
+        now = now.AddSeconds(0.3);
+        alerts.OnHit(Me, Mob, "Theostone: Traufnir's Courage", 4_000, 3000117, isDouble: true);
+        Assert.Equal("CRIT DOUBLE", Assert.Single(alerts.Showing).Flags);
+
+        alerts.OnHit(Enemy, Me, "Theostone: Tassin's Command", 2_500, 3000018, isDouble: true);
+        alerts.OnHit(Enemy, Me, "Theostone: Vidar's Dignity", 0, 3001112);
+        Assert.Equal(["CRIT DOUBLE", "DOUBLE", ""], alerts.Showing.Select(p => p.Flags));
+    }
+
+    [Fact]
     public void Hits_ShowTheWord()
     {
         alerts.OnHit(Me, Mob, "Theostone: Traufnir's Courage", 10_000, 3000117);

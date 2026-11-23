@@ -43,7 +43,7 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
 
             var d = parsed.Data!;
             if (theostones is not null && gameData.IsTheostone(d.SkillCode))
-                theostones.OnHit(d.ActorId, d.TargetId, gameData.GetSkillOrDefault(d.SkillCode).Name, d.Damage, d.SkillCode);   // before the player check below drops unknown attackers
+                theostones.OnHit(d.ActorId, d.TargetId, gameData.GetSkillOrDefault(d.SkillCode).Name, d.Damage, d.SkillCode, d.IsCritical, d.IsDoubleDamage);   // before the player check below drops unknown attackers
 
             var playerDamage = BuildPlayerDamage(d);
             if (playerDamage != null)

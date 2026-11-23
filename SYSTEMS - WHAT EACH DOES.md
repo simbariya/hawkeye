@@ -247,7 +247,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   "reached" shows "official at HH:mm" until the update.
 - **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
 
-## 6g. Theostone alerts (v0.2.17, own window and debuffs v0.2.19, tiles and words v0.2.21)
+## 6g. Theostone alerts (v0.2.17, own window and debuffs v0.2.19, tiles and words v0.2.21, grades and crits v0.2.22)
 
 - **Does:** `Engine/Services/Theostone/TheostoneAlerts`.
   - Procs: `DamagePacketProcessor` hands every hit with a Theostone skill code to `OnHit` before its
@@ -262,8 +262,11 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   - Words: `TheostoneKinds.Label(id, name)`: id / 10 = 300 F G SS (F family 0 damage / 1 debuff, G grade, SS slot).
     Debuff slots 07 Blind, 09 Silence, 10 Root, 11 Stun, 12 Paralyze, 13 Slow, 14 Attack Slow, 15 Poison,
     16 Bleed; damage slots 17 to 24 = "Damage N%" with the proc chance. Others keep the stone's name.
-- **Shows:** tiles side by side (92 x 66 at size M): YOURS / ON YOU, the word, the damage or seconds left, a small
-  line (damage so far, who, or xN), a bar for debuffs. `Views/TheostoneAlertWindow` (plain WPF, topmost,
+  - Grade (`TheostoneKinds.Grade`, the G digit): colours the word green / blue / gold. Crit and double come from
+    the damage message (`IsCritical`, `IsDoubleDamage`) into `OnHit`; `TheostoneProc.Flags` = CRIT / DOUBLE /
+    CRIT DOUBLE (any hit of a merged multi-hit).
+- **Shows:** tiles side by side (92 x 66 at size M): YOU / ON YOU, the word in its grade colour, the damage or
+  seconds left, a small line (orange CRIT / DOUBLE, then damage so far, who, or xN), a bar for debuffs. `Views/TheostoneAlertWindow` (plain WPF, topmost,
   click-through; edit mode with Settings open = dashed box, samples, drag, saved to `TheostoneLeft/Top`), created
   by `OverlayManager.Start`. Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter.
   Stream page: `/state.theo` (where, position, scale, items: tag, name, amount, sub, bar, fade), drawn by

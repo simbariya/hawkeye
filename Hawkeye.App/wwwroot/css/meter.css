@@ -325,6 +325,11 @@
 .theo-dmg { min-height: 20px; font-size: 16px; font-weight: 700; line-height: 20px; font-variant-numeric: tabular-nums; }
 .theo-sub { max-width: 100%; font-size: 9px; opacity: 0.75; overflow: hidden; text-overflow: ellipsis; }
 .theo-sub:empty { display: none; }
+.theo-name.g0 { color: #5FD068; }   /* Rare */
+.theo-name.g1 { color: #4FA8FF; }   /* Epic */
+.theo-name.g2 { color: #F2C14E; }   /* Unique */
+.theo-flag { font-style: normal; font-weight: 700; color: #FFA94D; }
+.theo-flag + .theo-who { margin-left: 6px; }
 .theo-bar { position: absolute; left: 0; bottom: 0; height: 3px; background: #FF4D4D; opacity: 0.85; }   /* debuff time left */
 .theo-alert.is-yours .theo-bar { background: var(--accent, #8CCFDF); }
 @keyframes theo-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }

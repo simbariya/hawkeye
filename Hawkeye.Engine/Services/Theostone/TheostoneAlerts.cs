@@ -12,11 +12,18 @@ namespace Hawkeye.Engine.Services.Theostone
     /// <param name="Instance">The game's number for that debuff, used by its removal message.</param>
     /// <param name="Label">What it does, for the tile: "Silence", "Damage 2%"... (<see cref="TheostoneKinds"/>).</param>
     /// <param name="Target">Who carries the debuff (you, or the enemy your stone debuffed).</param>
+    /// <param name="Grade">0 Rare, 1 Epic, 2 Unique (-1 unknown): the colour of the word.</param>
+    /// <param name="Crit">A hit in it was a critical.</param>
+    /// <param name="Double">A hit in it was a double (the game's "double damage").</param>
     public sealed record TheostoneProc(DateTime At, bool Yours, string Name, long Damage, string From, int Hits,
-        DateTime? Until = null, int Instance = 0, TimeSpan Duration = default, string Label = "", int Target = 0)
+        DateTime? Until = null, int Instance = 0, TimeSpan Duration = default, string Label = "", int Target = 0,
+        int Grade = -1, bool Crit = false, bool Double = false)
     {
         public bool IsDebuff => Until is not null;
         public string Word => Label.Length > 0 ? Label : Name;
+
+        /// <summary>The small tag for how it hit: "CRIT", "DOUBLE", "CRIT DOUBLE" or empty.</summary>
+        public string Flags => Crit && Double ? "CRIT DOUBLE" : Crit ? "CRIT" : Double ? "DOUBLE" : "";
     }
 
     /// <summary>
@@ -63,7 +70,7 @@ namespace Hawkeye.Engine.Services.Theostone
             skillName.StartsWith("Theostone: ", StringComparison.Ordinal) ? skillName["Theostone: ".Length..] : skillName;
 
         /// <summary>A Theostone hit: alerts only if it is yours or it hit you (and that alert is switched on).</summary>
-        public void OnHit(int actorId, int targetId, string skillName, long damage, int code = 0)
+        public void OnHit(int actorId, int targetId, string skillName, long damage, int code = 0, bool crit = false, bool isDouble = false)
         {
             bool yours = entities.IsCurrentPlayer(actorId);
             bool onYou = !yours && entities.IsCurrentPlayer(targetId);
@@ -84,9 +91,11 @@ namespace Hawkeye.Engine.Services.Theostone
                         Damage = procs[i].Damage + damage,
                         Hits = procs[i].Hits + 1,
                         From = procs[i].From.Length > 0 ? procs[i].From : from,
+                        Crit = procs[i].Crit || crit,
+                        Double = procs[i].Double || isDouble,
                     };
                 else Add(new TheostoneProc(now, yours, name, damage, from, 1, Label: TheostoneKinds.Label(code, name),
-                    Target: targetId));
+                    Target: targetId, Grade: TheostoneKinds.Grade(code), Crit: crit, Double: isDouble));
             }
             Changed?.Invoke(this, EventArgs.Empty);
         }
@@ -132,7 +141,7 @@ namespace Hawkeye.Engine.Services.Theostone
                     procs[i] = procs[i] with { At = now, Until = now + length, Instance = instance, Duration = length, Target = targetId,
                         From = procs[i].From.Length > 0 ? procs[i].From : from };
                 else Add(new TheostoneProc(now, yours, name, 0, from, 0, now + length, instance, length,
-                    TheostoneKinds.Label(code, name), targetId));
+                    TheostoneKinds.Label(code, name), targetId, TheostoneKinds.Grade(code)));
             }
             Changed?.Invoke(this, EventArgs.Empty);
         }
