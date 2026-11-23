@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.22 (2026-11-23, not released yet)
+## v0.2.22 (2026-11-23)
 
 Changed (owner: "instead of yours can it just say You, and can the name Damage/Silence etc be of a colour of
 rarity? Green/Blue/Gold? Also if damage godstone crits or doubles, can that be represented also, i.e.

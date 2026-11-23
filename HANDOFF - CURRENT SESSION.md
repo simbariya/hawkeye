@@ -272,3 +272,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.22 local, NOT pushed: tiles say YOU, word coloured by grade (green/blue/gold), CRIT / DOUBLE tags; 102 tests;
   rendered both versions (theorender, meterpreview/tiles.html).
 - 0.2.22 also: the attacker's name is the tile's top line instead of ON YOU (bottom line no longer shows it).
+- v0.2.22 released 2026-11-23 (YOU / attacker name, rarity colours, CRIT / DOUBLE); smoke start clean; GitHub v0.2.21
+  deleted (only v0.2.22 left). Owner runs release\0.2.21-github\full (updates in place); release\0.2.22-github\full
+  is a spare copy.
