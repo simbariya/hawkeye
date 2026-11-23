@@ -226,7 +226,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 
 - **Does:** `Engine/Services/Pvp/` (`PvpParser`, `PvpTracker`). Kills: a death (0x8D04) whose
   killer is you (entity or name); deaths: you are the victim; AP gained: rises of the AP item count
-  (0x561B, item id 0x1AC7C1, count at offset 18); rank points gained: changes of the 0xE273 total
+  (0x561B, key 0x37703323 at offset 14, count at offset 18; until v0.2.25 it used the number at 6, which differs per character); rank points gained: changes of the 0xE273 total
   (offset 4), negative on death. Assists: someone else's kill followed within 3 s by an AP rise for
   you (inferred: each AP rise belongs to the latest kill within 1.5 s before it). Kills need a victim
   announced as a player (0x3645, `EntityTracker.IsIdentifiedPlayer`): Abyss mobs name the killer and

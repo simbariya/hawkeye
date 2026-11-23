@@ -3,6 +3,16 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.25 (2026-11-23)
+
+Fixed (owner: "farming mobs on chanter now in abyss in pvp mode - it doesn't count the kills which is right, but
+it should count the AP gain from mobs"):
+- **AP on every character.** PvP mode found AP by the number at offset 6 of the item-count message (0x1AC7C1 on
+  the owner's main). That is the item's own number and differs per character: on his Chanter it was 0x08E6C5, so
+  no AP counted there at all (8,192 to 22,672 AP in 10 minutes of farming, none counted; not PvP kills either).
+  AP is now found by its key at offset 14 (0x37703323), the same on both characters in all three recordings.
+114 tests (1 new).
+
 ## v0.2.24 (2026-11-23)
 
 Fixed (owner: "something is off, I logged onto a ranger, and damage training dummy nothing registers"):

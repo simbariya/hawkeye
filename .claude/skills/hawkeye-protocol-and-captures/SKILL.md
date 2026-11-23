@@ -105,7 +105,9 @@ character's numbers and the stream was searched for them.
   global server ids seen: 1304 (owner's side), 2303 (enemies); not in `ServerMap` (Korean ids).
   Player announcements (0x3645) do NOT carry `[server][len][name]` like this (checked 11,579 of them).
   killer 0 and no names for non-player kills. Names can be non-ASCII (UTF-8).
-- **Item count 0x561B** (44 bytes): item id u32 at 6, new count u32 at 18. AP = item 0x1AC7C1. The
+- **Item count 0x561B** (44 bytes): the item's own number u32 at 6 (differs per character: AP is 0x1AC7C1 on
+  the owner's main, 0x08E6C5 on his Chanter), the item type's key u32 at 14, new count u32 at 18. AP = key
+  0x37703323 (since v0.2.25; the number at 6 missed all AP on the Chanter). The
   same message counts arrows going down while a Ranger shoots.
 - **Rank points 0xE273** (12 bytes): total u32 at 4. Sent only on change.
 - **Rank total in 0x3633** (candidate, one character only): u32 right after the 4 bytes `26 F4 CB 1F`,

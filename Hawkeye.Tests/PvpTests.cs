@@ -51,6 +51,19 @@ public sealed class PvpTests
         Assert.Equal(0, mobDeath.Killer);
     }
 
+    // Owner, 2026-11-23, farming Abyss mobs on his Chanter: AP did not count. The AP item's own number (offset 6) is
+    // different on that character (0x08E6C5, not 0x1AC7C1); the key at 14 (0x37703323) is the same.
+    [Fact]
+    public void Ap_IsFoundByItsKey_OnEveryCharacter()
+    {
+        const string ChanterAp20949 = "2F1B56010100C5E608000094000023337037D5510000000000000101000000000000000000000000000B0000";
+        const string NotAp = "2F1B56010100418D090000C2000021F4CB1F5812000000000000012200000000000000000000000000001600";
+        Assert.Equal(20949, PvpParser.ParseApTotal(Hex(ChanterAp20949)));
+        Assert.Equal(PvpParser.ApKey, PvpParser.ParseApKey(Hex(ChanterAp20949)));
+        Assert.Equal(149139, PvpParser.ParseApTotal(Hex(Ap149139)));   // the main's, as before
+        Assert.Null(PvpParser.ParseApTotal(Hex(NotAp)));
+    }
+
     private static (EntityTracker, PvpTracker, Func<DateTime>, Action<double>) Setup()
     {
         var entities = new EntityTracker();

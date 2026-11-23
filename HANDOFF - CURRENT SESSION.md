@@ -293,3 +293,12 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - v0.2.24 released 2026-11-23 15:08; smoke start locked 13328 and synced (only the old 0x3804 "Need 1 bytes"
   errors); GitHub v0.2.23 deleted (only v0.2.24). Local: release\0.2.23-github (owner's install, running since
   13:14, updates in place) and 0.2.24-github\full (spare); 0.2.22-github deleted. Awaiting in-game proof of I16.
+- 0.2.25 local, NOT pushed: AP found by key 0x37703323 (offset 14), not the per-character number at 6 (Chanter
+  farming AP never counted). 114 tests.
+- ARENA MODE requested (owner 2026-11-23): opponent CP/GS on load, enemy Defiance cooldown tracker, session
+  wins/losses/rating like PvP mode, maybe combat record. Recording scratchpad arena-1123 (1v1 vs a Sorcerer, won
+  3-0). Decoded: E319 roster (name, server, rating), E325 kill (killer key, victim key), E326 score per round,
+  E328 result + new rating, E32A your rating/wins/losses per arena mode at each zone change; Defiance = skill
+  XX26xxxx etc. named "Defiance" (Sorcerer 15240000): 0x3802 cast + 0x382A 5 s buff + 0x382C cleanse.
+  WAITING on the owner: CP/GS ground truth, Defiance cooldown, what "combat record" means.
+- v0.2.25 released 2026-11-23 15:3x (AP by key); smoke start clean; GitHub v0.2.24 deleted.

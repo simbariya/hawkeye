@@ -9,14 +9,21 @@ namespace Hawkeye.Engine.Services.Pvp
     ///
     /// Death (0x8D04): [len][op][victim varint][u32 unknown][killer varint][u16 killer's server id][killer name: len + UTF-8][legion: len + UTF-8]...
     ///   killer 0 and no names = not a player kill (mobs, falls).
-    /// Item count (0x561B, 44 bytes): item id u32 at offset 6, new count u32 at offset 18. AP is an item with id
-    ///   <see cref="ApItemId"/> (the same message counts arrows going down while you shoot).
+    /// Item count (0x561B, 44 bytes): the item's own number u32 at offset 6 (differs per character), the item
+    ///   type's key u32 at 14, new count u32 at offset 18. AP is the item with key <see cref="ApKey"/> (the same
+    ///   message counts arrows going down while you shoot).
     /// Rank points (0xE273, 12 bytes): total u32 at offset 4.
     /// </summary>
     public static class PvpParser
     {
-        /// <summary>Abyss Points, as the game counts them (an item). Seen on the owner's main.</summary>
-        public const uint ApItemId = 0x001AC7C1;
+        /// <summary>
+        /// The key AP is filed under, the same on every character. Until v0.2.25 AP was found by the number at offset
+        /// 6 (0x1AC7C1 on the owner's main), but that is the item's own number and differs per character: on his
+        /// Chanter it was 0x08E6C5 (and 0x153206 once), so PvP mode counted no AP there (owner, 2026-11-23: "farming
+        /// mobs on chanter in abyss in pvp mode ... it should count the AP gain from mobs"; 8,192 to 22,672 AP in
+        /// 10 minutes, none counted). The key was 0x37703323 in all three recordings on both characters.
+        /// </summary>
+        public const uint ApKey = 0x37703323;
 
         public readonly record struct Death(int Victim, int Killer, string KillerName, string KillerLegion, int KillerServer = 0);
 
@@ -47,7 +54,7 @@ namespace Hawkeye.Engine.Services.Pvp
         public static long? ParseApTotal(byte[] d)
         {
             if (d.Length != 44) return null;
-            return BitConverter.ToUInt32(d, 6) == ApItemId ? BitConverter.ToUInt32(d, 18) : null;
+            return BitConverter.ToUInt32(d, 14) == ApKey ? BitConverter.ToUInt32(d, 18) : null;
         }
 
         /// <summary>
@@ -58,7 +65,7 @@ namespace Hawkeye.Engine.Services.Pvp
         /// </summary>
         public static uint? ParseApKey(byte[] d)
         {
-            if (d.Length != 44 || BitConverter.ToUInt32(d, 6) != ApItemId) return null;
+            if (d.Length != 44 || BitConverter.ToUInt32(d, 14) != ApKey) return null;
             return BitConverter.ToUInt32(d, 14);
         }
 
