@@ -493,7 +493,12 @@ namespace Hawkeye.Engine.Services.Session
             // A start: it was ready (or never seen) and is now counting, or it jumped back up (re-cast).
             bool started = ms > 0 && (!lastCooldownMs.TryGetValue(skill, out var previous) || previous == 0 || ms > previous + 500);
             lastCooldownMs[skill] = ms;
-            if (started) recentCooldownStarts.Add((skill, now));
+            if (started)
+            {
+                recentCooldownStarts.Add((skill, now));
+                ownCooldownStarts[skill] = now;
+                SettleWaitingBuffs(skill, now);
+            }
             TryIdentifyCurrentPlayer(now);
 
             if (IsTracked((int)skillCdEvent.Id))
@@ -518,18 +523,71 @@ namespace Hawkeye.Engine.Services.Session
                     buffEvent.BuffName, buffEvent.BuffId, buffEvent.EntityId, buffEvent.DurationMs);
 
             // Buffs on you, plus anything you put on something else (e.g. a mark on the boss).
-            // Until Hawkeye knows who you are, a TRACKED buff is accepted from anyone rather than ignored.
-            bool accept = onMe || byMe || (tracked && !meKnown);
-            if (!accept) return;
+            // Until Hawkeye knows who you are, a TRACKED buff counts only if YOUR cooldown for it started within
+            // OwnCastWindow of it (the cooldown message holds only your skills), and only when one player got it
+            // (owner, 2026-11-23: in a crowd other rangers' Marking Shot "kept resetting the buff as if I got it";
+            // the old rule took a tracked buff from anyone while you were unknown, and in a crowd you stayed
+            // unknown because several rangers cast the same skills at once).
+            if (onMe || byMe)
+            {
+                AcceptBuff(buffEvent, onMe);
+                return;
+            }
+            if (!tracked || meKnown) return;
+            var nowUtc = DateTime.UtcNow;
+            waitingBuffs.RemoveAll(w => nowUtc - w.At > OwnCastWindow);
+            waitingBuffs.Add((buffEvent, nowUtc));
+            if (ownCooldownStarts.TryGetValue(buffEvent.BuffId, out var started) && nowUtc - started <= OwnCastWindow)
+                SettleWaitingBuffs(buffEvent.BuffId, nowUtc);
+        }
+
+        private void AcceptBuff(BuffEvent buffEvent, bool onMe, TimeSpan? elapsed = null)
+        {
+            var duration = TimeSpan.FromMilliseconds(buffEvent.DurationMs) - (elapsed ?? TimeSpan.Zero);
+            if (duration <= TimeSpan.Zero) return;
             if (onMe)
                 lastBuffOnYou[buffEvent.BuffId] = (TimeSpan.FromMilliseconds(buffEvent.DurationMs), buffEvent.BuffName, buffEvent.BuffIcon ?? string.Empty);
             buffEventTracker.Register(new TimedEvent()
             {
                 Name = buffEvent.BuffName,
                 IconUrl = buffEvent.BuffIcon ?? string.Empty,
-                Duration = TimeSpan.FromMilliseconds(buffEvent.DurationMs),
+                Duration = duration,
                 Id = (uint)buffEvent.BuffId
             });
+        }
+
+        // ---- Tracked buffs while you are still unknown (v0.2.23) ----
+        private static readonly TimeSpan OwnCastWindow = TimeSpan.FromSeconds(4);
+        private readonly Dictionary<int, DateTime> ownCooldownStarts = new();                  // skill -> when YOUR cooldown started
+        private readonly List<(BuffEvent Buff, DateTime At)> waitingBuffs = new();             // tracked buffs not yet matched
+
+        /// <summary>
+        /// Your cooldown for <paramref name="skill"/> started (or its buff arrived just after): a tracked buff of that id
+        /// that landed on exactly one player within the window is yours. Counts as evidence of who you are too.
+        /// </summary>
+        private void SettleWaitingBuffs(int skill, DateTime nowUtc)
+        {
+            lock (lockObject)
+            {
+                if (entityTracker.HasCurrentUser) { waitingBuffs.Clear(); return; }
+                waitingBuffs.RemoveAll(w => nowUtc - w.At > OwnCastWindow);
+                var matches = waitingBuffs.Where(w => w.Buff.BuffId == skill).ToList();
+                if (matches.Count == 0) return;
+                waitingBuffs.RemoveAll(w => w.Buff.BuffId == skill);
+                var players = matches.Select(m => m.Buff.EntityId).Distinct().ToList();
+                if (players.Count != 1)
+                {
+                    logger.LogInformation("[TRACK] buff {Name}: {Count} players got it around your cast, none counted",
+                        matches[0].Buff.BuffName, players.Count);
+                    return;
+                }
+                var (buff, at) = matches[^1];
+                logger.LogInformation("[TRACK] buff {Name} on {EntityId} counted as yours: your cooldown for it started with it",
+                    buff.BuffName, buff.EntityId);
+                AcceptBuff(buff, onMe: true, elapsed: nowUtc - at);
+                identityVotes[buff.EntityId] = identityVotes.GetValueOrDefault(buff.EntityId) + 1;
+            }
+            TryIdentifyCurrentPlayer(nowUtc);
         }
 
         public void Reset()

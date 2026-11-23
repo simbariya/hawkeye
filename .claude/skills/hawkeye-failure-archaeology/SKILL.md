@@ -209,3 +209,15 @@ Next free number: **I16**.
 ## CHANGES
 
 - 2026-11-20: created with I1 to I7 from the first session.
+
+## 2026-11-23: dummies stopped counting, others' Marking Shot reset the icon, the meter froze
+
+- Symptom: no dummy fights after the updater restarted Hawkeye at the dummy; only one of several dummies counted;
+  in a crowded boss fight other rangers' Marking Shot reset the owner's buff icon; once, the meter's numbers froze.
+- Causes: a mob's type is only in its appear message (missed after a restart next to it); while "you" was unknown
+  a tracked buff was taken from anyone, and in a crowd "you" stayed unknown; the meter's refresh loop died on one
+  "Collection was modified" (player list read on the UI thread while the packet thread wrote it).
+- Fixes (v0.2.23): known-dummies.json; tracked buffs need your own cooldown start; name from characters.json;
+  concurrent maps and a loop that survives a bad frame.
+- Lesson: after any change that restarts Hawkeye mid-game (the updater), test what depends on messages sent only
+  once (appear, login): a restart loses them.

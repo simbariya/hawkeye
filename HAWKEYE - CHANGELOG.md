@@ -6,7 +6,7 @@ error. Format and rules: `hawkeye-docs-and-writing` section 3.
 ## v0.2.23 (2026-11-23, not released yet)
 
 Fixed (owner: "why is the meter not recording when I am dpsing the dummy anymore ... it used to capture dummies
-before, but doesn't now"):
+before, but doesn't now", and three more found on the way):
 - **Dummy fights after a restart next to the dummy.** A mob's type only comes in the message that makes it appear.
   Since the updater restarts Hawkeye mid-game (several times on 2026-11-23), Hawkeye came back next to a dummy it
   never saw appear, took it for trash, and the boss-only rule dropped every hit (last dummy fight saved
@@ -16,7 +16,23 @@ before, but doesn't now"):
   N is a dummy seen before`). Only dummies; an id that belongs to a known player is never taken for one.
   The owner's file was seeded with the 10 dummies from his recordings.
 - Until then (or for a dummy never seen): walk away until it leaves your screen and come back, or change zone.
-105 tests (3 new).
+- **Several dummies:** the same cause made only the dummy that came into view after the restart count; hits on
+  the others were dropped, so switching dummy did not move the number (owner: "it only records one and the
+  number doesn't change if I choose a different one").
+- **Other rangers' Marking Shot reset your tracker icon** (owner: "on the boss other rangers attack it with
+  Marking Shot, it kept resetting the buff as if I got it ... it should count only my buffs"). Until Hawkeye
+  knows which character is you it took a tracked buff from anyone, and in a crowd it never found out (several
+  rangers cast the same skills at once, so no cast was clear evidence). Now, while you are unknown, a tracked
+  buff counts only if YOUR cooldown for that skill starts within 4 s of it (the cooldown list holds only your
+  skills) and only one player got it; each such match is also evidence of who you are, so a crowd no longer
+  keeps you unknown. Once known, only buffs on you count, as before. (The buff message's caster field reads
+  162 for everyone, so it cannot tell whose buff it is.)
+- **Your name after a restart mid-game:** the meter said "Player_9377". Hawkeye now names you from your
+  remembered characters: the one you played last with that class (log `[ME] named you ...`).
+- **The meter could freeze:** at 11:49 one refresh failed ("Collection was modified": the player list was read
+  while the game data changed it) and that stopped the meter's update loop for good. The lists are now safe to
+  read from both sides, and a failed refresh skips one frame instead of ending the loop.
+109 tests (8 new).
 
 ## v0.2.22 (2026-11-23)
 

@@ -45,6 +45,13 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   dropped; a new run starts on a hit after a 10 s pause) or StartStop (`StartDummyRun` clears dummy
   fights and counts from your next hit, on that dummy only; `StopDummyRun` freezes it; pauses never
   end it). Log line `[DUMMY]`.
+- **You, when the login message was missed (v0.2.23):** worked out from casts that start your cooldowns
+  (`TryIdentifyCurrentPlayer`), and from tracked buffs that arrive with your own cooldown start
+  (`SettleWaitingBuffs`, below). Then named from `characters.json`: the last character you played with that
+  class (`EntityTracker.GuessUserName`, set by `OdyleTracker`).
+- **Tracked buffs before you are known (v0.2.23):** counted only when your cooldown for that skill starts within
+  4 s of the buff and exactly one player got it; others' casts never touch your icon. The buff message's caster
+  field is not reliable (reads 162 for everyone), so the buff's target is what matters.
 - **Known dummies (v0.2.23):** `EntityTracker.Dummies` (`Services/Entity/KnownDummies`, file
   `%AppData%\Hawkeye\known-dummies.json`, entity id -> mob code). Every dummy that appears is remembered; a mob met
   without its appear message (Hawkeye started next to it) gets its code back if its id is a known dummy, so the

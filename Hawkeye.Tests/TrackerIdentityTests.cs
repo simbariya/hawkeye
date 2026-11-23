@@ -129,11 +129,51 @@ public sealed class TrackerIdentityTests : IDisposable
         Assert.False(entities.IsCurrentPlayer(Other));
     }
 
+    // Owner, 2026-11-23: on a boss "other rangers attack it with Marking Shot, it kept resetting the buff as if I got
+    // it". Before you are known a tracked buff counts only when YOUR cooldown for it starts with it.
+
     [Fact]
-    public void TrackedBuff_IsShownEvenBeforeYouAreKnown()
+    public void BeforeYouAreKnown_YourBuffCounts_WhenYourCooldownStartsWithIt()
     {
-        Buff(onEntity: 5000, caster: Me, MarkingShot, 15000);
+        Buff(onEntity: 5000, caster: 162, MarkingShot, 15000);
+        Assert.Null(buffs.Get(MarkingShot));            // not yet: could be anyone's
+        CooldownUpdate(MarkingShot, 8350);                // your cooldown for it starts (only yours are in that list)
         Assert.NotNull(buffs.Get(MarkingShot));
+    }
+
+    [Fact]
+    public void BeforeYouAreKnown_CooldownFirst_ThenTheBuff_AlsoCounts()
+    {
+        CooldownUpdate(MarkingShot, 8350);
+        Buff(onEntity: 5000, caster: 162, MarkingShot, 15000);
+        Assert.NotNull(buffs.Get(MarkingShot));
+    }
+
+    [Fact]
+    public void BeforeYouAreKnown_SomeoneElsesMarkingShot_NeverResetsYourIcon()
+    {
+        Buff(onEntity: Other, caster: 162, MarkingShot, 15000);   // another ranger, and your cooldown does not move
+        Assert.Null(buffs.Get(MarkingShot));
+    }
+
+    [Fact]
+    public void InACrowd_TwoRangersAtOnce_NeitherCounts_ButAClearOneDoes_AndNamesYou()
+    {
+        Buff(onEntity: Other, caster: 162, MarkingShot, 15000);
+        Buff(onEntity: Me, caster: 162, MarkingShot, 15000);
+        CooldownUpdate(MarkingShot, 8350);
+        Assert.Null(buffs.Get(MarkingShot));                      // two candidates: none counted
+
+        CooldownUpdate(MarkingShot, 0);                           // ready again
+        Buff(onEntity: Me, caster: 162, MarkingShot, 15000);
+        CooldownUpdate(MarkingShot, 8350);
+        Assert.NotNull(buffs.Get(MarkingShot));                   // one candidate: yours
+
+        CooldownUpdate(MarkingShot, 0);
+        Buff(onEntity: Me, caster: 162, MarkingShot, 15000);
+        CooldownUpdate(MarkingShot, 8350);
+        Assert.True(entities.IsCurrentPlayer(Me));                // two clear matches: Hawkeye knows who you are
+        Assert.False(entities.IsCurrentPlayer(Other));
     }
 
     [Fact]

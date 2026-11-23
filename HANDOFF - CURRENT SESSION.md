@@ -279,3 +279,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   recordings), so a restart next to a dummy still records it. Cause found from the logs: last dummy fight saved
   22nd 15:23, update restarts mid-game on the 23rd. Owner now runs release\0.2.22-github\full (he started it by
   hand at 12:29), so that folder must stay; 0.2.21-github is the spare now.
+- 0.2.23 also: tracked buffs before you are known need your own cooldown start (crowd Marking Shot fix); you are
+  named from characters.json after a mid-game restart; meter loop survives a bad frame, EntityTracker maps are
+  concurrent. 109 tests. Not seen live yet.

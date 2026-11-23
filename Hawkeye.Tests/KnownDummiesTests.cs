@@ -37,6 +37,32 @@ public sealed class KnownDummiesTests : IDisposable
     }
 
     [Fact]
+    public void AfterARestart_YouAreNamedFromYourLastCharacterOfThatClass()
+    {
+        var odylePath = Path.Combine(Path.GetTempPath(), $"hawkeye-chars-{Guid.NewGuid():N}.json");
+        try
+        {
+            File.WriteAllText(odylePath, """
+                [ { "Name": "Alpha", "ClassId": 14, "Current": 1, "Pool": 1, "VerifiedAt": "2026-11-23T12:26:34" },
+                  { "Name": "Charlie", "ClassId": 14, "Current": 1, "Pool": 1, "VerifiedAt": "2026-11-20T10:00:00" },
+                  { "Name": "Bravo", "ClassId": 17, "Current": 1, "Pool": 1, "VerifiedAt": "2026-11-23T12:30:00" } ]
+                """);
+            var entities = new EntityTracker();
+            _ = new Hawkeye.Engine.Services.Odyle.OdyleTracker(entities, odylePath);
+            string? named = null;
+            entities.CurrentUserNamed += n => named = n;
+
+            entities.MarkCurrentPlayer(9377);                     // worked out from casts; class not known yet
+            Assert.Null(named);
+            var ranger = new Hawkeye.Core.Models.CharacterClass { Id = 14, Name = "Ranger" };
+            entities.GetOrCreateSessionPlayer(9377, ranger);      // the class arrives with your first hit
+            Assert.Equal("Alpha", named);                         // the ranger you played last, not Charlie, not Bravo
+            Assert.Equal("Alpha", entities.GetPlayerEntity(9377)!.Name);
+        }
+        finally { File.Delete(odylePath); }
+    }
+
+    [Fact]
     public void OnlyDummiesAreKept_AndPlayersAreNeverTakenForOne()
     {
         var tracker = new EntityTracker { Dummies = new KnownDummies(path) };

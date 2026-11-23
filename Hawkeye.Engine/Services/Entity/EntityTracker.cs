@@ -1,4 +1,5 @@
-﻿using Hawkeye.Core.Models;
+using Hawkeye.Core.Models;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace Hawkeye.Engine.Services.Entity
@@ -16,13 +17,13 @@ namespace Hawkeye.Engine.Services.Entity
         public int SummonCount => summons.Count;
 
         // Session id -> player. 
-        private readonly Dictionary<int, Player> sessionPlayers = [];
+        private readonly ConcurrentDictionary<int, Player> sessionPlayers = new();
 
         // Global id -> player.
-        private readonly Dictionary<int, Player> globalPlayers = [];
+        private readonly ConcurrentDictionary<int, Player> globalPlayers = new();
 
-        private readonly Dictionary<int, Mob> targetEntities = [];
-        private readonly Dictionary<int, int> summons = []; // summonId -> ownerId
+        private readonly ConcurrentDictionary<int, Mob> targetEntities = new();
+        private readonly ConcurrentDictionary<int, int> summons = new(); // summonId -> ownerId
 
         private string currentUserName = string.Empty;
 
@@ -77,7 +78,22 @@ namespace Hawkeye.Engine.Services.Entity
             var player = GetOrCreateSessionPlayer(entityId);
             player.IsUser = true;
             if (player.IsIdentified) SetCurrentUser(player.Name);
+            else TryNameUnnamedUser(player);
             return true;
+        }
+
+        /// <summary>
+        /// Names you when the login message was missed (Hawkeye started mid-game, e.g. after an update): given your
+        /// class id, returns the character you last played with that class, or null. Set by the Odyle tracker, which
+        /// remembers your characters (v0.2.23; owner, 2026-11-23: the meter showed "Player_9377" instead of his name).
+        /// </summary>
+        public Func<int, string?>? GuessUserName { get; set; }
+
+        private void TryNameUnnamedUser(Player player)
+        {
+            if (!player.IsUser || player.IsIdentified || GuessUserName is null || player.CharacterClass is null) return;
+            var name = GuessUserName((int)player.CharacterClass.Id);
+            if (!string.IsNullOrEmpty(name)) SetSessionPlayerName(player.Id, name, 0, isUser: true);
         }
 
 
@@ -129,7 +145,11 @@ namespace Hawkeye.Engine.Services.Entity
         {
             if (sessionPlayers.TryGetValue(sessionId, out var player))
             {
-                player.CharacterClass ??= characterClass;
+                if (player.CharacterClass is null && characterClass is not null)
+                {
+                    player.CharacterClass = characterClass;
+                    TryNameUnnamedUser(player);    // the class often arrives after you were worked out
+                }
                 return player;
             }
 
@@ -148,7 +168,7 @@ namespace Hawkeye.Engine.Services.Entity
         public void CleanupUnidSessionPlayers()
         {
             var toRemove = sessionPlayers.Where(r=>!r.Value.IsIdentified && r.Value.CreatedAt < DateTime.Now.AddMinutes(-10)).ToList();
-            foreach (var kvp in toRemove) sessionPlayers.Remove(kvp.Key);
+            foreach (var kvp in toRemove) sessionPlayers.TryRemove(kvp.Key, out _);
         }
 
         public void SetSessionPlayerName(int sessionId, string name, int combatPower, string serverName = "", bool isUser = false)
@@ -158,7 +178,7 @@ namespace Hawkeye.Engine.Services.Entity
                 // Same session id, but it was already confirmed as a different
                 // player - the id has been reused for someone else. Drop the
                 // stale entity (and whatever it was linked to) and start fresh.
-                sessionPlayers.Remove(sessionId);
+                sessionPlayers.TryRemove(sessionId, out _);
             }
 
             var player = GetOrCreateSessionPlayer(sessionId);

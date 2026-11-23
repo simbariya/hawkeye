@@ -50,7 +50,22 @@ namespace Hawkeye.Engine.Services.Odyle
             now = clock ?? (() => DateTime.Now);
             characters = Load();
             entities.CurrentUserNamed += OnCurrentUserNamed;
+            entities.GuessUserName = GuessUserName;
             settleTimer = new Timer(_ => Settle(), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+        }
+
+        /// <summary>
+        /// After a restart mid-game the game does not name you again: take the character you last played (latest
+        /// reading) with that class. Null when none of your characters has that class.
+        /// </summary>
+        private string? GuessUserName(int classId)
+        {
+            if (classId == 0) return null;
+            CharacterOdyle? last;
+            lock (gate) last = characters.Where(c => c.ClassId == classId && c.Name.Length > 0).OrderByDescending(c => c.VerifiedAt).FirstOrDefault();
+            if (last is null) return null;
+            logger.LogInformation("[ME] named you {Name}: your last character of that class (the login message was missed)", last.Name);
+            return last.Name;
         }
 
         /// <summary>Every character seen, most Odyle first.</summary>

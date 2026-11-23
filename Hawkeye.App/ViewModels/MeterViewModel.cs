@@ -176,6 +176,8 @@ namespace Hawkeye.App.ViewModels
             _ = LoopAsync();
         }
 
+        private DateTime lastLoopError;
+
         private async Task LoopAsync()
         {
             using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(33));
@@ -183,7 +185,20 @@ namespace Hawkeye.App.ViewModels
             {
                 while (await timer.WaitForNextTickAsync(cts.Token))
                 {
-                    if (Refresh()) await redraw();
+                    // One bad frame must not end the loop: on 2026-11-23 an error in one refresh stopped it for good
+                    // and the meter's numbers froze until Hawkeye was restarted. Skip that frame, keep going.
+                    try
+                    {
+                        if (Refresh()) await redraw();
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        if (DateTime.UtcNow - lastLoopError > TimeSpan.FromMinutes(1))
+                        {
+                            lastLoopError = DateTime.UtcNow;
+                            Serilog.Log.Warning(ex, "[METER] a refresh failed; the meter carries on");
+                        }
+                    }
                 }
             }
             catch (OperationCanceledException) { }
