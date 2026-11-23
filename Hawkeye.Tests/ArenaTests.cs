@@ -167,7 +167,9 @@ public sealed class ArenaTests : IDisposable
 
     [Theory]
     [InlineData(1304, "eu-kaisinel")]    // the owner's
-    [InlineData(1311, "eu-tahabata")]    // an arena opponent the game showed as TAH
+    [InlineData(1305, "eu-yustiel")]     // confirmed on a real profile
+    [InlineData(2311, "eu-ludra")]       // confirmed on a real profile
+    [InlineData(1311, null)]             // TAH: shugo.gg's name for it is not known (eu-tahabata: page not found)
     [InlineData(2301, "eu-israphel")]
     [InlineData(2303, "eu-triniel")]
     [InlineData(9999, null)]

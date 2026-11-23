@@ -43,7 +43,8 @@
             {
                 foreach (var e in m.Enemies)
                 {
-                    var link = ShugoLinks.For(new PvpEvent(m.At, PvpEventKind.Kill, e.Name, "", e.Server, e.ClassId, e.ClassName, 0), Settings.Current.PvpEnemyServer);
+                    var link = ShugoLinks.ForArena(e.Name, e.Server);
+                    var code = ShugoLinks.Code(e.Server);
                     int change = m.RatingAfter is { } after && m.RatingBefore is { } before ? after - before : 0;
                     <div class="pv-row">
                         <span class="pv-when">@m.At.ToString("HH:mm:ss", CultureInfo.InvariantCulture)</span>
@@ -56,7 +57,7 @@
                         {
                             <span class="pv-name" title="@e.Name">@(string.IsNullOrEmpty(e.Name) ? "Unknown" : e.Name)</span>
                         }
-                        <span class="pv-legion" title="Their arena rating">@(e.Rating > 0 ? e.Rating.ToString("N0", CultureInfo.InvariantCulture) : "")</span>
+                        <span class="pv-legion" title="Their arena rating and server">@(e.Rating > 0 ? e.Rating.ToString("N0", CultureInfo.InvariantCulture) : "")@(code != "" ? "  " + code : "")</span>
                         <span class="pv-cp" title="Score, and your rating change">@($"{m.OurKills}-{m.TheirKills}  {(change > 0 ? "+" : "")}{change}")</span>
                         @if (link is not null)
                         {
@@ -64,7 +65,7 @@
                         }
                         else
                         {
-                            <span class="pv-link is-off" title="Set Enemy server in Settings for profile links"></span>
+                            <span class="pv-link is-off" title="Their server's name on shugo.gg is not known yet"></span>
                         }
                     </div>
                 }

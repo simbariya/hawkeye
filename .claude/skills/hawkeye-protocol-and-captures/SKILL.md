@@ -176,6 +176,9 @@ character's numbers and the stream was searched for them.
 - **Server ids on global:** the u16 server in a key (and in 0x8D04 deaths) is the Korean `ServerMap` id + 300 on
   EU: 1304 = 1004 KAI Kaisinel (owner), 1311 = 1011 TAH Tahabata (shown in game next to an opponent), 2301 =
   2001 ISR Israphel, 2303 = 2003 TRI Triniel. Other regions' offsets unknown (`ShugoLinks.SlugFor`).
+  Verified on shugo.gg profiles 2026-11-23: 1304 eu-kaisinel, 1305 eu-yustiel, 2301 eu-israphel, 2311 eu-ludra.
+  Global names differ from Korea for some: TAH (1311) is not "eu-tahabata" on shugo.gg; PER (1313) and BAB (2318)
+  unknown. shugo.gg has no working search URL and no full server list in its pages.
 - **Defiance** (every class's crowd-control breaker; skill name "Defiance", ids per class such as 14260000 Ranger,
   15240000 Sorcerer, 18200000 Chanter): an enemy's use is a **0x3802 cast whose cooldown field is their real
   cooldown** (51,300 ms in the recording; others in the Abyss 36,900 and 28,700 ms), then 0x3804 self-hits, a

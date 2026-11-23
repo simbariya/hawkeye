@@ -318,3 +318,5 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - v0.2.27 released 2026-11-23 16:2x; smoke start clean; GitHub v0.2.26 deleted. Owner: release and push by default from now on (CLAUDE.md rule 5).
 - 0.2.28: arena finds you by key (E343 / result), not name (a 3-2 win read "lost 0-5" after a restart); shugo
   links from each player's server id (EU = ServerMap id + 300); Arena view without Defiance rows. 127 tests.
+- 0.2.29: arena profile links only from a known server slug (no Settings fallback); server code shown in the
+  list. Unknown on shugo: TAH 1311, PER 1313, BAB 2318 (ask the owner for their shugo.gg server names).

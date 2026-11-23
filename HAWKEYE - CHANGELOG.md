@@ -3,6 +3,17 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.29 (2026-11-23)
+
+Fixed (owner: "STILL getting page not found from some opponents"):
+- **Arena profile links never guess any more.** Opponents whose server Hawkeye could not name got a link to the
+  server set in Settings (your own), so shugo.gg said page not found. Arena opponents now get a link only when their
+  server's shugo.gg name is known; the list shows each opponent's server code next to their rating (e.g. TAH).
+- Checked on shugo.gg: 1304 Kaisinel, 1305 Yustiel, 2301 Israphel, 2311 Ludra are right. "eu-tahabata" (TAH,
+  1311) does not exist there, so it is dropped; PER (1313) and BAB (2318) are not named yet. Added Hithanya,
+  Fregion and Munin (names shugo.gg uses that match the game's codes).
+129 tests (2 new).
+
 ## v0.2.28 (2026-11-23)
 
 Fixed (owner: "I just won an arena but it counts 0-5 lost"; "shugo gg also doesn't give the correct profile,
