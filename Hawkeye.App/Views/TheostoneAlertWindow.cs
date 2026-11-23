@@ -20,16 +20,18 @@ namespace Hawkeye.App.Views
     /// Settings is open it shows a dashed box with two sample alerts and can be dragged; the spot is saved.
     /// Plain WPF like the tracker icons. Streamer mode draws the same alerts at the same spot.
     ///
-    /// Tiles side by side (owner, 2026-11-23: "instead of line message, a box that takes less space but taller, like a
-    /// button that appears"): YOURS (cyan top edge) or ON YOU (red), the effect in a word ("Silence", "Damage 2%"),
+    /// Alerts side by side in the "Scope" style (v0.2.23, chosen by the owner from four mock-ups; tiles before that,
+    /// owner 2026-11-23: "a box that takes less space but taller, like a button that appears"): YOURS (cyan top edge) or ON YOU (red), the effect in a word ("Silence", "Damage 2%"),
     /// then the damage, or for a debuff its seconds left and a bar running down. A debuff stays until it ends or the
     /// game removes it (a potion).
     /// </summary>
     public sealed class TheostoneAlertWindow : Window
     {
-        public const double TileWidth = 92;
-        public const double TileHeight = 66;
-        public const double TileGap = 3;
+        // "Scope" style (owner chose it 2026-11-23 from four mock-ups): no box, the Hawkeye eye in a ring that runs down
+        // with a debuff, the text trailing off to the right over a fading shade.
+        public const double ItemWidth = 178;
+        public const double RingSize = 44;
+        public const double ItemGap = 4;
         private const double Pad = 6;
         private const double LabelRoom = 14;   // above the rows, for the "drag to move" label in edit mode
 
@@ -38,8 +40,30 @@ namespace Hawkeye.App.Views
         private static readonly Brush CyanBrush = Frozen(new SolidColorBrush(Cyan));
         private static readonly Brush RedBrush = Frozen(new SolidColorBrush(Red));
         private static readonly Brush TagRed = Frozen(new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B)));
-        private static readonly Brush YoursBack = Frozen(new SolidColorBrush(Color.FromRgb(14, 16, 20)));
-        private static readonly Brush OnYouBack = Frozen(new SolidColorBrush(Color.FromRgb(38, 12, 14)));
+        private static readonly Brush FaintRed = Frozen(new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0x4D, 0x4D)));
+        private static readonly Brush Shade = Frozen(new LinearGradientBrush(new GradientStopCollection
+        {
+            new(Color.FromArgb(0xE6, 10, 12, 14), 0), new(Color.FromArgb(0xBF, 10, 12, 14), 0.6), new(Color.FromArgb(0, 10, 12, 14), 1),
+        }, new Point(0, 0), new Point(1, 0)));
+        private static readonly ImageSource? Eye = LoadEye();
+
+        /// <summary>The Hawkeye eye, from the files embedded in the exe (the stream page serves the same one).</summary>
+        private static ImageSource? LoadEye()
+        {
+            try
+            {
+                using var stream = typeof(TheostoneAlertWindow).Assembly.GetManifestResourceStream("hawkeye-web/images\\hawkeye-emblem.png");
+                if (stream is null) return null;
+                var img = new System.Windows.Media.Imaging.BitmapImage();
+                img.BeginInit();
+                img.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                img.StreamSource = stream;
+                img.EndInit();
+                img.Freeze();
+                return img;
+            }
+            catch { return null; }
+        }
         private static readonly Brush Text = Frozen(new SolidColorBrush(Color.FromRgb(0xE6, 0xE8, 0xEC)));
         private static readonly Brush Dim = Frozen(new SolidColorBrush(Color.FromArgb(0xC0, 0xE6, 0xE8, 0xEC)));
         private static readonly FontFamily Font = new("Segoe UI");
@@ -168,7 +192,7 @@ namespace Hawkeye.App.Views
                     if (left < TimeSpan.Zero) left = TimeSpan.Zero;
                     parts.Main.Text = MainText(p, left);
                     double frac = p.Duration.TotalMilliseconds > 0 ? Math.Clamp(left.TotalMilliseconds / p.Duration.TotalMilliseconds, 0, 1) : 0;
-                    parts.Bar.Width = Math.Max(0, TileWidth * scale * frac);
+                    parts.Arc.Data = Arc(frac, RingSize * scale);
                     row.Opacity = 1;
                 }
                 else
@@ -179,7 +203,7 @@ namespace Hawkeye.App.Views
             }
         }
 
-        private sealed record RowParts(TextBlock Main, Rectangle Bar);
+        private sealed record RowParts(System.Windows.Documents.Run Main, Path Arc);
 
         /// <summary>Top line of a tile: whose it is.</summary>
         /// <summary>Top line: YOU, or who hit you (owner, 2026-11-23: "instead of ON YOU make the person's name in there");
@@ -198,47 +222,68 @@ namespace Hawkeye.App.Views
             return p.Hits > 1 ? $"x{p.Hits}" : "";
         }
 
+        /// <summary>The ring's arc: <paramref name="fraction"/> of a circle, clockwise from the top.</summary>
+        private static Geometry Arc(double fraction, double size)
+        {
+            double r = size * 20 / 44, c = size / 2;   // radius 20 in a 44 ring at size M
+            if (fraction >= 0.999) return new EllipseGeometry(new Point(c, c), r, r);
+            if (fraction <= 0.001) return Geometry.Empty;
+            double a = fraction * 2 * Math.PI;
+            var end = new Point(c + r * Math.Sin(a), c - r * Math.Cos(a));
+            var fig = new PathFigure { StartPoint = new Point(c, c - r), IsClosed = false };
+            fig.Segments.Add(new ArcSegment(end, new Size(r, r), 0, fraction > 0.5, SweepDirection.Clockwise, true));
+            var g = new PathGeometry();
+            g.Figures.Add(fig);
+            g.Freeze();
+            return g;
+        }
+
         private static Border BuildRow(TheostoneProc p, double scale)
         {
             TextBlock Line(string text, double size, Brush brush, FontWeight weight) => new()
             {
                 Text = text, FontFamily = Font, FontSize = size * scale, Foreground = brush, FontWeight = weight,
-                TextTrimming = TextTrimming.CharacterEllipsis, HorizontalAlignment = HorizontalAlignment.Center,
-                Visibility = text.Length > 0 ? Visibility.Visible : Visibility.Collapsed,
+                TextTrimming = TextTrimming.CharacterEllipsis, Visibility = text.Length > 0 ? Visibility.Visible : Visibility.Collapsed,
             };
-            var tag = Line(TagText(p), 8.5, p.Yours ? CyanBrush : TagRed, FontWeights.SemiBold);
-            var word = Line(p.Word, 13, WordBrush(p), FontWeights.SemiBold);
-            var main = Line(MainText(p, p.Until is { } u ? u - DateTime.Now : TimeSpan.Zero), 16, Text, FontWeights.Bold);
-            main.Visibility = Visibility.Visible;   // keeps its room so a countdown does not jump
-            // Small line: how it hit (CRIT / DOUBLE, orange), then the damage so far, who, or xN.
-            string subText = SubText(p);
-            var sub = Line(p.Flags.Length > 0 || subText.Length > 0 ? " " : "", 9, Dim, FontWeights.Normal);
-            sub.Inlines.Clear();
-            if (p.Flags.Length > 0) sub.Inlines.Add(new System.Windows.Documents.Run(p.Flags) { Foreground = FlagBrush, FontWeight = FontWeights.Bold });
-            if (p.Flags.Length > 0 && subText.Length > 0) sub.Inlines.Add(new System.Windows.Documents.Run("  "));
-            if (subText.Length > 0) sub.Inlines.Add(new System.Windows.Documents.Run(subText));
-            var stack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-            stack.Children.Add(tag); stack.Children.Add(word); stack.Children.Add(main); stack.Children.Add(sub);
 
-            var bar = new Rectangle
-            {
-                Height = Math.Max(2, 3 * scale), Fill = p.Yours ? CyanBrush : RedBrush, HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Bottom, Visibility = p.IsDebuff ? Visibility.Visible : Visibility.Collapsed,
-                Opacity = 0.85,
-            };
-            var body = new Grid();
-            body.Children.Add(new Border { Child = stack, Padding = new Thickness(4 * scale, 3 * scale, 4 * scale, 4 * scale) });
-            body.Children.Add(bar);
+            // The ring: yours cyan, on you red; a debuff's ring runs down over a faint full one.
+            double ring = RingSize * scale;
+            var colour = p.Yours ? CyanBrush : RedBrush;
+            var ringGrid = new Grid { Width = ring, Height = ring, VerticalAlignment = VerticalAlignment.Center };
+            if (p.IsDebuff)
+                ringGrid.Children.Add(new Ellipse { Stroke = FaintRed, StrokeThickness = 3 * scale, Margin = new Thickness(0.5 * scale) });
+            double left = p.Until is { } u ? Math.Clamp((u - DateTime.Now).TotalMilliseconds / Math.Max(1, p.Duration.TotalMilliseconds), 0, 1) : 1;
+            var arc = new Path { Stroke = colour, StrokeThickness = (p.Yours ? 2 : 3) * scale, Data = Arc(left, ring), Opacity = p.Yours ? 0.9 : 1 };
+            ringGrid.Children.Add(arc);
+            if (Eye is not null)
+                ringGrid.Children.Add(new Image { Source = Eye, Margin = new Thickness(7 * scale), Stretch = Stretch.Uniform });
+
+            // The text: who, what (in its grade colour), then the number with CRIT / DOUBLE and the small extra.
+            var who = Line(TagText(p), 9, p.Yours ? CyanBrush : TagRed, FontWeights.SemiBold);
+            var word = Line(p.Word, 14, WordBrush(p), FontWeights.SemiBold);
+            var number = new TextBlock { FontFamily = Font, TextTrimming = TextTrimming.CharacterEllipsis };
+            var main = new System.Windows.Documents.Run(MainText(p, p.Until is { } u2 ? u2 - DateTime.Now : TimeSpan.Zero))
+                { FontSize = 16 * scale, FontWeight = FontWeights.Bold, Foreground = Text };
+            number.Inlines.Add(main);
+            if (p.Flags.Length > 0)
+                number.Inlines.Add(new System.Windows.Documents.Run("  " + p.Flags) { FontSize = 9 * scale, FontWeight = FontWeights.Bold, Foreground = FlagBrush, BaselineAlignment = BaselineAlignment.Center });
+            if (SubText(p) is { Length: > 0 } extra)
+                number.Inlines.Add(new System.Windows.Documents.Run("  " + extra) { FontSize = 10 * scale, Foreground = Dim, BaselineAlignment = BaselineAlignment.Center });
+            var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8 * scale, 0, 0, 0) };
+            text.Children.Add(who); text.Children.Add(word); text.Children.Add(number);
+
+            var line = new DockPanel { LastChildFill = true };
+            DockPanel.SetDock(ringGrid, Dock.Left);
+            line.Children.Add(ringGrid);
+            line.Children.Add(text);
             return new Border
             {
-                Width = TileWidth * scale,
-                Height = TileHeight * scale,
-                Background = p.Yours ? YoursBack : OnYouBack,
-                BorderBrush = p.Yours ? CyanBrush : RedBrush,
-                BorderThickness = new Thickness(0, 2, 0, 0),
-                Margin = new Thickness(0, 0, TileGap, 0),
-                Child = body,
-                Tag = new RowParts(main, bar),
+                Width = ItemWidth * scale,
+                Background = Shade,
+                Padding = new Thickness(6 * scale, 5 * scale, 14 * scale, 5 * scale),
+                Margin = new Thickness(0, 0, ItemGap * scale, 0),
+                Child = line,
+                Tag = new RowParts(main, arc),
             };
         }
 
@@ -255,7 +300,7 @@ namespace Hawkeye.App.Views
                 return;
             }
             // Not placed yet: a little above the screen centre, where your eyes are anyway.
-            Left = SystemParameters.PrimaryScreenWidth / 2 - TileWidth - Pad;
+            Left = SystemParameters.PrimaryScreenWidth / 2 - ItemWidth - Pad;
             Top = SystemParameters.PrimaryScreenHeight * 0.28;
         }
 

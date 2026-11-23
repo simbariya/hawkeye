@@ -32,7 +32,18 @@ before, but doesn't now", and three more found on the way):
 - **The meter could freeze:** at 11:49 one refresh failed ("Collection was modified": the player list was read
   while the game data changed it) and that stopped the meter's update loop for good. The lists are now safe to
   read from both sides, and a failed refresh skips one frame instead of ending the loop.
-109 tests (8 new).
+- **Boss deaths count per pull:** a wipe and re-pull now starts the deaths from zero (owner: "when a team wipes
+  and restarts the boss, the deaths count continues instead of resetting"). They used to add up over every pull
+  until the boss died.
+- **Skill breakdown header:** scrolling the skill list in the fight details no longer shows the numbers through
+  the Crit / Perf header row (its background was see-through in Monolith and Aurora).
+
+Changed (owner: "can godstone alerts be a bit more stylish, not just a box but something minimalistic and uneven,
+maybe our Hawkeye logo somewhere ... make a few options and let me choose"; he chose C "Scope" of four mock-ups):
+- **Theostone alerts in the "Scope" style:** no box; the Hawkeye eye sits in a ring (cyan for yours, red for
+  someone else's), and for a debuff the ring runs down like a clock; the name, the word in its rarity colour and
+  the number trail off to the right over a fading shade. Same on screen, on the meter and on the stream page.
+110 tests (9 new).
 
 ## v0.2.22 (2026-11-23)
 

@@ -139,29 +139,35 @@ namespace Hawkeye.Engine.Services.Session
                 ? new Dictionary<int, int>(tally.Deaths)
                 : new Dictionary<int, int>();
 
-        // ---- Deaths on a boss, across pulls ---------------------------------------------------------
-        // Kept per boss TYPE (mob code), not per entity, so a wipe and re-pull (even if the boss
-        // respawns as a new entity) keeps adding up. Starts again after the boss is killed.
+        // ---- Deaths on a boss, this pull ------------------------------------------------------------
+        // Kept per boss TYPE (mob code) and tied to the fight on the meter: a wipe and re-pull starts a new fight
+        // (the boss's HP resets, or the fight went idle, or it respawned as a new entity), and the count starts again
+        // (owner, 2026-11-23: "when a team wipes and restarts the boss, the deaths count continues instead of
+        // resetting"; until v0.2.22 it added up over every pull until the boss died).
         private sealed class BossDeaths
         {
             public readonly HashSet<int> Fighters = new();
             public readonly Dictionary<int, int> Deaths = new();
             public bool SawHp;
             public bool Killed;
+            public TargetCombatSession? Pull;
         }
 
         private readonly Dictionary<int, BossDeaths> deathsByBoss = new();
 
-        private void NoteBossFighter(Mob mob, int playerId)
+        private void NoteBossFighter(Mob mob, int playerId, TargetCombatSession? pull)
         {
             if (!deathsByBoss.TryGetValue(mob.MobCode, out var tally))
-                deathsByBoss[mob.MobCode] = tally = new BossDeaths();
+                deathsByBoss[mob.MobCode] = tally = new BossDeaths { Pull = pull };
 
-            if (tally.Killed && mob.HpCurrent > 0)
+            if ((tally.Killed && mob.HpCurrent > 0) || (pull is not null && tally.Pull is not null && !ReferenceEquals(tally.Pull, pull)))
             {
-                // A fresh fight after a kill: start counting again.
-                deathsByBoss[mob.MobCode] = tally = new BossDeaths();
+                // A fresh fight after a kill, or a new pull after a wipe: start counting again.
+                if (tally.Deaths.Count > 0)
+                    logger.LogInformation("[DEATH] new pull on {Boss}: deaths start again", mob.Name);
+                deathsByBoss[mob.MobCode] = tally = new BossDeaths { Pull = pull };
             }
+            tally.Pull ??= pull;
 
             if (mob.HpCurrent > 0) tally.SawHp = true;
             else if (tally.SawHp) tally.Killed = true;
@@ -185,7 +191,7 @@ namespace Hawkeye.Engine.Services.Session
             }
         }
 
-        /// <summary>Deaths per player on the boss the meter is showing (all pulls since its last kill).</summary>
+        /// <summary>Deaths per player on the boss the meter is showing, this pull.</summary>
         public IReadOnlyDictionary<int, int> GetActiveBossDeaths()
         {
             lock (lockObject)
@@ -339,9 +345,10 @@ namespace Hawkeye.Engine.Services.Session
                         return;
 
                     if (mob.IsDummy && !AcceptDummyHit(damageEvent)) return;
-                    if (!mob.IsDummy) NoteBossFighter(mob, damageEvent.SourceEntity.Id);
 
                     RouteToTargetEntry(damageEvent);
+                    if (!mob.IsDummy && targetEntries.TryGetValue(damageEvent.TargetEntity.Id, out var routed))
+                        NoteBossFighter(mob, damageEvent.SourceEntity.Id, routed.CurrentSession);
 
                     // Check all other entries for idle timeout on each new event
                     CheckIdleTimeouts(damageEvent.DateTime, excludeTargetId: damageEvent.TargetEntity.Id);

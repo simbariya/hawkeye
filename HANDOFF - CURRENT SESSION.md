@@ -282,3 +282,5 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.23 also: tracked buffs before you are known need your own cooldown start (crowd Marking Shot fix); you are
   named from characters.json after a mid-game restart; meter loop survives a bad frame, EntityTracker maps are
   concurrent. 109 tests. Not seen live yet.
+- 0.2.23 also: Theostone alerts in the "Scope" style (owner picked C of 4 mock-ups, scratchpad
+  meterpreview/theo-styles.html); boss deaths per pull; details header opaque. 110 tests. Not released.

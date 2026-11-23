@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Hawkeye.Tests;
 
 /// <summary>
-/// Which fights count, deaths per boss across pulls, the sticky meter, and the two dummy modes.
+/// Which fights count, deaths per boss per pull, the sticky meter, and the two dummy modes.
 /// Uses real mob codes from mobs.json: 2090027 is a boss, 2000000 a training dummy, 1 is unknown (trash).
 /// </summary>
 public sealed class SessionModesTests : IDisposable
@@ -101,7 +101,7 @@ public sealed class SessionModesTests : IDisposable
     }
 
     [Fact]
-    public void DeathsAddUpAcrossPulls_AndStartAgainAfterTheKill()
+    public void DeathsAddUpDuringAPull_AndStartAgainAfterTheKill()
     {
         var boss = Target(1, BossCode);
         Hit(Me, boss, 0);
@@ -121,6 +121,25 @@ public sealed class SessionModesTests : IDisposable
         boss.HpCurrent = 1_000_000;                // next time you fight it
         Hit(Me, boss, 600);
         Assert.Empty(sessions.GetActiveBossDeaths());
+    }
+
+    // Owner, 2026-11-23: "when a team wipes and restarts the boss, the deaths count continues instead of resetting".
+    [Fact]
+    public void AWipeAndRePull_StartsTheDeathsAgain()
+    {
+        var boss = Target(1, BossCode);
+        Hit(Me, boss, 0);
+        Hit(Ally, boss, 1);
+        sessions.RegisterPlayerDeath(Ally);
+        sessions.RegisterPlayerDeath(Me);
+        Assert.Equal(2, sessions.GetActiveBossDeaths().Values.Sum());
+
+        // Everyone died; the boss resets. The next pull comes after the fight went idle: a new fight, deaths from zero.
+        Hit(Me, boss, 120);
+        Assert.Empty(sessions.GetActiveBossDeaths());
+        Hit(Ally, boss, 121);
+        sessions.RegisterPlayerDeath(Ally);
+        Assert.Equal(1, sessions.GetActiveBossDeaths()[Ally]);
     }
 
     [Fact]

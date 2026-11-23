@@ -309,28 +309,32 @@
 .theme-graphite .meter-deaths { color: var(--accent); }
 .theme-graphite .meter-status { color: #7a7c82; }
 
-/* Theostone alerts (v0.2.17, tiles since v0.2.21): over the top of the meter, or in their own box on screen */
+/* Theostone alerts (v0.2.17; "Scope" style since v0.2.23, chosen by the owner): no box, the Hawkeye eye in a ring that
+   runs down with a debuff, the text trailing off to the right over a fading shade. Over the meter, or in their own box. */
 .theo-alerts { position: absolute; top: 28px; left: var(--side, 26px); right: 6px; z-index: 5; display: flex;
-    flex-direction: row; flex-wrap: wrap; gap: 3px; pointer-events: none; }
+    flex-direction: row; flex-wrap: wrap; gap: 4px; pointer-events: none; }
 .theo-float { position: absolute; right: auto; flex-wrap: nowrap; transform-origin: top left; }   /* stream page: own box */
-.theo-alert { position: relative; box-sizing: border-box; width: 92px; height: 66px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; padding: 3px 4px 4px; overflow: hidden; white-space: nowrap; text-align: center;
-    background: rgb(14, 16, 20); border-top: 2px solid var(--accent, #8CCFDF); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+.theo-alert { position: relative; box-sizing: border-box; width: 178px; display: flex; align-items: center; gap: 8px;
+    padding: 5px 14px 5px 6px; overflow: hidden; white-space: nowrap;
+    background: linear-gradient(90deg, rgba(10, 12, 14, 0.9) 0%, rgba(10, 12, 14, 0.75) 60%, rgba(10, 12, 14, 0) 100%);
     animation: theo-in 0.18s ease-out; }
-.theo-alert.is-on-you { border-top-color: #FF4D4D; background: rgb(38, 12, 14); }
-.theo-tag { max-width: 100%; font-size: 8.5px; font-weight: 600; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; }
+.theo-ring { position: relative; flex: none; width: 44px; height: 44px; }
+.theo-ring svg { position: absolute; inset: 0; width: 44px; height: 44px; }
+.theo-ring img { position: absolute; inset: 7px; width: 30px; height: 30px; object-fit: contain; }
+.theo-ring .arc { fill: none; stroke: var(--accent, #8CCFDF); stroke-width: 2; opacity: 0.9; }
+.theo-alert.is-on-you .theo-ring .arc { stroke: #FF4D4D; stroke-width: 3; opacity: 1; }
+.theo-ring .bg { fill: none; stroke: rgba(255, 77, 77, 0.25); stroke-width: 3; }
+.theo-text { display: flex; flex-direction: column; min-width: 0; }
+.theo-tag { max-width: 100%; font-size: 9px; font-weight: 600; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; }
 .theo-alert.is-yours .theo-tag { color: var(--accent, #8CCFDF); }
 .theo-alert.is-on-you .theo-tag { color: #FF6B6B; }
-.theo-name { max-width: 100%; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
-.theo-dmg { min-height: 20px; font-size: 16px; font-weight: 700; line-height: 20px; font-variant-numeric: tabular-nums; }
-.theo-sub { max-width: 100%; font-size: 9px; opacity: 0.75; overflow: hidden; text-overflow: ellipsis; }
-.theo-sub:empty { display: none; }
+.theo-name { max-width: 100%; font-size: 14px; font-weight: 600; line-height: 17px; overflow: hidden; text-overflow: ellipsis; }
+.theo-num { font-size: 16px; line-height: 19px; overflow: hidden; text-overflow: ellipsis; }
+.theo-dmg { font-weight: 700; font-variant-numeric: tabular-nums; }
+.theo-flag { font-style: normal; font-size: 9px; font-weight: 700; color: #FFA94D; margin-left: 6px; vertical-align: 2px; }
+.theo-who { font-size: 10px; opacity: 0.75; margin-left: 6px; vertical-align: 1px; }
 .theo-name.g0 { color: #5FD068; }   /* Rare */
 .theo-name.g1 { color: #4FA8FF; }   /* Epic */
 .theo-name.g2 { color: #F2C14E; }   /* Unique */
-.theo-flag { font-style: normal; font-weight: 700; color: #FFA94D; }
-.theo-flag + .theo-who { margin-left: 6px; }
-.theo-bar { position: absolute; left: 0; bottom: 0; height: 3px; background: #FF4D4D; opacity: 0.85; }   /* debuff time left */
-.theo-alert.is-yours .theo-bar { background: var(--accent, #8CCFDF); }
 @keyframes theo-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @keyframes theo-out { to { opacity: 0; } }

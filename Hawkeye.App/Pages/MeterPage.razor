@@ -83,21 +83,26 @@
                     @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
         </div>
 
-        @* Theostone procs (v0.2.17; tiles since v0.2.21): over the top of the meter for a few seconds. *@
+        @* Theostone procs (v0.2.17; "Scope" style since v0.2.23): over the top of the meter for a few seconds. *@
         @if (vm.Theostones.Count > 0)
         {
             <div class="theo-alerts">
                 @foreach (var p in vm.Theostones)
                 {
                     <div class="theo-alert @(p.Yours ? "is-yours" : "is-on-you")" @key="p.Name + p.Yours">
-                        <span class="theo-tag">@Hawkeye.App.Views.TheostoneAlertWindow.TagText(p)</span>
-                        <span class="theo-name @(p.Grade >= 0 ? $"g{p.Grade}" : "")">@p.Word</span>
-                        <b class="theo-dmg">@vm.ProcMain(p)</b>
-                        <span class="theo-sub">@if (p.Flags.Length > 0) { <em class="theo-flag">@p.Flags</em> }@if (Hawkeye.App.Views.TheostoneAlertWindow.SubText(p) is { Length: > 0 } who) { <span class="theo-who">@who</span> }</span>
-                        @if (vm.ProcBar(p) is var bar && bar >= 0)
-                        {
-                            <i class="theo-bar" style="width:@(bar.ToString("0.#", CultureInfo.InvariantCulture))%"></i>
-                        }
+                        <div class="theo-ring">
+                            <svg viewBox="0 0 44 44">
+                                @if (p.IsDebuff) { <circle class="bg" cx="22" cy="22" r="20" /> }
+                                <circle class="arc" cx="22" cy="22" r="20" stroke-dasharray="125.66" transform="rotate(-90 22 22)"
+                                        stroke-dashoffset="@((125.66 * (1 - Math.Clamp(vm.ProcBar(p) < 0 ? 1 : vm.ProcBar(p) / 100, 0, 1))).ToString("0.##", CultureInfo.InvariantCulture))" />
+                            </svg>
+                            <img src="images/hawkeye-emblem.png" alt="" />
+                        </div>
+                        <div class="theo-text">
+                            <span class="theo-tag">@Hawkeye.App.Views.TheostoneAlertWindow.TagText(p)</span>
+                            <span class="theo-name @(p.Grade >= 0 ? $"g{p.Grade}" : "")">@p.Word</span>
+                            <span class="theo-num"><b class="theo-dmg">@vm.ProcMain(p)</b>@if (p.Flags.Length > 0) { <em class="theo-flag">@p.Flags</em> }@if (Hawkeye.App.Views.TheostoneAlertWindow.SubText(p) is { Length: > 0 } extra) { <span class="theo-who">@extra</span> }</span>
+                        </div>
                     </div>
                 }
             </div>

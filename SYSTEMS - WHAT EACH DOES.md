@@ -39,8 +39,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   `mobs.json` is NOT counted until the file is updated.
 - **Which fight is shown:** the one you hit most recently, for as long as it is open (sticky, v0.1.2).
   Only when you have hit nothing open does it show the busiest fight.
-- **Deaths:** counted per boss type (mob code) over every pull, wipes included, for players who hit
-  that boss; reset when the boss is killed. Log line `[DEATH]`.
+- **Deaths:** counted per boss type (mob code) for players who hit that boss, this pull: a new fight on it (HP
+  reset, idle, new entity) starts them again (v0.2.23; before, they added up over every pull), and so does
+  a kill. Log line `[DEATH]`.
 - **Training dummy:** `DummyMode` Timed (a run lasts `DummyMinutes`, 1 to 3; hits after that are
   dropped; a new run starts on a hit after a 10 s pause) or StartStop (`StartDummyRun` clears dummy
   fights and counts from your next hit, on that dummy only; `StopDummyRun` freezes it; pauses never
@@ -277,9 +278,11 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   - Grade (`TheostoneKinds.Grade`, the G digit): colours the word green / blue / gold. Crit and double come from
     the damage message (`IsCritical`, `IsDoubleDamage`) into `OnHit`; `TheostoneProc.Flags` = CRIT / DOUBLE /
     CRIT DOUBLE (any hit of a merged multi-hit).
-- **Shows:** tiles side by side (92 x 66 at size M): YOU, or the attacker's name (ON YOU if unknown), the word in
-  its grade colour, the damage or seconds left, a small line (orange CRIT / DOUBLE, then damage so far or xN),
-  a bar for debuffs. `Views/TheostoneAlertWindow` (plain WPF, topmost,
+- **Shows ("Scope" style, v0.2.23):** side by side, 178 px wide at size M: the Hawkeye eye in a ring (cyan yours,
+  red someone else's; a debuff's ring runs down), then YOU or the attacker's name (ON YOU if unknown), the word in
+  its grade colour, the damage or seconds left with orange CRIT / DOUBLE and the extra (damage so far or xN),
+  over a shade that fades to the right. WPF draws the ring with `Arc()`; the meter and stream page with an SVG
+  circle and `stroke-dashoffset`. `Views/TheostoneAlertWindow` (plain WPF, topmost,
   click-through; edit mode with Settings open = dashed box, samples, drag, saved to `TheostoneLeft/Top`), created
   by `OverlayManager.Start`. Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter.
   Stream page: `/state.theo` (where, position, scale, items: tag, name, amount, sub, bar, fade), drawn by

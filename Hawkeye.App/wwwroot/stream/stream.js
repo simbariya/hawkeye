@@ -238,7 +238,7 @@
         });
     }
 
-    // ------------------------------------------------------------------ Theostone alerts (v0.2.19, tiles v0.2.21)
+    // ------------------------------------------------------------------ Theostone alerts (v0.2.19, "Scope" style v0.2.23)
     // Drawn from /state.theo: in their own box at the streamer's spot, or over the meter, same look as on screen.
 
     var theoEl = null;
@@ -260,11 +260,16 @@
         }
         var html = t.items.map(function (p) {
             var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+            var left = p.bar >= 0 ? Math.max(0, Math.min(1, p.bar / 100)) : 1;
             return '<div class="theo-alert ' + (p.yours ? 'is-yours' : 'is-on-you') + '" style="opacity:' + p.fade + '">' +
-                '<span class="theo-tag">' + esc(p.tag) + '</span><span class="theo-name' + (p.grade >= 0 ? ' g' + p.grade : '') + '">' + esc(p.name) + '</span>' +
-                '<b class="theo-dmg">' + esc(p.amount) + '</b><span class="theo-sub">' +
-                (p.flags ? '<em class="theo-flag">' + esc(p.flags) + '</em>' : '') + (p.sub ? '<span class="theo-who">' + esc(p.sub) + '</span>' : '') + '</span>' +
-                (p.bar >= 0 ? '<i class="theo-bar" style="width:' + p.bar + '%"></i>' : '') + '</div>';
+                '<div class="theo-ring"><svg viewBox="0 0 44 44">' + (p.bar >= 0 ? '<circle class="bg" cx="22" cy="22" r="20"/>' : '') +
+                '<circle class="arc" cx="22" cy="22" r="20" stroke-dasharray="125.66" transform="rotate(-90 22 22)" stroke-dashoffset="' +
+                (125.66 * (1 - left)).toFixed(2) + '"/></svg><img src="/images/hawkeye-emblem.png" alt=""></div>' +
+                '<div class="theo-text"><span class="theo-tag">' + esc(p.tag) + '</span>' +
+                '<span class="theo-name' + (p.grade >= 0 ? ' g' + p.grade : '') + '">' + esc(p.name) + '</span>' +
+                '<span class="theo-num"><b class="theo-dmg">' + esc(p.amount) + '</b>' +
+                (p.flags ? '<em class="theo-flag">' + esc(p.flags) + '</em>' : '') +
+                (p.sub ? '<span class="theo-who">' + esc(p.sub) + '</span>' : '') + '</span></div></div>';
         }).join('');
         if (theoEl._html !== html) { theoEl.innerHTML = html; theoEl._html = html; }
     }
