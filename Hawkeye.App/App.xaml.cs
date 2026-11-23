@@ -49,7 +49,11 @@ namespace Hawkeye.App
                     services.AddSingleton<FilePacketWriter>();
                     services.AddSingleton<TcpStreamBuffer>();
                     services.AddSingleton<IPacketCaptureDevice, CaptureDevice>();
-                    services.AddSingleton<EntityTracker>();
+                    services.AddSingleton(sp => new EntityTracker
+                    {
+                        Dummies = new KnownDummies(Path.Combine(Hawkeye.Engine.Settings.SettingsService.DataDirectory, "known-dummies.json"),
+                            sp.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Hawkeye.Dummies")),
+                    });
                     services.AddKeyedSingleton<ITimedEventTracker, TimedEventTracker>(TimerKeys.Cooldowns);
                     services.AddKeyedSingleton<ITimedEventTracker, TimedEventTracker>(TimerKeys.Buffs);
                     services.AddSingleton<IEncounterHistory, EncounterHistory>();

@@ -275,3 +275,7 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - v0.2.22 released 2026-11-23 (YOU / attacker name, rarity colours, CRIT / DOUBLE); smoke start clean; GitHub v0.2.21
   deleted (only v0.2.22 left). Owner runs release\0.2.21-github\full (updates in place); release\0.2.22-github\full
   is a spare copy.
+- 0.2.23 local, NOT pushed: dummies remembered by entity id (known-dummies.json; owner's file seeded with 10 from
+  recordings), so a restart next to a dummy still records it. Cause found from the logs: last dummy fight saved
+  22nd 15:23, update restarts mid-game on the 23rd. Owner now runs release\0.2.22-github\full (he started it by
+  hand at 12:29), so that folder must stay; 0.2.21-github is the spare now.

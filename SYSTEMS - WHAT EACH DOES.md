@@ -45,6 +45,11 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   dropped; a new run starts on a hit after a 10 s pause) or StartStop (`StartDummyRun` clears dummy
   fights and counts from your next hit, on that dummy only; `StopDummyRun` freezes it; pauses never
   end it). Log line `[DUMMY]`.
+- **Known dummies (v0.2.23):** `EntityTracker.Dummies` (`Services/Entity/KnownDummies`, file
+  `%AppData%\Hawkeye\known-dummies.json`, entity id -> mob code). Every dummy that appears is remembered; a mob met
+  without its appear message (Hawkeye started next to it) gets its code back if its id is a known dummy, so the
+  boss-only rule still opens the fight. Dummies keep their ids across days; bosses and trash do not, so only
+  dummies are kept.
 - **Settings:** `DummyMode`, `DummyMinutes` (UI); file only: `BossOnlyCapture` (default true),
   `GroupSummonDamage` (true).
 - **Files:** `Hawkeye.Engine/Services/Session/` (`CombatSessionManager.cs`, `TargetEntry.cs`,

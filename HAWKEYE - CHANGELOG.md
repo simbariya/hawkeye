@@ -3,6 +3,21 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.23 (2026-11-23, not released yet)
+
+Fixed (owner: "why is the meter not recording when I am dpsing the dummy anymore ... it used to capture dummies
+before, but doesn't now"):
+- **Dummy fights after a restart next to the dummy.** A mob's type only comes in the message that makes it appear.
+  Since the updater restarts Hawkeye mid-game (several times on 2026-11-23), Hawkeye came back next to a dummy it
+  never saw appear, took it for trash, and the boss-only rule dropped every hit (last dummy fight saved
+  2026-11-22 15:23; a boss fight at 12:14 on the 23rd was fine). Dummies are fixed NPCs that keep their entity id
+  (all 7 in the owner's recordings had the same ids on the 21st and the 22nd), so Hawkeye now remembers every
+  dummy it sees in `%AppData%\Hawkeye\known-dummies.json` and recognises it after a restart (log `[DUMMY] entity
+  N is a dummy seen before`). Only dummies; an id that belongs to a known player is never taken for one.
+  The owner's file was seeded with the 10 dummies from his recordings.
+- Until then (or for a dummy never seen): walk away until it leaves your screen and come back, or change zone.
+105 tests (3 new).
+
 ## v0.2.22 (2026-11-23)
 
 Changed (owner: "instead of yours can it just say You, and can the name Damage/Silence etc be of a colour of

@@ -35,16 +35,25 @@ namespace Hawkeye.Engine.Services.Entity
 
         private const int UnknownEntityHpThreshold = 1_000_000;
 
+        /// <summary>Dummies seen before, by entity id, so one met without its appear message is still a dummy (v0.2.23).</summary>
+        public KnownDummies? Dummies { get; set; }
+
+        /// <summary>A mob met without its appear message: a dummy seen before gets its code back.</summary>
+        private Mob NewUnseenMob(int entityId)
+        {
+            int code = sessionPlayers.ContainsKey(entityId) ? 0 : Dummies?.Recall(entityId) ?? 0;
+            var mob = new Mob { Id = entityId, MobCode = code };
+            targetEntities[entityId] = mob;
+            return mob;
+        }
+
 
         // ----- Targets (mobs) --------------------------------------------------
 
         public Mob GetOrCreateTargetEntity(int entityId)
         {
             if (targetEntities.TryGetValue(entityId, out var entity)) return entity;
-
-            entity = new Mob { Id = entityId };
-            targetEntities[entityId] = entity;
-            return entity;
+            return NewUnseenMob(entityId);
         }
 
         public bool IsIdentifiedPlayer(int entityId) => sessionPlayers.TryGetValue(entityId, out var player) && player.IsIdentified;
@@ -77,7 +86,7 @@ namespace Hawkeye.Engine.Services.Entity
             if (!targetEntities.TryGetValue(entityId, out var entity))
             {
                 if (hpCurrent < UnknownEntityHpThreshold) return false;
-                entity = CreateOrUpdateTargetEntity(entityId, 0, 0);
+                entity = NewUnseenMob(entityId);
             }
 
             entity.HpCurrent = hpCurrent;
@@ -90,6 +99,8 @@ namespace Hawkeye.Engine.Services.Entity
 
         public Mob CreateOrUpdateTargetEntity(int entityId, int mobCode, long hpTotal = 0)
         {
+            if (mobCode != 0 && Dummies is not null && Hawkeye.Core.GameData.Services.GameDataProvider.Instance.IsDummy(mobCode))
+                Dummies.Remember(entityId, mobCode);
             if (targetEntities.TryGetValue(entityId, out var entity))
             {
                 entity.MobCode = mobCode;

@@ -154,6 +154,10 @@ character's numbers and the stream was searched for them.
   The owner's potion: 0x382C reason 7 naming the Poison's instance at 9.4 s of 20, ticks stopped.
 - **Theostone crits and doubles (2026-11-23):** Theostone damage hits carry the usual damage type (3 = crit) and
   the double-damage flag: 67 of 147 hits in the owner's PvP recording were crits, 13 doubles, 7 both.
+- **Mob types and dummy ids (2026-11-23):** a mob's code is only in its appear message 0x3641
+  (`[len][op][entity varint][u16 mask][u8][u32 mob code]...`); no other message carries it (searched all
+  recordings for the dummy codes). Training dummies keep their entity ids: all 7 in login-1122 and target-run had
+  the same ids on 2026-11-21 and 2026-11-22. Dummy max HP is small (50,540 and 119,700), so HP cannot spot them.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder
