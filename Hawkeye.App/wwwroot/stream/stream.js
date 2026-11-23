@@ -296,6 +296,29 @@
         if (theoEl._html !== html) { theoEl.innerHTML = html; theoEl._html = html; }
     }
 
+    // Enemy Defiance box (v0.2.27): the Theostone style, the Defiance icon in the ring.
+    var defEl = null;
+    function renderDefiance(d) {
+        if (!d || !d.items || !d.items.length) {
+            if (defEl) { defEl.remove(); defEl = null; }
+            return;
+        }
+        if (!defEl) defEl = el('div', 'theo-alerts theo-float', stage);
+        defEl.style.left = d.left + 'px';
+        defEl.style.top = d.top + 'px';
+        defEl.style.transform = 'scale(' + d.scale + ')';
+        var html = d.items.map(function (t) {
+            var left = Math.max(0, Math.min(1, t.bar / 100));
+            return '<div class="theo-alert def-alert ' + (t.down ? 'is-down' : 'is-ready') + '">' +
+                '<div class="theo-ring"><svg viewBox="0 0 44 44">' + (t.down ? '<circle class="bg" cx="22" cy="22" r="20"/>' : '') +
+                '<circle class="arc" cx="22" cy="22" r="20" stroke-dasharray="125.66" transform="rotate(-90 22 22)" stroke-dashoffset="' +
+                (125.66 * (1 - left)).toFixed(2) + '"/></svg>' + (d.icon ? '<img src="' + esc(d.icon) + '" alt="">' : '') + '</div>' +
+                '<div class="theo-text"><span class="theo-tag">' + esc(t.name) + '</span><span class="theo-name">Defiance</span>' +
+                '<span class="theo-num"><b class="theo-dmg">' + esc(t.main) + '</b></span></div></div>';
+        }).join('');
+        if (defEl._html !== html) { defEl.innerHTML = html; defEl._html = html; }
+    }
+
     // ------------------------------------------------------------------ frame
 
     function frame() {
@@ -308,8 +331,10 @@
             renderWindows(state.windows || []);
             renderIcons(state.icons || [], performance.now() - receivedAt);
             renderTheo(state.theo);
+            renderDefiance(state.defiance);
         } else {
             renderTheo(null);
+            renderDefiance(null);
             renderMeter(null);
             renderWindows([]);
             renderIcons([], 0);

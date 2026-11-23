@@ -147,6 +147,14 @@ namespace Hawkeye.Engine.Services.Arena
 
         private void Settle(ArenaMatch m, bool won, int newRating)
         {
+            // Their class, for the Wins / Losses list (the game announced them as players when the match loaded).
+            foreach (var e in m.Enemies)
+            {
+                var p = (e.EntityId != 0 ? entities.GetPlayerEntity(e.EntityId) : null)
+                        ?? entities.PlayerEntities.FirstOrDefault(x => x.Name == e.Name);
+                if (p?.CharacterClass is { } c) { e.ClassId = (int)c.Id; e.ClassName = c.Name; }
+                if (p is not null && e.EntityId == 0) e.EntityId = p.Id;
+            }
             m.Won = won;
             m.RatingAfter = newRating;
             if (won) Wins++; else Losses++;
@@ -213,6 +221,8 @@ namespace Hawkeye.Engine.Services.Arena
         public int Server { get; } = server;
         public int Rating { get; } = rating;
         public int EntityId { get; set; }
+        public int ClassId { get; set; }
+        public string ClassName { get; set; } = "";
         public DateTime? DefianceAt { get; set; }
         public TimeSpan DefianceCooldown { get; set; } = ArenaTracker.DefaultDefianceCooldown;
     }

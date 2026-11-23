@@ -105,6 +105,18 @@ namespace Hawkeye.Engine.Settings
         /// <summary>How long a plain proc alert stays, seconds. Debuffs on you stay until they end.</summary>
         public double TheostoneSeconds { get; set; } = 3.5;
 
+        // ---- arena: enemy Defiance alert (v0.2.27) ----
+
+        /// <summary>The enemy's Defiance in its own draggable box during an arena match, Theostone style.</summary>
+        public bool DefianceAlert { get; set; } = true;
+
+        /// <summary>Where the Defiance box sits (dragged while Settings is open); null = default spot.</summary>
+        public double? DefianceLeft { get; set; }
+        public double? DefianceTop { get; set; }
+
+        /// <summary>Defiance box size: 0.85, 1, 1.25 or 1.5.</summary>
+        public double DefianceScale { get; set; } = 1.0;
+
         // ---- training dummy ----
         public DummyMode DummyMode { get; set; } = DummyMode.Timed;
         /// <summary>Length of a Timed dummy run: 1, 2 or 3 minutes.</summary>

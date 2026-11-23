@@ -3,6 +3,21 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.27 (2026-11-23)
+
+Added (owner, after his first arena win with 0.2.26: "I wanna click on wins and see who they are same as in pvp
+mode style. Also defiance ready/cd I want to drag it out like we do with godstones and be in same style, just a
+defiance icon instead"):
+- **Arena Wins / Losses are clickable:** the PvP list window opens on an Arena list with Wins and Losses tabs:
+  time, class icon, opponent (profile link when the server is known), their rating, the score and your rating
+  change.
+- **Enemy Defiance box:** its own draggable, click-through window in the Theostone "Scope" style, the Defiance
+  icon in the ring. One tile per enemy during a match: a full red ring and "Ready" while it can break your stun, a
+  green ring running down with the seconds left while it is on cooldown. Placed and sized like the Theostone box
+  (Settings open = dashed outline to drag; Settings > "Arena: enemy Defiance" on/off and size). Same spot on the
+  stream page.
+- The 0.2.26 live test: the owner's first win was recorded (3-0, 1845 to 1876); his opponent did not use Defiance.
+
 ## v0.2.26 (2026-11-23)
 
 Added (owner: "an arena mode, something that will on load show your opponent ... and track when they use defiance,

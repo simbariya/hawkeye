@@ -304,7 +304,12 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Shows:** the Arena tab of the PvP panel (`MeterPage.razor`, `.meter-arena`, `.pvp-tabs`, `.arena-*`,
   `.foe-*` in `meter.css`); switched on by a match loading (`ArenaTracker.Showing`), off again when you leave
   if the match switched it on. Stream page: `/state.meter.arena` (`StreamServer.BuildArena`, `renderArena`).
-- **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved yet.
+- **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved yet. Wins and
+  Losses open the PvP window's Arena list (v0.2.27, `PvpView.ShowArena`, `PvpPage.razor`): opponent, class (looked
+  up when the match ends), rating, score, rating change.
+- **Defiance box (v0.2.27):** `Views/DefianceAlertWindow.cs`, Theostone style with the Defiance icon (all classes'
+  Defiance share ICON_CO_SKILL_002, loaded through `SkillIconCache`); shown during a running match. Settings:
+  `DefianceAlert`, `DefianceLeft/Top`, `DefianceScale`. Stream page: `/state.defiance`, `renderDefiance`.
 - **Not yet:** opponent CP and gear score (the RATmeter CP pair is in your own 0x3633 record, 112,790 / 115,866,
   but not in other players' 0x3645; waiting on ground truth).
 

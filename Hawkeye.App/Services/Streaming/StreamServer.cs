@@ -292,6 +292,7 @@ namespace Hawkeye.App.Services.Streaming
                     },
                     windows = BuildWindows(s),
                     theo = BuildTheostones(s),
+                    defiance = BuildDefiance(),
                     icons = !s.StreamShowIcons || !overlays.IconsVisible ? Array.Empty<object>() : overlays.IconWindows.Select(object (w) =>
                     {
                         var tracked = s.TrackedSkills.FirstOrDefault(t => t.SkillId == w.SkillId);
@@ -381,6 +382,20 @@ namespace Hawkeye.App.Services.Streaming
                         ? Math.Round(100 * alerts.TimeLeft(p).TotalMilliseconds / p.Duration.TotalMilliseconds, 1) : -1,
                     fade = p.IsDebuff ? 1 : Math.Round(Math.Clamp((alerts.ShowFor - (now - p.At)).TotalSeconds / 0.5, 0, 1), 2),
                 }).ToArray(),
+            };
+        }
+
+        /// <summary>The enemy Defiance box for the stream (v0.2.27), at the same spot. Null when none is showing.</summary>
+        private object? BuildDefiance()
+        {
+            if (overlays.DefianceWindow is not { } w || w.Shown.Count == 0) return null;
+            return new
+            {
+                left = w.ContentLeft,
+                top = w.ContentTop,
+                scale = w.Scale,
+                icon = Hawkeye.App.Views.DefianceAlertWindow.IconUrl,
+                items = w.Shown.Select(t => new { name = t.Name, down = t.Down, main = t.Main, bar = Math.Round(100 * t.Fraction, 1) }).ToArray(),
             };
         }
 

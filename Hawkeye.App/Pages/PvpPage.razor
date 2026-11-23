@@ -6,6 +6,7 @@
 @implements IDisposable
 @inject PvpView View
 @inject PvpTracker Tracker
+@inject Hawkeye.Engine.Services.Arena.ArenaTracker Arena
 @inject OverlayManager Overlays
 @inject Hawkeye.Engine.Settings.ISettingsService Settings
 
@@ -15,12 +16,63 @@
 *@
 <div class="pv @Looks.ClassFor(Settings.Current.Look)">
     <header class="pv-header" @onmousedown="() => Overlays.DragPage(typeof(PvpPage))">
-        <span class="pv-title">PVP</span>
+        <span class="pv-title">@(View.Arena ? "ARENA" : "PVP")</span>
         <span class="pv-sub">@Subtitle</span>
         <span class="pv-spacer"></span>
         <button type="button" class="pv-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(PvpPage))" @onmousedown:stopPropagation="true">✕</button>
     </header>
 
+    @if (View.Arena)
+    {
+        var matches = Arena.Matches;
+        <nav class="pv-tabs">
+            @foreach (var (kind, label, won) in new[] { (PvpEventKind.Kill, "Wins", true), (PvpEventKind.Death, "Losses", false) })
+            {
+                <button type="button" class="pv-tab @(View.Kind == kind ? "is-on" : "")" @onclick="() => View.Select(kind)">
+                    <b>@matches.Count(m => m.Won == won)</b> @label
+                </button>
+            }
+        </nav>
+        <div class="pv-body">
+            @{ bool wantWon = View.Kind != PvpEventKind.Death; var shownMatches = matches.Where(m => m.Won == wantWon).Reverse().ToList(); }
+            @if (shownMatches.Count == 0)
+            {
+                <div class="pv-empty">No @(wantWon ? "wins" : "losses") yet this session.</div>
+            }
+            @foreach (var m in shownMatches)
+            {
+                foreach (var e in m.Enemies)
+                {
+                    var link = ShugoLinks.For(new PvpEvent(m.At, PvpEventKind.Kill, e.Name, "", e.Server, e.ClassId, e.ClassName, 0), Settings.Current.PvpEnemyServer);
+                    int change = m.RatingAfter is { } after && m.RatingBefore is { } before ? after - before : 0;
+                    <div class="pv-row">
+                        <span class="pv-when">@m.At.ToString("HH:mm:ss", CultureInfo.InvariantCulture)</span>
+                        <span class="pv-icon" title="@e.ClassName" style="@(e.ClassId != 0 ? $"background-image:url('images/classes/{e.ClassId}.png')" : "")"></span>
+                        @if (link is not null)
+                        {
+                            <span class="pv-name is-link" title="Open @e.Name's profile" @onclick="() => Overlays.OpenProfile(link, e.Name)">@e.Name</span>
+                        }
+                        else
+                        {
+                            <span class="pv-name" title="@e.Name">@(string.IsNullOrEmpty(e.Name) ? "Unknown" : e.Name)</span>
+                        }
+                        <span class="pv-legion" title="Their arena rating">@(e.Rating > 0 ? e.Rating.ToString("N0", CultureInfo.InvariantCulture) : "")</span>
+                        <span class="pv-cp" title="Score, and your rating change">@($"{m.OurKills}-{m.TheirKills}  {(change > 0 ? "+" : "")}{change}")</span>
+                        @if (link is not null)
+                        {
+                            <span class="pv-link" title="Open @e.Name's profile" @onclick="() => Overlays.OpenProfile(link, e.Name)">Profile</span>
+                        }
+                        else
+                        {
+                            <span class="pv-link is-off" title="Set Enemy server in Settings for profile links"></span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    }
+    else
+    {
     <nav class="pv-tabs">
         @foreach (var kind in new[] { PvpEventKind.Kill, PvpEventKind.Death, PvpEventKind.Assist })
         {
@@ -63,12 +115,13 @@
             </div>
         }
     </div>
+    }
 </div>
 
 @code {
     private IReadOnlyList<PvpEvent> events = Array.Empty<PvpEvent>();
 
-    private string Subtitle => View.Saved is { } s
+    private string Subtitle => View.Arena ? "this session" : View.Saved is { } s
         ? $"{s.Character}  {s.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)}  {Dur(s.Duration)}"
         : "this session";
 
@@ -86,8 +139,11 @@
         Load();
         View.Changed += OnChanged;
         Tracker.Changed += OnTracker;
+        Arena.Changed += OnArena;
         Settings.Changed += OnSettings;
     }
+
+    private void OnArena(object? sender, EventArgs e) { if (View.Arena) InvokeAsync(StateHasChanged); }
 
     private void Load() => events = View.Saved?.Events ?? Tracker.Events;
 
@@ -99,6 +155,7 @@
     {
         View.Changed -= OnChanged;
         Tracker.Changed -= OnTracker;
+        Arena.Changed -= OnArena;
         Settings.Changed -= OnSettings;
     }
 }

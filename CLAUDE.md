@@ -85,8 +85,10 @@ Hawkeye.App\bin\Debug\net10.0-windows10.0.20348.0\Hawkeye.exe   # run it
    plain hyphen.
 4. **Never touch the game process.** Network capture and Windows' own event stream only. No memory
    reading, no injection, no input sending to the game.
-5. **Push, publish and anything public need the owner's explicit word** in the current message.
-   Spending money (OpenAI images) needs the owner's go for that spend.
+5. **Releases: by default since 2026-11-23** (owner: "yes push it by default"). Once a change is finished,
+   tested and the packaged exe smoke-started cleanly, release it and push (privacy scan first, never the
+   `backup-before-scrub` branch). Anything else public still needs the owner's word. Spending money (OpenAI
+   images) needs the owner's go for that spend.
 6. **Every change ends with the update duty** in `hawkeye-docs-and-writing`: changelog entry,
    `SYSTEMS - WHAT EACH DOES.md` if a system changed, the checkpoint in `HANDOFF - CURRENT SESSION.md`.
 

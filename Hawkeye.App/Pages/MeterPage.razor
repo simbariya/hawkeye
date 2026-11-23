@@ -137,8 +137,8 @@
                     <div class="arena-wait">Shows your opponent and their Defiance when a match loads</div>
                 }
                 <div class="pvp-kda">
-                    <div><b>@vm.ArenaWins</b><span>Wins</span></div>
-                    <div><b>@vm.ArenaLosses</b><span>Losses</span></div>
+                    <div class="is-clickable" title="Who you beat" @onclick="() => vm.OpenArenaList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Kill)" @onmousedown:stopPropagation="true"><b>@vm.ArenaWins</b><span>Wins</span></div>
+                    <div class="is-clickable" title="Who beat you" @onclick="() => vm.OpenArenaList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Death)" @onmousedown:stopPropagation="true"><b>@vm.ArenaLosses</b><span>Losses</span></div>
                     <div><b>@vm.ArenaChange</b><span>Rating</span></div>
                 </div>
                 <div class="pvp-gain"><span>Arena rating</span><b>@vm.ArenaRating</b></div>

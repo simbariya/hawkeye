@@ -38,6 +38,7 @@ namespace Hawkeye.App.Services.Windowing
 
         /// <summary>The Theostone alert window (v0.2.19), for streamer mode. UI thread only.</summary>
         public TheostoneAlertWindow? TheostoneWindow { get; private set; }
+        public DefianceAlertWindow? DefianceWindow { get; private set; }
 
         public OverlayManager(
             IServiceProvider services,
@@ -60,6 +61,8 @@ namespace Hawkeye.App.Services.Windowing
         {
             TheostoneWindow = new TheostoneAlertWindow(settings, services.GetRequiredService<Hawkeye.Engine.Services.Theostone.TheostoneAlerts>());
             TheostoneWindow.Show();
+            DefianceWindow = new DefianceAlertWindow(settings, services.GetRequiredService<Hawkeye.Engine.Services.Arena.ArenaTracker>());
+            DefianceWindow.Show();
             SyncIcons();
             visibilityTimer.Start();
         }
@@ -102,6 +105,7 @@ namespace Hawkeye.App.Services.Windowing
             {
                 foreach (var icon in icons.Values) icon.BringToFront();
                 TheostoneWindow?.BringToFront();
+                DefianceWindow?.BringToFront();
             };
             settingsWindow.Closed += (_, _) =>
             {
@@ -253,6 +257,7 @@ namespace Hawkeye.App.Services.Windowing
         {
             foreach (var icon in icons.Values) icon.SetEditMode(editMode);
             TheostoneWindow?.SetEditMode(editMode);
+            DefianceWindow?.SetEditMode(editMode);
         }
 
         // ------------------------------------------------------------------ helpers

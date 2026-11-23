@@ -10,6 +10,8 @@ namespace Hawkeye.App.Services
     {
         public PvpSession? Saved { get; private set; }
         public bool Live => Saved is null;
+        /// <summary>The arena's Wins / Losses list instead (v0.2.27): Kill = wins, Death = losses.</summary>
+        public bool Arena { get; private set; }
         public PvpEventKind Kind { get; private set; } = PvpEventKind.Kill;
 
         public event Action? Changed;
@@ -17,6 +19,15 @@ namespace Hawkeye.App.Services
         public void ShowLive(PvpEventKind kind)
         {
             Saved = null;
+            Arena = false;
+            Kind = kind;
+            Changed?.Invoke();
+        }
+
+        public void ShowArena(PvpEventKind kind)
+        {
+            Saved = null;
+            Arena = true;
             Kind = kind;
             Changed?.Invoke();
         }
@@ -24,6 +35,7 @@ namespace Hawkeye.App.Services
         public void ShowSaved(PvpSession session, PvpEventKind kind = PvpEventKind.Kill)
         {
             Saved = session;
+            Arena = false;
             Kind = kind;
             Changed?.Invoke();
         }

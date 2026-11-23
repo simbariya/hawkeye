@@ -130,6 +130,24 @@
             </ValueSlot>
         </SettingRow>
 
+        <SettingRow Title="Arena: enemy Defiance" Description="During an arena match, a box per enemy: red Ready while their Defiance can break your stun, green counting down while it is on cooldown. While Settings is open it shows a dashed outline you can drag anywhere">
+            <ValueSlot><ToggleSwitch Checked="S.DefianceAlert" CheckedChanged="v => Settings.Update(s => s.DefianceAlert = v)" /></ValueSlot>
+        </SettingRow>
+        @if (S.DefianceAlert)
+        {
+            <SettingRow Title="Defiance: size" Description="How big the Defiance box is">
+                <ValueSlot>
+                    <div class="hs-mode">
+                        @foreach (var (label, v) in new[] { ("S", 0.85), ("M", 1.0), ("L", 1.25), ("XL", 1.5) })
+                        {
+                            <button type="button" class="@(Math.Abs(S.DefianceScale - v) < 0.01 ? "is-on" : "")"
+                                    @onclick="() => Settings.Update(s => s.DefianceScale = v)">@label</button>
+                        }
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+        }
+
         <div class="hs-section">STATUS LINE</div>
         <SettingRow Title="Ping" Description="Your latency to the game server">
             <ValueSlot><ToggleSwitch Checked="S.ShowPing" CheckedChanged="v => Settings.Update(s => s.ShowPing = v)" /></ValueSlot>

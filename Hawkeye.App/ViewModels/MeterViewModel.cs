@@ -159,6 +159,13 @@ namespace Hawkeye.App.ViewModels
         public string ArenaChange => Signed(arena.RatingChange);
         public IReadOnlyList<ArenaFoeView> ArenaFoes { get; private set; } = [];
 
+        /// <summary>Opens the list of who this session's arena wins or losses were against (Kill = wins, Death = losses).</summary>
+        public void OpenArenaList(PvpEventKind kind)
+        {
+            pvpView.ShowArena(kind);
+            overlays.OpenPvp();
+        }
+
         /// <summary>World or Arena tab of the PvP panel.</summary>
         public void ShowArena(bool on)
         {

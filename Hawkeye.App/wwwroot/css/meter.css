@@ -365,5 +365,14 @@
 .theo-name.g0 { color: #5FD068; }   /* Rare */
 .theo-name.g1 { color: #4FA8FF; }   /* Epic */
 .theo-name.g2 { color: #F2C14E; }   /* Unique */
+/* Enemy Defiance box on the stream page (v0.2.27): red full ring = ready, green running down = on cooldown */
+.def-alert .theo-tag { color: #FF6B6B; }
+.def-alert .theo-ring .arc { stroke-width: 3; opacity: 1; }
+.def-alert.is-ready .theo-ring .arc { stroke: #FF4D4D; }
+.def-alert.is-ready .theo-dmg { color: #FF6B6B; }
+.def-alert.is-down .theo-ring .arc { stroke: #5FD068; }
+.def-alert.is-down .theo-ring .bg { stroke: rgba(95, 208, 104, 0.25); }
+.def-alert.is-down .theo-ring img { opacity: 0.55; }
+.def-alert.is-down .theo-dmg { color: #5FD068; }
 @keyframes theo-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @keyframes theo-out { to { opacity: 0; } }
