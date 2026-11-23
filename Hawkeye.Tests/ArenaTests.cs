@@ -172,6 +172,7 @@ public sealed class ArenaTests : IDisposable
     [InlineData(1311, null)]             // TAH: shugo.gg's name for it is not known (eu-tahabata: page not found)
     [InlineData(2301, "eu-israphel")]
     [InlineData(2303, "eu-triniel")]
+    [InlineData(2318, "eu-zikel")]       // "BAB" in the Korean list, Zikel on EU (an opponent's real profile)
     [InlineData(9999, null)]
     public void ServerIds_GiveShugoLinks(int server, string? slug) =>
         Assert.Equal(slug, Hawkeye.Engine.Services.Pvp.ShugoLinks.SlugFor(server));

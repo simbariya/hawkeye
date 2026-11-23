@@ -321,3 +321,4 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.29: arena profile links only from a known server slug (no Settings fallback); server code shown in the
   list. Unknown on shugo: TAH 1311, PER 1313, BAB 2318 (ask the owner for their shugo.gg server names).
 - 0.2.30: one-letter arena names (opponent "X" was missed). 130 tests.
+- 0.2.31: 2318 = eu-zikel; server shown by name/code/#id; [ARENA] log has server ids. Recorder arena-1723 running 60 min from 17:2x.

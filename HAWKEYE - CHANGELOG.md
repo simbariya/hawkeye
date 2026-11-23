@@ -3,6 +3,17 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.31 (2026-11-23)
+
+Fixed (owner: "Zikel server is not shown either"):
+- **Zikel** (server 2318) now has profile links: an opponent's real shugo.gg profile shows it is Zikel on EU,
+  though the Korean list calls 2318 "BAB". Servers checked on real profiles are now listed by their id.
+- The arena list shows each opponent's server by name when known, else the game's code, else its number
+  (e.g. "#1322"), so no server is blank; the log line `[ARENA] match` now gives each opponent's server id, to name
+  new ones.
+- Still unknown: 1311 (shown in game as TAH) and 1313 (PER).
+131 tests (1 new).
+
 ## v0.2.30 (2026-11-23)
 
 Fixed (owner: "just had a fight vs templar X and the meter didn't show any stats"):

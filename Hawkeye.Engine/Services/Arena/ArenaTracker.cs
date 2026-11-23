@@ -96,8 +96,10 @@ namespace Hawkeye.Engine.Services.Arena
                 Assign(match);
                 Match = match;
                 if (!showing) { showing = true; shownByMatch = true; }
-                logger?.LogInformation("[ARENA] match: {Count} enemies, ratings {Ratings}{Unknown}", match.Enemies.Count,
-                    string.Join(", ", match.Enemies.Select(e => e.Rating)), match.MeKey is null ? " (you not found yet)" : "");
+                // Server ids logged so new servers can be named for profile links (shugo.gg).
+                logger?.LogInformation("[ARENA] match: {Count} enemies ({Foes}){Unknown}", match.Enemies.Count,
+                    string.Join(", ", match.Enemies.Select(e => $"rating {e.Rating}, server {e.Server}")),
+                    match.MeKey is null ? " (you not found yet)" : "");
             }
             MatchStarted?.Invoke(this, EventArgs.Empty);
             Changed?.Invoke(this, EventArgs.Empty);
