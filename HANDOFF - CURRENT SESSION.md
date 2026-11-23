@@ -266,3 +266,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   your debuff on an enemy counts down; 100 tests; WPF tiles rendered (scratchpad theorender) and the CSS tiles
   in headless Edge (scratchpad meterpreview/tiles.html). Not seen live yet.
 - v0.2.21 released 2026-11-23 (Theostone tiles); packaged exe smoke-started clean.
+- 2026-11-23 cleanup (owner asked): release folder down to 0.2.21-github\full (running copy); old RATmeter
+  install folder and all bin/obj deleted (6.65 GB to 218 MB); GitHub releases v0.2.6 to v0.2.20 and their tags
+  deleted, v0.2.21 is the only one. New release routine in hawkeye-build-and-run section 4.

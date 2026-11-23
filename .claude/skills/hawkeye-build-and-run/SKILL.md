@@ -90,6 +90,17 @@ COMException 0x8007139F (window stays blank, logged as "Unhandled UI error"). La
 `WEBVIEW2_USER_DATA_FOLDER` set to a scratch folder. The test window opens exactly over the owner's
 meter (shared settings), so warn the owner first; they may click it.
 
+**Keep only the latest (owner, 2026-11-23: "clean up the directory so it takes no space, delete old versions,
+clean up GitHub so just the latest release is available").** The release folder was emptied down to
+`0.2.21-github\full\Hawkeye` (the copy the owner runs) and GitHub down to the one latest release. So:
+- take `READ ME FIRST.txt` from the repo's `packaging\` (replace `{VERSION}`) and `LICENSE` from the repo
+  (as `LICENSE.txt`), not from a previous release folder;
+- after a release is verified, delete the previous release folder, except the one Hawkeye is running from
+  (check `Get-Process Hawkeye` paths first), and delete the new zips and the `small` folder locally (they are
+  on GitHub);
+- delete the previous GitHub release and its tag: `gh release delete vX -R simbariya/hawkeye --cleanup-tag -y`.
+  Auto-update only reads `releases/latest`. Download counts go with the deleted releases.
+
 **Release command: always pass `-R simbariya/hawkeye`.** Without it `gh` picked the old fork's upstream
 (2026-11-22: "Failed to create release, workflow scope may be required", and `gh release list` showed
 RATmeter's v1.11.x releases). Verify after: `gh api repos/simbariya/hawkeye/releases/latest`.
