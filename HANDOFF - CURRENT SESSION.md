@@ -261,3 +261,4 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - Still not seen live: the alert box in a real fight, a cleanse ending an alert, the stream page drawing it.
 
 - 0.2.20 local, not pushed: Settings footer Support button now opens the owner's Ko-fi (Branding.SupportUrl).
+- v0.2.20 released 2026-11-23 (Ko-fi Support button); packaged exe smoke-started clean.

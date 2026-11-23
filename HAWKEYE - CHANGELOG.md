@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.20 (2026-11-23, not released yet)
+## v0.2.20 (2026-11-23)
 
 Added (owner: "fetch my kofi link from salsa manga project and insert in the meter"):
 - **Support button works:** the "Support (soon)" button at the bottom of Settings is now "Support"
