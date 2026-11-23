@@ -38,7 +38,8 @@ namespace Hawkeye.Engine.Services.Arena
                     uint id = BitConverter.ToUInt32(d, i);
                     if (id == 0 || d[i + 4] != 0 || d[i + 5] != 0) continue;
                     int len = d[i + 8];
-                    if (len < 2 || len > 32 || i + 9 + len > d.Length) continue;
+                    // One letter is a real name (an opponent called "X", 2026-11-23, was missed with a minimum of 2).
+                    if (len < 1 || len > 32 || i + 9 + len > d.Length) continue;
                     if (!IsName(d, i + 9, len)) continue;
                     int rating = (int)BitConverter.ToUInt32(d, i - 21);
                     if (rating < 100 || rating > 10_000) continue;

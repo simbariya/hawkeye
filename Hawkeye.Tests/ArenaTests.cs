@@ -176,6 +176,16 @@ public sealed class ArenaTests : IDisposable
     public void ServerIds_GiveShugoLinks(int server, string? slug) =>
         Assert.Equal(slug, Hawkeye.Engine.Services.Pvp.ShugoLinks.SlugFor(server));
 
+    // Owner, 2026-11-23: a match against a player called "X" showed no opponent: names under 2 letters were skipped.
+    [Fact]
+    public void AOneLetterName_IsRead()
+    {
+        var roster = Roster.Replace("08526976616C313233", "0158").Replace("B90119E3", "B20119E3");
+        var players = ArenaParser.ParseRoster(Hex(roster))!;
+        Assert.Equal(new[] { "X", "OwnerName" }, players.Select(p => p.Name));
+        Assert.Equal(1442, players[0].Rating);
+    }
+
     [Fact]
     public void AppServiceSetup_CanBuildIt()
     {

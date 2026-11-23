@@ -3,6 +3,15 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.30 (2026-11-23)
+
+Fixed (owner: "just had a fight vs templar X and the meter didn't show any stats"):
+- **An opponent with a one-letter name was not read.** The roster reader skipped names under 2 letters, so the
+  arena view showed no opponent for a player called "X" (log: "match: 0 enemies"; the result still counted, lost
+  0-3, 1924 to 1912). One letter is now allowed; the other checks (key shape, rating in range) keep out misreads.
+  Replayed both recordings: one opponent per match as before.
+130 tests (1 new).
+
 ## v0.2.29 (2026-11-23)
 
 Fixed (owner: "STILL getting page not found from some opponents"):
