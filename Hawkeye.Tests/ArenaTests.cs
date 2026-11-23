@@ -174,6 +174,8 @@ public sealed class ArenaTests : IDisposable
     [InlineData(2303, "eu-triniel")]
     [InlineData(2302, "eu-zikel")]       // an opponent's current server, real profile; "SIE" in the Korean list
     [InlineData(2318, null)]             // the same opponent's key server: not where he plays now
+    [InlineData(1302, "eu-nezekan")]     // an opponent's real profile
+    [InlineData(2304, "eu-lumiel")]      // an opponent's real profile
     [InlineData(9999, null)]
     public void ServerIds_GiveShugoLinks(int server, string? slug) =>
         Assert.Equal(slug, Hawkeye.Engine.Services.Pvp.ShugoLinks.SlugFor(server));

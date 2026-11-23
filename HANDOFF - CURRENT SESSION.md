@@ -323,3 +323,4 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.30: one-letter arena names (opponent "X" was missed). 130 tests.
 - 0.2.31: 2318 = eu-zikel; server shown by name/code/#id; [ARENA] log has server ids. Recorder arena-1723 running 60 min from 17:2x.
 - 0.2.32: arena server = the one after the name (current); only profile-checked servers named; Korean codes dropped (wrong for global).
+- 0.2.33: servers 1302 Nezekan, 2304 Lumiel. Unnamed: 1303, 1311, 1313.

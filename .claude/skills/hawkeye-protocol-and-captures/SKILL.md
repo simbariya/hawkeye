@@ -178,8 +178,9 @@ character's numbers and the stream was searched for them.
   server]`). The one after the name is the CURRENT server (an opponent: key 2318, after-name 2302, shugo.gg
   profile Zikel with matching class); the key's is likely where the character started. The Korean `ServerMap`
   codes (id - 300) do NOT name global servers (2302 is "SIE" there, Zikel on EU), so v0.2.28 to v0.2.31 named
-  servers wrongly. Checked on real profiles (name + class): 1304 Kaisinel, 1305 Yustiel, 2301 Israphel, 2302 Zikel,
-  2303 Triniel, 2311 Ludra. Unknown: 1311 (game shows "TAH"), 1313. shugo.gg profile pages also show combat
+  servers wrongly. Checked on real profiles (name + class): 1302 Nezekan, 1304 Kaisinel, 1305 Yustiel, 2301
+  Israphel, 2302 Zikel, 2303 Triniel, 2304 Lumiel, 2311 Ludra. Unknown: 1303, 1311 (game shows "TAH"), 1313 (not
+  on 15 EU servers tried; nathara, hithanya, atiel, munin untried). shugo.gg profile pages also show combat
   power and gear score (e.g. "gear score 3,270, combat power 243,206"). shugo.gg has no working search URL and no full server list in its pages.
 - **Defiance** (every class's crowd-control breaker; skill name "Defiance", ids per class such as 14260000 Ranger,
   15240000 Sorcerer, 18200000 Chanter): an enemy's use is a **0x3802 cast whose cooldown field is their real

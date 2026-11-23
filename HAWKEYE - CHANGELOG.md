@@ -3,6 +3,13 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.33 (2026-11-23)
+
+Added:
+- Two more servers named for arena profile links, from opponents' real shugo.gg profiles: 1302 Nezekan and 2304
+  Lumiel. Still unnamed: 1303, 1311, 1313 (shown as their number, no link).
+135 tests (2 new).
+
 ## v0.2.32 (2026-11-23)
 
 Fixed (owner: "something not right with servers, they are shown wrong for people I'm facing, like SIE is shown for

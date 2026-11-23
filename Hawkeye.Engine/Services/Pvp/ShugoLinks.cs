@@ -17,9 +17,11 @@ namespace Hawkeye.Engine.Services.Pvp
             [2303] = "eu-triniel",
             // Checked on real shugo.gg profiles of arena opponents, 2026-11-23 (name and class both match): the
             // CURRENT server, from the arena roster (the one after the name, not the one in the key).
+            [1302] = "eu-nezekan",
             [1305] = "eu-yustiel",
             [2301] = "eu-israphel",
             [2302] = "eu-zikel",
+            [2304] = "eu-lumiel",
             [2311] = "eu-ludra",
         };
 
@@ -60,7 +62,7 @@ namespace Hawkeye.Engine.Services.Pvp
         /// <summary>
         /// A global server id to a shugo.gg slug, only for ids checked on real profiles (<see cref="KnownServers"/>).
         /// The Korean short codes (ServerMap, id - 300) do not name global servers: 2302 is "SIE" there but Zikel on EU.
-        /// Unknown: 1311 (the game showed "TAH"), 1313 and the rest; they get no link rather than a wrong one.
+        /// Unknown: 1303, 1311 (the game showed "TAH"), 1313 and the rest; they get no link rather than a wrong one.
         /// </summary>
         public static string? SlugFor(int serverId) => KnownServers.TryGetValue(serverId, out var known) ? known : null;
 
