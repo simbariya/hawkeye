@@ -284,3 +284,4 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   concurrent. 109 tests. Not seen live yet.
 - 0.2.23 also: Theostone alerts in the "Scope" style (owner picked C of 4 mock-ups, scratchpad
   meterpreview/theo-styles.html); boss deaths per pull; details header opaque. 110 tests. Not released.
+- v0.2.23 released 2026-11-23 13:13; smoke start clean; GitHub v0.2.22 deleted (only v0.2.23). Local: release\0.2.22-github (owner's install, updates in place) and 0.2.23-github (spare).

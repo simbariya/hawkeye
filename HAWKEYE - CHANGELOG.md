@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.23 (2026-11-23, not released yet)
+## v0.2.23 (2026-11-23)
 
 Fixed (owner: "why is the meter not recording when I am dpsing the dummy anymore ... it used to capture dummies
 before, but doesn't now", and three more found on the way):
