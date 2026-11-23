@@ -3,6 +3,23 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.24 (2026-11-23, not released)
+
+Fixed (owner: "something is off, I logged onto a ranger, and damage training dummy nothing registers"):
+- **The meter went blank for good after a character switch.** At 14:06 the game connection went quiet (the
+  switch); Hawkeye went back to looking for it, and 4.5 minutes later a web connection (port 443) had shown the
+  game's 3 detection bytes 5 times by chance, so Hawkeye locked onto it. Any traffic on the locked port kept the
+  watchdog happy, so it never looked again, while the game was back on its usual port 13328. In every one of the
+  owner's logs, the 26 locks on 13328 were real and the 2 on 443 / 80 were false.
+  Now a port must show the bytes 5 times within 10 seconds (the game gives 40+ in 2), and a lock must read a real
+  game keep-alive within 45 s, or Hawkeye drops it, skips that port for 5 minutes and looks again (log
+  `[CAPTURE] port N sent no game message ... not the game`).
+- **Reading the stream from the right place (inherited from RATmeter):** when it lost step, the reader searched
+  for the game's sync bytes past the end of the data instead of inside it, so it re-synced on whatever chunk came
+  next. It worked because the game's chunks mostly start on a message. Replaying 4 raw recordings: same messages
+  after the fix, plus the 6 to 45 at the start that the old search threw away.
+113 tests (3 new).
+
 ## v0.2.23 (2026-11-23)
 
 Fixed (owner: "why is the meter not recording when I am dpsing the dummy anymore ... it used to capture dummies

@@ -12,7 +12,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Does:** opens every network adapter through Npcap, watches for the game's regular heartbeat
   bytes, picks the adapter and port where they appear (prefers loopback, so VPNs and ping reducers
   work), then captures only server-to-you TCP on that port. Re-detects if the heartbeat stops for
-  60 s.
+  60 s. Since v0.2.24 a port must show the bytes 5 times within 10 s to win, and a lock must read a real
+  game keep-alive (11-byte `0E 00 36` message, in step) within 45 s, or the port is dropped and skipped
+  for 5 minutes (a web connection on port 443 won a lock on 2026-11-23 and kept the meter blank).
 - **Settings:** none in the UI. `RecordPackets` (file only) also saves the raw stream to `%AppData%\Hawkeye\PacketLogs\`.
 - **Files:** `Hawkeye.Engine/PacketCapture/CaptureDevice.cs`, `TcpStreamBuffer.cs`,
   `PacketAccumulator.cs`, `FilePacketWriter.cs`; replay: `FilePacketCaptureDevice.cs`.

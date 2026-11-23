@@ -285,3 +285,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.23 also: Theostone alerts in the "Scope" style (owner picked C of 4 mock-ups, scratchpad
   meterpreview/theo-styles.html); boss deaths per pull; details header opaque. 110 tests. Not released.
 - v0.2.23 released 2026-11-23 13:13; smoke start clean; GitHub v0.2.22 deleted (only v0.2.23). Local: release\0.2.22-github (owner's install, updates in place) and 0.2.23-github (spare).
+- 0.2.24 local, NOT pushed, NOT released: capture no longer sticks on a wrong port (owner switched to a ranger,
+  Hawkeye locked onto port 443 at 14:10 and stayed blank). 10 s hit window, 45 s keep-alive proof, 5 min skip;
+  resync searches inside the data. 113 tests; replayed raw-copy*.txt recordings (scratchpad syncreplay). The
+  owner's install now runs from release\0.2.23-github\full (log 13:14), so 0.2.22-github is the spare. The 0.2.23
+  log showed `[DUMMY]` recall working live (entities 31692 and 27610 at 13:14 to 13:15).

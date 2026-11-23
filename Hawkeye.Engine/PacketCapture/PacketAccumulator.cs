@@ -13,6 +13,7 @@ public sealed class PacketAccumulator
     private byte[] buffer;
     private int length;
     private bool isSynchronized;
+    private bool atSyncPoint;   // the next message is the one the sync landed on
     private readonly ILogger logger;
 
     public PacketAccumulator(ILogger logger)
@@ -22,6 +23,11 @@ public sealed class PacketAccumulator
         this.logger = logger;
         isSynchronized = false;
     }
+
+    // Called for each game keep-alive (11 bytes, 0E 00 36) read in step. Only the real game stream makes these.
+    private readonly Action? onKeepAlive;
+
+    public PacketAccumulator(ILogger logger, Action? onKeepAlive) : this(logger) => this.onKeepAlive = onKeepAlive;
 
     public void AppendAndProcess(byte[] data, Action<byte[]> onPacketFound)
     {
@@ -66,7 +72,10 @@ public sealed class PacketAccumulator
                     // === SYNCHRONIZATION SEARCH MODE (06 00 36) ===
 
                     // Search for pattern 06 00 36
-                    int syncIndex = buffer.IndexOfArray([0x0E, 0x00, 0x36], length);
+                    // Inside the data received so far. Until v0.2.24 this passed `length` as the START offset, so it
+                    // searched the stale space past the data and in practice synced on whatever chunk came next
+                    // (fine for the game, whose chunks mostly start on a message; never on a real 0E 00 36).
+                    int syncIndex = buffer.AsSpan(0, length).IndexOf([(byte)0x0E, (byte)0x00, (byte)0x36]);
 
                     if (syncIndex == -1)
                     {
@@ -94,6 +103,7 @@ public sealed class PacketAccumulator
                         // Now we're positioned exactly at 06 00 36.
                         // Enable synchronization mode.
                         isSynchronized = true;
+                        atSyncPoint = true;
                         logger.LogInformation("Packet Stream SYNCHRONIZED on pattern 06-00-36");
 
                         // Don't continue, immediately proceed to parsing block below,
@@ -132,6 +142,9 @@ public sealed class PacketAccumulator
                         if (packet.Length == 11 && packet[0] == 0x0E && packet[1] == 0x00 && packet[2] == 0x36)
                         {
                             // This is our KeepAlive/Sync packet. No need to spam the log.
+                            // The one we synced on proves nothing (any stream can hold the 3 bytes by chance);
+                            // one reached by reading lengths in step does.
+                            if (!atSyncPoint) onKeepAlive?.Invoke();
                         }
                         else
                         {
@@ -141,6 +154,7 @@ public sealed class PacketAccumulator
 
                         // Remove processed packet from buffer
                         RemoveFromBuffer(packetSize, null); // null msg = don't log removal of valid packet
+                        atSyncPoint = false;
 
                         // Continue loop, next byte should be the length of next packet
                     }

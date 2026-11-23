@@ -17,7 +17,9 @@ it. Everything marked "unknown" in the code is genuinely unknown. Verify, never 
 ## 1. Transport
 
 - Game server to client over TCP. The capture locks on the adapter and SOURCE port where the
-  heartbeat bytes `0E 00 36` appear (seen on ports 443, 80 and 13328 in the owner's logs).
+  heartbeat bytes `0E 00 36` appear. The game is on 13328; locks on 443 and 80 in the owner's logs were
+  web traffic holding the 3 bytes by chance (never read a message), so since v0.2.24 a lock must read a
+  real keep-alive (the 11-byte `0E 00 36 ...` message, reached in step, not the one it synced on) within 45 s.
   NOTE: the log line "SYNCHRONIZED on pattern 06-00-36" prints the wrong bytes; the code
   (`CaptureDevice.HeartbeatPattern`, `PacketAccumulator`) uses `0E 00 36`.
 - Only server-to-client traffic is captured (`tcp src port N`). Hawkeye sends nothing.

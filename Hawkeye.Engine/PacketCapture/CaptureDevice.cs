@@ -18,6 +18,8 @@ namespace Hawkeye.Engine.PacketCapture
     ///      loopback > physical. The winner's device is locked; all others close.
     ///   5. A watchdog resets everything back to detection if no heartbeat is
     ///      seen on the locked adapter for WatchdogTimeoutMs.
+    ///   6. A lock must prove itself with a game keep-alive within ProofTimeoutMs,
+    ///      or the port is dropped and skipped for RejectForMs (v0.2.24).
     /// </summary>
     public sealed class CaptureDevice : IPacketCaptureDevice
     {
@@ -26,6 +28,17 @@ namespace Hawkeye.Engine.PacketCapture
         private const int DetectionThreshold = 5;
         private const int GraceWindowMs = 2000;
         private const int WatchdogTimeoutMs = 60_000;
+
+        // A port must show the detection bytes DetectionThreshold times within this window. Web traffic (port 443)
+        // carries the 3 bytes by chance now and then: on 2026-11-23 it collected 5 over 4.5 minutes, won the lock,
+        // and the meter stayed blank on that port for the rest of the session. The game gives 40+ in 2 seconds.
+        private const long HitWindowMs = 10_000;
+
+        // After a lock, the port must prove it is the game: at least one game keep-alive (an 11-byte 0E 00 36
+        // message, read in step) within this time, or it is dropped and skipped for RejectForMs. The game sends
+        // several a second in a fight; the longest gap in the owner's recordings is 25 s.
+        private const int ProofTimeoutMs = 45_000;
+        private const long RejectForMs = 5 * 60_000;
 
         private static readonly byte[] HeartbeatPattern = { 0x0E, 0x00, 0x36 };
         // ────────────────────────────────────────────────────────────────────────
@@ -37,6 +50,11 @@ namespace Hawkeye.Engine.PacketCapture
         /// Written from multiple capture callbacks; guarded by detectionLock.
         /// </summary>
         private readonly Dictionary<string, Dictionary<int, int>> detectionHits = new();
+        private readonly Dictionary<string, long> firstHitAt = new();      // "adapter|port" -> tick of the window's first hit
+        private readonly Dictionary<string, long> rejectedUntil = new();   // "adapter|port" -> tick; failed the proof
+
+        private Timer? proofTimer;
+        private long keepAlivesAtLock;
 
         private readonly object detectionLock = new();
 
@@ -148,6 +166,7 @@ namespace Hawkeye.Engine.PacketCapture
             statsTimer?.Dispose(); statsTimer = null;
             watchdogTimer?.Dispose(); watchdogTimer = null;
             graceWindowTimer?.Dispose(); graceWindowTimer = null;
+            proofTimer?.Dispose(); proofTimer = null;
 
             CloseAllAdapters();
 
@@ -336,6 +355,14 @@ namespace Hawkeye.Engine.PacketCapture
             {
                 if (isLocked) return; // race: locked between queue enqueue and here
 
+                string key = $"{ctx.Device.Name}|{port}";
+                long now = Environment.TickCount64;
+                if (rejectedUntil.TryGetValue(key, out long until))
+                {
+                    if (now < until) return;
+                    rejectedUntil.Remove(key);
+                }
+
                 if (!detectionHits.TryGetValue(ctx.Device.Name, out var portMap))
                 {
                     portMap = new Dictionary<int, int>();
@@ -343,6 +370,12 @@ namespace Hawkeye.Engine.PacketCapture
                 }
 
                 portMap.TryGetValue(port, out int hits);
+                if (!firstHitAt.TryGetValue(key, out long since) || now - since > HitWindowMs)
+                {
+                    // Too slow to be the game: start this port's count again.
+                    firstHitAt[key] = now;
+                    hits = 0;
+                }
                 portMap[port] = ++hits;
 
                 logger.LogDebug(
@@ -409,6 +442,8 @@ namespace Hawkeye.Engine.PacketCapture
                     int port = kv.Key;
                     int hits = kv.Value;
                     if (hits < DetectionThreshold) continue;
+                    if (!firstHitAt.TryGetValue($"{ctx.Device.Name}|{port}", out long since) ||
+                        Environment.TickCount64 - since > HitWindowMs + GraceWindowMs) continue;
 
                     if (ctx.Kind == AdapterKind.Loopback && hits > bestLoopbackHits)
                     {
@@ -476,12 +511,43 @@ namespace Hawkeye.Engine.PacketCapture
             CloseAllExcept(winner);
 
             detectionHits.Clear();
+            firstHitAt.Clear();
 
             watchdogHeartbeatsSinceCheck = 0;
             watchdogTimer = new Timer(
                 CheckWatchdog, null,
                 WatchdogTimeoutMs,
                 WatchdogTimeoutMs);
+
+            keepAlivesAtLock = tcpStreamBuffer.KeepAlives;
+            proofTimer?.Dispose();
+            proofTimer = new Timer(CheckProof, new LockProof(winner, port), ProofTimeoutMs, Timeout.Infinite);
+        }
+
+        private sealed record LockProof(AdapterContext Adapter, int Port);
+
+        /// <summary>
+        /// The locked port has had ProofTimeoutMs to send a game keep-alive. If it has not, it was not the game
+        /// (in the owner's logs every false lock was on port 443 or 80 and never read a message): drop it, skip it
+        /// for a while, and look again.
+        /// </summary>
+        private void CheckProof(object? state)
+        {
+            if (!isCapturing || !isLocked || state is not LockProof proof) return;
+            if (lockedAdapter != proof.Adapter || lockedPort != proof.Port) return;   // a newer lock since
+
+            if (tcpStreamBuffer.KeepAlives > keepAlivesAtLock)
+            {
+                logger.LogDebug($"[CAPTURE] port {proof.Port} confirmed: game messages read.");
+                return;
+            }
+
+            logger.LogWarning(
+                $"[CAPTURE] port {proof.Port} sent no game message in {ProofTimeoutMs / 1000}s after the lock: not the game. " +
+                $"Skipping it for {RejectForMs / 60_000} minutes and looking again.");
+            lock (detectionLock)
+                rejectedUntil[$"{proof.Adapter.Device.Name}|{proof.Port}"] = Environment.TickCount64 + RejectForMs;
+            ResetToDetection();
         }
 
 
@@ -509,6 +575,7 @@ namespace Hawkeye.Engine.PacketCapture
         {
             watchdogTimer?.Dispose(); watchdogTimer = null;
             graceWindowTimer?.Dispose(); graceWindowTimer = null;
+            proofTimer?.Dispose(); proofTimer = null;
 
             lock (detectionLock)
             {
@@ -517,6 +584,7 @@ namespace Hawkeye.Engine.PacketCapture
                 lockedAdapter = null;
                 lockedPort = 0;
                 detectionHits.Clear();
+                firstHitAt.Clear();
             }
 
             lock (expectedSeqNumbers)
@@ -551,6 +619,8 @@ namespace Hawkeye.Engine.PacketCapture
                 lockedAdapter = null;
                 lockedPort = 0;
                 detectionHits.Clear();
+                firstHitAt.Clear();
+                rejectedUntil.Clear();
             }
 
             lock (expectedSeqNumbers)

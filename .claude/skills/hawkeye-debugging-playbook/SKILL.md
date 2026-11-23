@@ -28,6 +28,7 @@ model of the bug is wrong.
 | Message box "couldn't start listening" | Npcap missing or installed without WinPcap mode | Reinstall Npcap with "WinPcap API-compatible Mode" |
 | Meter empty, no "LOCKED" in log | No heartbeat seen: game not in a zone yet, or traffic on an adapter Npcap does not see | Teleport or change zone; with a VPN, check the loopback adapter exists in Npcap |
 | "LOCKED" then "[WATCHDOG] No heartbeat" repeating | Game reconnected on a new port or adapter | Normal after zoning; it re-detects by itself |
+| Meter blank for everything; last "LOCKED" line says port 443 or 80 | Locked onto web traffic after the game went quiet (character switch, 2026-11-23) | v0.2.24 drops such a lock after 45 s (`[CAPTURE] port N sent no game message`); before that, restart Hawkeye |
 | Meter empty on a training dummy, other fights fine | Hawkeye started next to the dummy (update restart) and never saw it appear, so it looks like trash (2026-11-23) | v0.2.23 remembers dummies (`known-dummies.json`); otherwise walk away until it leaves the screen and come back |
 | Meter empty during a fight on trash mobs | `BossOnlyCapture` is true by design | Hit a boss or training dummy, or set it false in settings.json |
 | DPS lower than the game shows | Lost hits: TCP gaps or damage-decode failures | Count `[TCP GAP]` and "Need N bytes" lines; record a capture (protocol skill section 5) |
