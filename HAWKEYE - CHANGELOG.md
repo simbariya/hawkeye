@@ -3,6 +3,12 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.20 (2026-11-23, not released yet)
+
+Added (owner: "fetch my kofi link from salsa manga project and insert in the meter"):
+- **Support button works:** the "Support (soon)" button at the bottom of Settings is now "Support"
+  and opens the owner's Ko-fi page (https://ko-fi.com/X3N527KYCV) in the browser.
+
 ## v0.2.19 (2026-11-23)
 
 Added (owner: "make Theostone pop out customizable and draggable ... make sure all of that is

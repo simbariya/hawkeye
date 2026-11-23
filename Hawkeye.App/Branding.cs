@@ -15,9 +15,9 @@ namespace Hawkeye.App
         public const string TwitchName = "twitch.tv/drake22x";
 
         /// <summary>
-        /// Ko-fi (or any support) page. Empty = the Support button shows as "coming soon" and does nothing.
-        /// Put the full link here (e.g. https://ko-fi.com/yourname) to switch it on.
+        /// The owner's Ko-fi page (given 2026-11-23, same as on salsaghost.com/donate). Empty = the Support button
+        /// shows as "coming soon" and does nothing.
         /// </summary>
-        public const string SupportUrl = "";
+        public const string SupportUrl = "https://ko-fi.com/X3N527KYCV";
     }
 }

@@ -259,3 +259,5 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 
 - v0.2.19 released (GitHub release v0.2.19, both zips; packaged exe smoke-started: locked on, synced, remembered rank loaded, no errors).
 - Still not seen live: the alert box in a real fight, a cleanse ending an alert, the stream page drawing it.
+
+- 0.2.20 local, not pushed: Settings footer Support button now opens the owner's Ko-fi (Branding.SupportUrl).

@@ -34,7 +34,8 @@ applies to the whole project:
 the older fork `simbariya/AIon2-Dps-Meter` is no longer pushed to). Nothing personal and
 no secret goes in a commit: no real names, emails, API keys, Npcap captures or settings files.
 The owner chose to be credited publicly as **Simba** with the Twitch link **twitch.tv/drake22x**
-(2026-11-21, `Hawkeye.App/Branding.cs`); those two are fine. Nothing else about the owner is.
+(2026-11-21) and the Ko-fi link **ko-fi.com/X3N527KYCV** (2026-11-23), all in `Hawkeye.App/Branding.cs`;
+those are fine. Nothing else about the owner is.
 
 ## Start with the skill library
 
