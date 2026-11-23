@@ -3,6 +3,26 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.28 (2026-11-23)
+
+Fixed (owner: "I just won an arena but it counts 0-5 lost"; "shugo gg also doesn't give the correct profile,
+because the server is always different, see if you get their server from loading"):
+- **A win counted as a loss 0-5.** Hawkeye found you in the arena roster by your name; after the update restart
+  at 16:28 it did not know your name yet, so you were put on the enemy team and every kill counted for them (the
+  match was a 3-2 win, 1876 to 1903). You are now found by your arena key, which the game sends as you enter the
+  arena (0xE343) and again in the result; if only the result has it, the teams and score are redone then.
+  Replayed both recordings with your name unknown: 3-0 win +25, 1-3 loss -27, 3-2 win +27.
+- **shugo.gg profile links use each player's own server.** A player's key carries their server id, and on EU it is
+  the Korean id in ServerMap plus 300 (1304 Kaisinel is the owner's, 1311 Tahabata showed in game as "TAH", 2301
+  Israphel, 2303 Triniel). 18 EU servers named from shugo.gg's leaderboard; other regions still fall back to
+  Settings > Enemy server. Also fixes PvP-mode kill links.
+
+Changed (owner: "lose their defiance from the main window and just have it displayed on the draggable place; no
+need for that text"):
+- The Arena view no longer shows the Defiance rows (the Defiance box does that) or the waiting text; it shows the
+  score, each opponent with their rating, and the session.
+127 tests (7 new).
+
 ## v0.2.27 (2026-11-23)
 
 Added (owner, after his first arena win with 0.2.26: "I wanna click on wins and see who they are same as in pvp

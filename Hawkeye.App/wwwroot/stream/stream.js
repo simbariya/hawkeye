@@ -65,8 +65,7 @@
             var cls = a.result === 'Won' ? ' is-won' : a.result === 'Lost' ? ' is-lost' : '';
             html += '<div class="arena-score' + cls + '"><b>' + esc(a.score) + '</b>' + (a.result ? '<span>' + esc(a.result) + '</span>' : '') + '</div>';
             a.foes.forEach(function (f) {
-                html += '<div class="arena-foe"><div class="foe-name"><span>' + esc(f.name) + '</span><small>' + esc(f.rating) + '</small></div>' +
-                    '<div class="foe-def ' + (f.down ? 'is-down' : 'is-ready') + '"><i style="width:' + f.bar + '%"></i><span>Defiance</span><b>' + esc(f.text) + '</b></div></div>';
+                html += '<div class="arena-foe"><div class="foe-name"><span>' + esc(f.name) + '</span><small>' + esc(f.rating) + '</small></div></div>';
             });
         }
         html += '<div class="pvp-kda"><div><b>' + a.wins + '</b><span>Wins</span></div><div><b>' + a.losses + '</b><span>Losses</span></div><div><b>' +

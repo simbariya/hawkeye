@@ -51,10 +51,35 @@ namespace Hawkeye.Engine.Services.Pvp
             }
         }
 
+        // Server names by their short code in ServerMap (the Korean ids). Only names shugo.gg uses for EU characters
+        // (its leaderboard, 2026-11-23), plus Tahabata, which the owner saw as "TAH" next to an arena opponent.
+        private static readonly Dictionary<string, string> NameByCode = new()
+        {
+            ["ISR"] = "israphel", ["SIE"] = "siel", ["TRI"] = "triniel", ["LUM"] = "lumiel", ["MAR"] = "marchutan",
+            ["AZP"] = "azphel", ["ERE"] = "ereshkigal", ["LUD"] = "ludra", ["ODA"] = "odar", ["KRO"] = "kromede",
+            ["NEZ"] = "nezekan", ["KAI"] = "kaisinel", ["YUS"] = "yustiel", ["ARI"] = "ariel", ["NAN"] = "nania",
+            ["TAH"] = "tahabata", ["LUT"] = "luteros", ["BAK"] = "bakarma",
+        };
+
+        /// <summary>
+        /// A global server id to a shugo.gg slug. EU ids are the Korean ids (ServerMap) plus 300: 1304 Kaisinel (the
+        /// owner's), 2303 Triniel, 1311 Tahabata (an arena opponent the game showed as TAH), 2301 Israphel. Other
+        /// regions' ranges are not known yet: null.
+        /// </summary>
+        public static string? SlugFor(int serverId)
+        {
+            if (KnownServers.TryGetValue(serverId, out var known)) return known;
+            if (serverId is (>= 1300 and < 1400) or (>= 2300 and < 2400)
+                && Hawkeye.Core.Data.ServerMap.Servers.TryGetValue(serverId - 300, out var code)
+                && NameByCode.TryGetValue(code, out var name))
+                return "eu-" + name;
+            return null;
+        }
+
         public static string? For(PvpEvent e, string? enemyServerSetting)
         {
             if (string.IsNullOrWhiteSpace(e.Name)) return null;
-            var slug = KnownServers.TryGetValue(e.ServerId, out var known) ? known : Slug(enemyServerSetting);
+            var slug = SlugFor(e.ServerId) ?? Slug(enemyServerSetting);
             return slug is null ? null : $"https://shugo.gg/character/global/{slug}/{Uri.EscapeDataString(e.Name)}";
         }
 

@@ -316,3 +316,5 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   Recorder running into scratchpad select-1123 (30 min from ~16:25): owner asked to select players whose CP/GS
   questlog shows, to find where CP/GS arrive (not in the arena recording: no message about the opponent holds it).
 - v0.2.27 released 2026-11-23 16:2x; smoke start clean; GitHub v0.2.26 deleted. Owner: release and push by default from now on (CLAUDE.md rule 5).
+- 0.2.28: arena finds you by key (E343 / result), not name (a 3-2 win read "lost 0-5" after a restart); shugo
+  links from each player's server id (EU = ServerMap id + 300); Arena view without Defiance rows. 127 tests.

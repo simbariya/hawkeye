@@ -135,6 +135,45 @@ public sealed class ArenaTests : IDisposable
         Assert.Equal((1, 1), (arena.Wins, arena.Losses));
     }
 
+    // Owner, 2026-11-23: "I just won an arena but it counts 0-5 lost". Hawkeye had restarted mid-game and did not know
+    // his name, so he was put on the enemy team. You are now found by your key (0xE343 as you enter, or the result).
+    [Fact]
+    public void YouAreFoundByYourKey_EvenWithoutYourName()
+    {
+        var stranger = new EntityTracker();
+        var a = new ArenaTracker(stranger, null, () => clock);   // your name not known
+        var ownKey = Hex("4643E3030D0E0F000000180501000000005478" + "3D09A20100000D0E0F00000018050200000000" +
+                         "54783D09A20100000D0E0F000000180503000000005478" + "3D09A2010000");
+        Assert.Equal(ArenaParser.ParseRoster(Hex(Roster))![1].Key, ArenaParser.ParseOwnKey(ownKey));
+
+        a.OnOwnKey(ArenaParser.ParseOwnKey(ownKey)!.Value);
+        a.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        Assert.Equal("Rival123", Assert.Single(a.Match!.Enemies).Name);
+        a.OnKill(ArenaParser.ParseKill(Hex(YouKillThem))!.Value);
+        Assert.Equal((1, 0), (a.Match.OurKills, a.Match.TheirKills));
+    }
+
+    [Fact]
+    public void WithoutTheEntryMessage_TheResultStillFindsYou()
+    {
+        var a = new ArenaTracker(new EntityTracker(), null, () => clock);
+        a.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        Assert.Equal(2, a.Match!.Enemies.Count);              // not sure who you are yet
+        for (int i = 0; i < 3; i++) a.OnKill(ArenaParser.ParseKill(Hex(YouKillThem))!.Value);
+        a.OnResult(1525, ArenaParser.ParseResultKey(Hex(Result1525)));
+        Assert.Equal("Rival123", Assert.Single(a.Match.Enemies).Name);
+        Assert.Equal((3, 0, true, 1, 25), (a.Match.OurKills, a.Match.TheirKills, a.Match.Won, a.Wins, a.RatingChange));
+    }
+
+    [Theory]
+    [InlineData(1304, "eu-kaisinel")]    // the owner's
+    [InlineData(1311, "eu-tahabata")]    // an arena opponent the game showed as TAH
+    [InlineData(2301, "eu-israphel")]
+    [InlineData(2303, "eu-triniel")]
+    [InlineData(9999, null)]
+    public void ServerIds_GiveShugoLinks(int server, string? slug) =>
+        Assert.Equal(slug, Hawkeye.Engine.Services.Pvp.ShugoLinks.SlugFor(server));
+
     [Fact]
     public void AppServiceSetup_CanBuildIt()
     {

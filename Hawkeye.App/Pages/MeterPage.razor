@@ -122,19 +122,8 @@
                          title="Kills this match: your team, then theirs"><b>@vm.ArenaScore</b>@if (vm.ArenaResult != "") {<span>@vm.ArenaResult</span>}</div>
                     @foreach (var f in vm.ArenaFoes)
                     {
-                        <div class="arena-foe">
-                            <div class="foe-name"><span>@f.Name</span><small>@f.Rating</small></div>
-                            <div class="foe-def @(f.DefianceDown ? "is-down" : "is-ready")"
-                                 title="@(f.DefianceDown ? "Their Defiance is on cooldown: your stuns land" : "Their Defiance is ready: it breaks your stun")">
-                                <i style="width:@(f.DefianceBar.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></i>
-                                <span>Defiance</span><b>@f.DefianceText</b>
-                            </div>
-                        </div>
+                        <div class="arena-foe"><div class="foe-name"><span>@f.Name</span><small>@f.Rating</small></div></div>
                     }
-                }
-                else
-                {
-                    <div class="arena-wait">Shows your opponent and their Defiance when a match loads</div>
                 }
                 <div class="pvp-kda">
                     <div class="is-clickable" title="Who you beat" @onclick="() => vm.OpenArenaList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Kill)" @onmousedown:stopPropagation="true"><b>@vm.ArenaWins</b><span>Wins</span></div>

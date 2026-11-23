@@ -75,6 +75,25 @@ namespace Hawkeye.Engine.Services.Arena
             return rating is >= 100 and <= 10_000 ? rating : null;
         }
 
+        /// <summary>Your key in the result: [u8][u32 rating][u8][u8][key].</summary>
+        public static ulong? ParseResultKey(byte[] d)
+        {
+            int p = HeaderLength(d) + 1 + 4 + 2;
+            return p + 8 <= d.Length ? BitConverter.ToUInt64(d, p) : null;
+        }
+
+        /// <summary>
+        /// Your key from 0xE343, sent as you enter (and leave) the arena: [u8 count] then per entry [key][u8 mode]
+        /// [u32 0][u64 time], your key in every entry (seen in both recordings).
+        /// </summary>
+        public static ulong? ParseOwnKey(byte[] d)
+        {
+            int p = HeaderLength(d);
+            if (p + 1 + 8 > d.Length || d[p] < 1) return null;
+            ulong key = BitConverter.ToUInt64(d, p + 1);
+            return key != 0 && d[p + 5] == 0 && d[p + 6] == 0 ? key : null;
+        }
+
         public static List<Standing>? ParseStandings(byte[] d)
         {
             int p = HeaderLength(d);

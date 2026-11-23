@@ -71,29 +71,73 @@ namespace Hawkeye.Engine.Services.Arena
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
+        // Your arena key ([u32 character id][u16 0][u16 server]), from 0xE343 as you enter the arena or from a result.
+        // By key, not by name: after a restart mid-game Hawkeye may not know your name yet, and on 2026-11-23 that put
+        // the owner on the enemy team, so a 3-2 win read "lost 0-5".
+        private ulong? myKey;
+
+        /// <summary>Your arena key (0xE343, sent as you enter the arena).</summary>
+        public void OnOwnKey(ulong key)
+        {
+            lock (gate)
+            {
+                myKey = key;
+                if (Match is { Won: null, MeKey: null } m) Assign(m);
+            }
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
         public void OnRoster(List<ArenaParser.Player> players)
         {
             lock (gate)
             {
-                string me = entities.CurrentUserName;
-                var mine = players.FirstOrDefault(p => !string.IsNullOrEmpty(me) && p.Name == me);
-                int myTeam = mine.Name is null ? -1 : mine.Team;
-                var match = new ArenaMatch(now(), mine.Name is null ? null : mine.Rating);
-                foreach (var p in players)
-                {
-                    if (mine.Name is not null && p.Key == mine.Key) continue;
-                    if (myTeam >= 0 && p.Team == myTeam) match.Allies.Add(p);
-                    else match.Enemies.Add(new ArenaFoe(p.Key, p.Name, p.Server, p.Rating));
-                }
-                if (mine.Name is not null) match.OurKeys.Add(mine.Key);
-                foreach (var a in match.Allies) match.OurKeys.Add(a.Key);
+                var match = new ArenaMatch(now(), null);
+                match.Players.AddRange(players);
+                Assign(match);
                 Match = match;
                 if (!showing) { showing = true; shownByMatch = true; }
-                logger?.LogInformation("[ARENA] match: {Count} enemies, ratings {Ratings}", match.Enemies.Count,
-                    string.Join(", ", match.Enemies.Select(e => e.Rating)));
+                logger?.LogInformation("[ARENA] match: {Count} enemies, ratings {Ratings}{Unknown}", match.Enemies.Count,
+                    string.Join(", ", match.Enemies.Select(e => e.Rating)), match.MeKey is null ? " (you not found yet)" : "");
             }
             MatchStarted?.Invoke(this, EventArgs.Empty);
             Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>Splits the roster into you, allies and enemies, and counts the kills again from the list.</summary>
+        private void Assign(ArenaMatch m)
+        {
+            string me = entities.CurrentUserName;
+            int mine = myKey is { } k ? m.Players.FindIndex(p => p.Key == k) : -1;
+            if (mine < 0 && !string.IsNullOrEmpty(me)) mine = m.Players.FindIndex(p => p.Name == me);
+            var old = m.Enemies.ToDictionary(e => e.Key);
+            m.Enemies.Clear();
+            m.Allies.Clear();
+            m.OurKeys.Clear();
+            if (mine >= 0)
+            {
+                var you = m.Players[mine];
+                m.MeKey = you.Key;
+                m.RatingBefore = you.Rating;
+                m.OurKeys.Add(you.Key);
+            }
+            foreach (var p in m.Players)
+            {
+                if (m.MeKey == p.Key) continue;
+                if (mine >= 0 && p.Team == m.Players[mine].Team) { m.Allies.Add(p); m.OurKeys.Add(p.Key); }
+                else m.Enemies.Add(old.TryGetValue(p.Key, out var kept) ? kept : new ArenaFoe(p.Key, p.Name, p.Server, p.Rating));
+            }
+            Recount(m);
+        }
+
+        private static void Recount(ArenaMatch m)
+        {
+            m.OurKills = m.TheirKills = 0;
+            if (m.MeKey is null) return;   // whose kill it was is not known yet
+            foreach (var kill in m.Kills)
+            {
+                if (m.OurKeys.Contains(kill.Killer)) m.OurKills++;
+                else m.TheirKills++;
+            }
         }
 
         public void OnKill(ArenaParser.Kill kill)
@@ -101,18 +145,22 @@ namespace Hawkeye.Engine.Services.Arena
             lock (gate)
             {
                 if (Match is not { Won: null } m) return;
-                if (m.OurKeys.Contains(kill.Killer)) m.OurKills++;
-                else if (m.OurKeys.Contains(kill.Victim) || m.Enemies.Any(e => e.Key == kill.Killer)) m.TheirKills++;
-                else return;
+                m.Kills.Add(kill);
+                Recount(m);
             }
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void OnResult(int newRating)
+        public void OnResult(int newRating, ulong? yourKey = null)
         {
             lock (gate)
             {
                 if (Match is not { Won: null } m) return;
+                if (yourKey is { } k && m.MeKey != k && m.Players.Any(p => p.Key == k))
+                {
+                    myKey = k;
+                    Assign(m);
+                }
                 bool won = m.RatingBefore is { } before ? newRating > before : m.OurKills > m.TheirKills;
                 Settle(m, won, newRating);
             }
@@ -204,7 +252,10 @@ namespace Hawkeye.Engine.Services.Arena
     public sealed class ArenaMatch(DateTime at, int? ratingBefore)
     {
         public DateTime At { get; } = at;
-        public int? RatingBefore { get; } = ratingBefore;
+        public int? RatingBefore { get; set; } = ratingBefore;
+        public ulong? MeKey { get; set; }
+        public List<ArenaParser.Player> Players { get; } = new();
+        public List<ArenaParser.Kill> Kills { get; } = new();
         public int? RatingAfter { get; set; }
         public bool? Won { get; set; }
         public int OurKills { get; set; }

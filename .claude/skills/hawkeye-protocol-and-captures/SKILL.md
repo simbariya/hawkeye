@@ -170,7 +170,12 @@ character's numbers and the stream was searched for them.
   per player (not used). **0xE328 result** `[u8][u32 new rating][u8][u8][your key]...`. **0xE32A standings**
   (every zone change) `[u8 count]` then 14 bytes per mode `[u8 mode][u32 rating][u32 ?][u8 wins][u8 losses]
   [u16 ?][u8 ?]` (mode 1: 1500/0/0 to 1525/1/0; the owner's mode 3: 1532/9/7; the last byte 4 there is unknown).
-  0xE31C / E31B / E31D / E33x / E34x also come with arena loading, not decoded.
+  **0xE343** (as you enter and leave the arena) `[u8 count]` then per mode `[your key][u8 mode][u32 0][u64 time]`:
+  your key (used since v0.2.28 to find you in the roster). 0xE31C / E31B / E31D / E33x / E34x also come with
+  arena loading, not decoded.
+- **Server ids on global:** the u16 server in a key (and in 0x8D04 deaths) is the Korean `ServerMap` id + 300 on
+  EU: 1304 = 1004 KAI Kaisinel (owner), 1311 = 1011 TAH Tahabata (shown in game next to an opponent), 2301 =
+  2001 ISR Israphel, 2303 = 2003 TRI Triniel. Other regions' offsets unknown (`ShugoLinks.SlugFor`).
 - **Defiance** (every class's crowd-control breaker; skill name "Defiance", ids per class such as 14260000 Ranger,
   15240000 Sorcerer, 18200000 Chanter): an enemy's use is a **0x3802 cast whose cooldown field is their real
   cooldown** (51,300 ms in the recording; others in the Abyss 36,900 and 28,700 ms), then 0x3804 self-hits, a

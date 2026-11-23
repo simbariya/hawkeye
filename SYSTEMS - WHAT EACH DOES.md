@@ -298,11 +298,12 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   from `SkillCastProcessor` (0x3802, any caster). A match starts with the roster (0xE319: players as 8-byte keys
   [u32 character id][u16 0][u16 server], name, rating, team); kills (0xE325) give the score; the result (0xE328)
   gives your new rating (up = win). If the result is missed, the next standings (0xE32A, sent at every zone
-  change: rating, wins, losses per arena mode) settle it. Your team is found by your name in the roster.
+  change: rating, wins, losses per arena mode) settle it. Your team is found by your arena key (0xE343 as you
+  enter, or the result 0xE328; v0.2.28), else by your name.
   Defiance counts only during a match, only for players not on your team, with the cooldown from their cast
   (10 s to 5 min, else 60 s).
 - **Shows:** the Arena tab of the PvP panel (`MeterPage.razor`, `.meter-arena`, `.pvp-tabs`, `.arena-*`,
-  `.foe-*` in `meter.css`); switched on by a match loading (`ArenaTracker.Showing`), off again when you leave
+  `.foe-*` in `meter.css`): score, opponents and ratings, session (Defiance only in its own box since v0.2.28); switched on by a match loading (`ArenaTracker.Showing`), off again when you leave
   if the match switched it on. Stream page: `/state.meter.arena` (`StreamServer.BuildArena`, `renderArena`).
 - **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved yet. Wins and
   Losses open the PvP window's Arena list (v0.2.27, `PvpView.ShowArena`, `PvpPage.razor`): opponent, class (looked

@@ -30,4 +30,5 @@ public static class PacketOpcodes
     public const ushort ArenaKill = 0xE325;           // 25 E3  (arena: killer key, victim key)
     public const ushort ArenaResult = 0xE328;         // 28 E3  (arena: match over, your new rating)
     public const ushort ArenaStandings = 0xE32A;      // 2A E3  (arena: rating, wins, losses per mode, at zone changes)
+    public const ushort ArenaOwnKey = 0xE343;         // 43 E3  (arena: your key, as you enter; v0.2.28)
 }

@@ -29,7 +29,17 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
     {
         public void Process(Packet packet)
         {
-            if (ArenaParser.ParseResultRating(packet.Data) is { } rating) arena.OnResult(rating);
+            if (ArenaParser.ParseResultRating(packet.Data) is { } rating) arena.OnResult(rating, ArenaParser.ParseResultKey(packet.Data));
+        }
+    }
+
+    /// <summary>Your arena key, as you enter the arena (0xE343).</summary>
+    [PacketOpcode(PacketOpcodes.ArenaOwnKey)]
+    public sealed class ArenaOwnKeyProcessor(ArenaTracker arena) : IOpcodeProcessor
+    {
+        public void Process(Packet packet)
+        {
+            if (ArenaParser.ParseOwnKey(packet.Data) is { } key) arena.OnOwnKey(key);
         }
     }
 
