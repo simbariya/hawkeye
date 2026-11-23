@@ -8,7 +8,9 @@ error. Format and rules: `hawkeye-docs-and-writing` section 3.
 Changed (owner: "instead of yours can it just say You, and can the name Damage/Silence etc be of a colour of
 rarity? Green/Blue/Gold? Also if damage godstone crits or doubles, can that be represented also, i.e.
 crit/crit double/double tags? something small"):
-- Tiles say **YOU** instead of YOURS.
+- Tiles say **YOU** instead of YOURS, and **the attacker's name** instead of ON YOU (owner: "instead of ON YOU
+  make the person's name in there and save space on the other bit"); the bottom line no longer repeats it.
+  ON YOU stays only when the name is not known.
 - **The word is coloured by the stone's grade:** green Rare, blue Epic, gold Unique (from the skill id).
 - **CRIT, DOUBLE or CRIT DOUBLE** in small orange letters on the tile's bottom line when the hit was one (a
   multi-hit keeps it if any hit was). From the damage message's own flags; in the owner's recording 67 of 147

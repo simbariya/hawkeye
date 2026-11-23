@@ -318,7 +318,7 @@
     background: rgb(14, 16, 20); border-top: 2px solid var(--accent, #8CCFDF); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     animation: theo-in 0.18s ease-out; }
 .theo-alert.is-on-you { border-top-color: #FF4D4D; background: rgb(38, 12, 14); }
-.theo-tag { font-size: 8.5px; font-weight: 600; letter-spacing: 1px; }
+.theo-tag { max-width: 100%; font-size: 8.5px; font-weight: 600; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; }
 .theo-alert.is-yours .theo-tag { color: var(--accent, #8CCFDF); }
 .theo-alert.is-on-you .theo-tag { color: #FF6B6B; }
 .theo-name { max-width: 100%; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }

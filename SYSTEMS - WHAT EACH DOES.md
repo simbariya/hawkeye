@@ -265,8 +265,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   - Grade (`TheostoneKinds.Grade`, the G digit): colours the word green / blue / gold. Crit and double come from
     the damage message (`IsCritical`, `IsDoubleDamage`) into `OnHit`; `TheostoneProc.Flags` = CRIT / DOUBLE /
     CRIT DOUBLE (any hit of a merged multi-hit).
-- **Shows:** tiles side by side (92 x 66 at size M): YOU / ON YOU, the word in its grade colour, the damage or
-  seconds left, a small line (orange CRIT / DOUBLE, then damage so far, who, or xN), a bar for debuffs. `Views/TheostoneAlertWindow` (plain WPF, topmost,
+- **Shows:** tiles side by side (92 x 66 at size M): YOU, or the attacker's name (ON YOU if unknown), the word in
+  its grade colour, the damage or seconds left, a small line (orange CRIT / DOUBLE, then damage so far or xN),
+  a bar for debuffs. `Views/TheostoneAlertWindow` (plain WPF, topmost,
   click-through; edit mode with Settings open = dashed box, samples, drag, saved to `TheostoneLeft/Top`), created
   by `OverlayManager.Start`. Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter.
   Stream page: `/state.theo` (where, position, scale, items: tag, name, amount, sub, bar, fade), drawn by

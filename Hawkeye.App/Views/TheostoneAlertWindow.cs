@@ -182,18 +182,19 @@ namespace Hawkeye.App.Views
         private sealed record RowParts(TextBlock Main, Rectangle Bar);
 
         /// <summary>Top line of a tile: whose it is.</summary>
-        public static string TagText(TheostoneProc p) => p.Yours ? "YOU" : "ON YOU";
+        /// <summary>Top line: YOU, or who hit you (owner, 2026-11-23: "instead of ON YOU make the person's name in there");
+        /// ON YOU only when the game has not told us their name.</summary>
+        public static string TagText(TheostoneProc p) => p.Yours ? "YOU" : p.From.Length > 0 ? p.From : "ON YOU";
 
         /// <summary>The big line: seconds left on a debuff, else the damage (empty when it did none).</summary>
         public static string MainText(TheostoneProc p, TimeSpan left) =>
             p.IsDebuff ? left.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture) + "s"
             : p.Damage > 0 ? MeterViewModel.Compact(p.Damage, shortThousands: true) : "";
 
-        /// <summary>The small line: a debuff's damage so far, who it came from, or how many hits.</summary>
+        /// <summary>The small line (after any CRIT / DOUBLE tag): a debuff's damage so far, or how many hits.</summary>
         public static string SubText(TheostoneProc p)
         {
             if (p.IsDebuff && p.Damage > 0) return MeterViewModel.Compact(p.Damage, shortThousands: true);
-            if (!p.Yours && p.From.Length > 0) return p.From;
             return p.Hits > 1 ? $"x{p.Hits}" : "";
         }
 
