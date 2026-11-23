@@ -172,7 +172,8 @@ public sealed class ArenaTests : IDisposable
     [InlineData(1311, null)]             // TAH: shugo.gg's name for it is not known (eu-tahabata: page not found)
     [InlineData(2301, "eu-israphel")]
     [InlineData(2303, "eu-triniel")]
-    [InlineData(2318, "eu-zikel")]       // "BAB" in the Korean list, Zikel on EU (an opponent's real profile)
+    [InlineData(2302, "eu-zikel")]       // an opponent's current server, real profile; "SIE" in the Korean list
+    [InlineData(2318, null)]             // the same opponent's key server: not where he plays now
     [InlineData(9999, null)]
     public void ServerIds_GiveShugoLinks(int server, string? slug) =>
         Assert.Equal(slug, Hawkeye.Engine.Services.Pvp.ShugoLinks.SlugFor(server));
@@ -185,6 +186,18 @@ public sealed class ArenaTests : IDisposable
         var players = ArenaParser.ParseRoster(Hex(roster))!;
         Assert.Equal(new[] { "X", "OwnerName" }, players.Select(p => p.Name));
         Assert.Equal(1442, players[0].Rating);
+    }
+
+    // Owner, 2026-11-23: "SIE is shown for a Zikel player". The server is the one after the name (the player's current
+    // server), not the one in the key: an opponent had 2318 in the key and 2302 after the name; his profile says Zikel.
+    [Fact]
+    public void TheServer_IsTheOneAfterTheName()
+    {
+        var roster = Roster.Replace("1A000000012D000000000000001F05", "1A000000012D00000000000000FE08");
+        var rival = ArenaParser.ParseRoster(Hex(roster))![0];
+        Assert.Equal(("Rival123", 2302), (rival.Name, rival.Server));
+        Assert.Equal("Zikel", Hawkeye.Engine.Services.Pvp.ShugoLinks.Code(2302));
+        Assert.Equal("#1311", Hawkeye.Engine.Services.Pvp.ShugoLinks.Code(1311));
     }
 
     [Fact]

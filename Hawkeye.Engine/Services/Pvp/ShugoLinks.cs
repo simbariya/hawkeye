@@ -15,12 +15,12 @@ namespace Hawkeye.Engine.Services.Pvp
         {
             [1304] = "eu-kaisinel",
             [2303] = "eu-triniel",
-            // Checked on real shugo.gg profiles of arena opponents, 2026-11-23. Global names can differ from the
-            // Korean code: 2318 is "BAB" in ServerMap but Zikel on EU.
+            // Checked on real shugo.gg profiles of arena opponents, 2026-11-23 (name and class both match): the
+            // CURRENT server, from the arena roster (the one after the name, not the one in the key).
             [1305] = "eu-yustiel",
             [2301] = "eu-israphel",
+            [2302] = "eu-zikel",
             [2311] = "eu-ludra",
-            [2318] = "eu-zikel",
         };
 
         private static readonly (string Phrase, string Code)[] Regions =
@@ -57,43 +57,23 @@ namespace Hawkeye.Engine.Services.Pvp
             }
         }
 
-        // Server names by their short code in ServerMap (the Korean ids): only codes whose name shugo.gg uses for EU
-        // characters (its leaderboard and profiles, 2026-11-23). Confirmed on real profiles: 1304 Kaisinel, 1305
-        // Yustiel, 2301 Israphel, 2311 Ludra, 2318 Zikel. NOT known: TAH (1311; not eu-tahabata, zikel, zemurru,
-        // nathara, atiel or agnita), PER (1313; nor those five), and the rest; those get no link rather than a wrong one.
-        private static readonly Dictionary<string, string> NameByCode = new()
-        {
-            ["ISR"] = "israphel", ["SIE"] = "siel", ["TRI"] = "triniel", ["LUM"] = "lumiel", ["MAR"] = "marchutan",
-            ["AZP"] = "azphel", ["ERE"] = "ereshkigal", ["LUD"] = "ludra", ["ODA"] = "odar", ["KRO"] = "kromede",
-            ["NEZ"] = "nezekan", ["KAI"] = "kaisinel", ["YUS"] = "yustiel", ["ARI"] = "ariel", ["NAN"] = "nania",
-            ["LUT"] = "luteros", ["BAK"] = "bakarma", ["HIT"] = "hithanya", ["FRE"] = "fregion", ["MUN"] = "munin",
-        };
-
         /// <summary>
-        /// A global server id to a shugo.gg slug. EU ids are the Korean ids (ServerMap) plus 300: 1304 Kaisinel (the
-        /// owner's), 2303 Triniel, 1311 Tahabata (an arena opponent the game showed as TAH), 2301 Israphel. Other
-        /// regions' ranges are not known yet: null.
+        /// A global server id to a shugo.gg slug, only for ids checked on real profiles (<see cref="KnownServers"/>).
+        /// The Korean short codes (ServerMap, id - 300) do not name global servers: 2302 is "SIE" there but Zikel on EU.
+        /// Unknown: 1311 (the game showed "TAH"), 1313 and the rest; they get no link rather than a wrong one.
         /// </summary>
-        public static string? SlugFor(int serverId)
-        {
-            if (KnownServers.TryGetValue(serverId, out var known)) return known;
-            if (serverId is (>= 1300 and < 1400) or (>= 2300 and < 2400)
-                && Hawkeye.Core.Data.ServerMap.Servers.TryGetValue(serverId - 300, out var code)
-                && NameByCode.TryGetValue(code, out var name))
-                return "eu-" + name;
-            return null;
-        }
+        public static string? SlugFor(int serverId) => KnownServers.TryGetValue(serverId, out var known) ? known : null;
 
         /// <summary>
-        /// The server's name for the arena list: shugo.gg's name when known ("Kaisinel"), else the game's short code
-        /// ("TAH" for 1311), else its number ("#1322"), so an unnamed server is still visible.
+        /// The server's name for the arena list: shugo.gg's name when known ("Kaisinel"), else its number ("#1311").
+        /// Not the Korean short codes: global servers are named differently (2302 is "SIE" there but Zikel on EU, and
+        /// the owner saw "SIE" next to Zikel players in 0.2.31).
         /// </summary>
         public static string Code(int serverId)
         {
             if (serverId <= 0) return "";
             if (SlugFor(serverId) is { } slug) { var n = slug[(slug.IndexOf('-') + 1)..]; return char.ToUpperInvariant(n[0]) + n[1..]; }
-            var code = serverId is (>= 1300 and < 1400) or (>= 2300 and < 2400) ? Hawkeye.Core.Data.ServerMap.GetName(serverId - 300) : "";
-            return code != "" ? code : "#" + serverId;
+            return "#" + serverId;
         }
 
         /// <summary>An arena opponent's profile: their own server, read from the game; no guess from Settings.</summary>

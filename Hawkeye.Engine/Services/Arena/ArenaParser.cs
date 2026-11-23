@@ -6,7 +6,8 @@ namespace Hawkeye.Engine.Services.Arena
     /// The arena's own messages, read from the owner's recorded 1v1 match (2026-11-23, won 3-0, rating 1500 to 1525).
     /// A player in them is an 8-byte key: [u32 character id][u16 0][u16 server id]. Layouts:
     ///
-    /// Roster 0xE319, as the match loads: per player [u8 team][u32 rating]...(17 bytes)...[key 8][u8 name length][name].
+    /// Roster 0xE319, as the match loads: per player [u8 team][u32 rating]...(17 bytes)...[key 8][u8 name length][name]
+    ///   [u32 ?][u8 faction 1/2][u32 level][u32 0][u16 current server][u32 rating]...
     ///   Found by looking for the key + name shape; the team byte is 22 bytes before the key, the rating 21.
     /// Kill 0xE325: [len][op][killer key][victim key], once per kill (three for a 3-0).
     /// Result 0xE328: [len][op][u8][u32 your new rating][..][your key]..., at the end of the match.
@@ -43,8 +44,14 @@ namespace Hawkeye.Engine.Services.Arena
                     if (!IsName(d, i + 9, len)) continue;
                     int rating = (int)BitConverter.ToUInt32(d, i - 21);
                     if (rating < 100 || rating > 10_000) continue;
+                    // The server: the u16 13 bytes after the name ([u32 ?][u8 faction][u32 level][u32 0][u16 server]),
+                    // the server the player is on now. The one inside the key can differ (an opponent, 2026-11-23: key 2318,
+                    // here 2302, and his shugo.gg profile says Zikel); it is likely where the character started.
+                    int at = i + 9 + len + 13, keyServer = d[i + 6] | (d[i + 7] << 8);
+                    int server = at + 2 <= d.Length ? d[at] | (d[at + 1] << 8) : 0;
+                    if (server < 1000 || server > 9999) server = keyServer;
                     players.Add(new Player(BitConverter.ToUInt64(d, i), Encoding.UTF8.GetString(d, i + 9, len),
-                        d[i + 6] | (d[i + 7] << 8), rating, d[i - 22]));
+                        server, rating, d[i - 22]));
                     i += 8 + len;
                 }
                 return players.Count > 0 ? players : null;

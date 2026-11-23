@@ -3,6 +3,19 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.32 (2026-11-23)
+
+Fixed (owner: "something not right with servers, they are shown wrong for people I'm facing, like SIE is shown for
+a Zikel player"):
+- **The wrong server was read and named.** Two mistakes in 0.2.28 to 0.2.31: (1) the server came from inside the
+  player's key, but the roster also gives the server after the name, and that one is where they play now: an
+  opponent with 2318 in his key had 2302 after his name, and his shugo.gg profile (name and class) says Zikel;
+  three Zikel opponents all read 2302 there. (2) Servers were named by the Korean server list (id - 300), which
+  does not hold for global: 2302 is "SIE" there but Zikel on EU. Now the current server is read, and only servers
+  checked on real profiles are named (Kaisinel 1304, Yustiel 1305, Israphel 2301, Zikel 2302, Triniel 2303,
+  Ludra 2311); others show their number (e.g. #1311) and get no link.
+133 tests (2 new).
+
 ## v0.2.31 (2026-11-23)
 
 Fixed (owner: "Zikel server is not shown either"):
