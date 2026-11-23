@@ -254,3 +254,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - Not seen live yet: the alert box in game, a real cleanse ending an alert, the stream page drawing it.
 - Known OLD: damage message parse errors (see the v0.2.18 checkpoint).
 - Still open: target combat power / gear score.
+
+## CHECKPOINT (2026-11-23, v0.2.19 live)
+
+- v0.2.19 released (GitHub release v0.2.19, both zips; packaged exe smoke-started: locked on, synced, remembered rank loaded, no errors).
+- Still not seen live: the alert box in a real fight, a cleanse ending an alert, the stream page drawing it.

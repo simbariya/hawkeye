@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.19 (2026-11-22, not released yet)
+## v0.2.19 (2026-11-23)
 
 Added (owner: "make Theostone pop out customizable and draggable ... make sure all of that is
 capturable by the overlay"; "Theostones that do a negative debuff, like blind for 6 sec, should remain
