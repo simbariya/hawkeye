@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.24 (2026-11-23, not released)
+## v0.2.24 (2026-11-23)
 
 Fixed (owner: "something is off, I logged onto a ranger, and damage training dummy nothing registers"):
 - **The meter went blank for good after a character switch.** At 14:06 the game connection went quiet (the

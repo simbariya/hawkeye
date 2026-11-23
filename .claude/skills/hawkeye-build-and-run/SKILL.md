@@ -99,8 +99,8 @@ clean up GitHub so just the latest release is available").** The release folder 
   (check `Get-Process Hawkeye` paths first), and delete the new zips and the `small` folder locally (they are
   on GitHub);
 - the owner's install updates IN PLACE (the updater copies the new files over the running folder), so his
-  folder keeps its old name (2026-11-23: he runs `release\0.2.21-github\full\Hawkeye`, which becomes 0.2.22 on
-  update). Never delete the folder Hawkeye runs from; the freshly published `full` folder is only a spare once
+  folder keeps its old name (2026-11-23: he ran `release\0.2.21-github\full\Hawkeye`, which became 0.2.22 on
+  update; by 0.2.24 he ran `0.2.23-github`). Never delete the folder Hawkeye runs from; the freshly published `full` folder is only a spare once
   his install has updated, and can go then;
 - delete the previous GitHub release and its tag: `gh release delete vX -R simbariya/hawkeye --cleanup-tag -y`.
   Auto-update only reads `releases/latest`. Download counts go with the deleted releases.

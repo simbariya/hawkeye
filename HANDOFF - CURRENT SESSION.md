@@ -290,3 +290,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   resync searches inside the data. 113 tests; replayed raw-copy*.txt recordings (scratchpad syncreplay). The
   owner's install now runs from release\0.2.23-github\full (log 13:14), so 0.2.22-github is the spare. The 0.2.23
   log showed `[DUMMY]` recall working live (entities 31692 and 27610 at 13:14 to 13:15).
+- v0.2.24 released 2026-11-23 15:08; smoke start locked 13328 and synced (only the old 0x3804 "Need 1 bytes"
+  errors); GitHub v0.2.23 deleted (only v0.2.24). Local: release\0.2.23-github (owner's install, running since
+  13:14, updates in place) and 0.2.24-github\full (spare); 0.2.22-github deleted. Awaiting in-game proof of I16.
