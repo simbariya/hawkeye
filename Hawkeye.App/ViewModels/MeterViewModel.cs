@@ -29,6 +29,9 @@ namespace Hawkeye.App.ViewModels
         public double BarPercent { get; set; }
     }
 
+    /// <summary>One enemy in the arena view: who, their rating, and their Defiance.</summary>
+    public sealed record ArenaFoeView(string Name, string Rating, bool DefianceDown, string DefianceText, double DefianceBar);
+
     /// <summary>One piece of the status line. Css picks its colour; Clickable items run an action.</summary>
     public sealed record StatusItem(string Text, string Css, string Title = "", bool Clickable = false);
 
@@ -47,6 +50,7 @@ namespace Hawkeye.App.ViewModels
         private readonly PvpHistory pvpHistory;
         private readonly PvpView pvpView;
         private readonly Hawkeye.Engine.Services.Theostone.TheostoneAlerts theostones;
+        private readonly Hawkeye.Engine.Services.Arena.ArenaTracker arena;
 
         /// <summary>Theostone procs to flash on the meter (yours, and others' hitting you), oldest first.</summary>
         public IReadOnlyList<Hawkeye.Engine.Services.Theostone.TheostoneProc> Theostones { get; private set; } = [];
@@ -133,8 +137,51 @@ namespace Hawkeye.App.ViewModels
 
         public void TogglePvp()
         {
-            pvp.SetActive(!pvp.Active);
+            if (pvp.Active || arena.Showing)
+            {
+                pvp.SetActive(false);
+                arena.Showing = false;
+            }
+            else pvp.SetActive(true);
             stateKey = string.Empty;
+        }
+
+        // ---- Arena mode (v0.2.26): the second tab of the PvP panel; a match loading switches it on ----
+        public bool ArenaMode => arena.Showing;
+        public bool PvpButtonOn => pvp.Active || arena.Showing;
+        public bool InArenaMatch => arena.InMatch;
+        public bool HasArenaMatch => arena.Match is not null;
+        public string ArenaScore => arena.Match is { } m ? $"{m.OurKills} - {m.TheirKills}" : "";
+        public string ArenaResult => arena.Match?.Won switch { true => "Won", false => "Lost", _ => "" };
+        public int ArenaWins => arena.Wins;
+        public int ArenaLosses => arena.Losses;
+        public string ArenaRating => arena.Rating?.ToString("N0", CultureInfo.InvariantCulture) ?? "-";
+        public string ArenaChange => Signed(arena.RatingChange);
+        public IReadOnlyList<ArenaFoeView> ArenaFoes { get; private set; } = [];
+
+        /// <summary>World or Arena tab of the PvP panel.</summary>
+        public void ShowArena(bool on)
+        {
+            arena.Showing = on;
+            if (!on) pvp.SetActive(true);
+            stateKey = string.Empty;
+        }
+
+        private string ArenaKey()
+        {
+            if (!arena.Showing) { ArenaFoes = []; return ""; }
+            var m = arena.Match;
+            ArenaFoes = m is null ? [] : m.Enemies.Select(e =>
+            {
+                var left = arena.DefianceLeft(e);
+                bool down = left > TimeSpan.Zero;
+                return new ArenaFoeView(e.Name, e.Rating > 0 ? e.Rating.ToString("N0", CultureInfo.InvariantCulture) : "",
+                    down, down ? $"{Math.Ceiling(left.TotalSeconds):0}s" : "Ready",
+                    down ? 100 * left.TotalMilliseconds / e.DefianceCooldown.TotalMilliseconds : 0);
+            }).ToList();
+            // Redraw every tenth of a second while a countdown runs.
+            return $"{arena.Wins}|{arena.Losses}|{arena.Rating}|{arena.RatingChange}|{ArenaScore}|{ArenaResult}|" +
+                   string.Join(",", ArenaFoes.Select(f => f.Name + f.DefianceText + (int)(f.DefianceBar * 10)));
         }
 
         /// <summary>CSS class for the chosen look.</summary>
@@ -159,7 +206,7 @@ namespace Hawkeye.App.ViewModels
 
         public MeterViewModel(CombatSessionManager sessions, SystemStatsService stats, ISettingsService settings,
             OverlayManager overlays, MeterSource source, DetailsState details, UpdateService updates, PvpTracker pvp, PvpHistory pvpHistory, PvpView pvpView,
-            Hawkeye.Engine.Services.Theostone.TheostoneAlerts theostones, Func<Task> redraw)
+            Hawkeye.Engine.Services.Theostone.TheostoneAlerts theostones, Hawkeye.Engine.Services.Arena.ArenaTracker arena, Func<Task> redraw)
         {
             this.sessions = sessions;
             this.stats = stats;
@@ -171,6 +218,7 @@ namespace Hawkeye.App.ViewModels
             this.pvpHistory = pvpHistory;
             this.pvpView = pvpView;
             this.theostones = theostones;
+            this.arena = arena;
             this.details = details;
             this.redraw = redraw;
             _ = LoopAsync();
@@ -218,7 +266,13 @@ namespace Hawkeye.App.ViewModels
             shown = data.Shown;
             string duration = data.Duration.ToString(@"mm\:ss");
             string target = data.Target;
-            if (pvp.Active)
+            if (arena.Showing)
+            {
+                var elapsed = DateTime.Now - (arena.Match is { Won: null } m ? m.At : arena.StartedAt);
+                duration = elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss") : elapsed.ToString(@"mm\:ss");
+                target = "Arena";
+            }
+            else if (pvp.Active)
             {
                 var elapsed = DateTime.Now - pvp.StartedAt;
                 duration = elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss") : elapsed.ToString(@"mm\:ss");
@@ -228,7 +282,7 @@ namespace Hawkeye.App.ViewModels
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}|{TheostoneKey()}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}|{TheostoneKey()}|{arena.Showing}|{ArenaKey()}";
             if (key != stateKey)
             {
                 Duration = duration;
@@ -406,6 +460,12 @@ namespace Hawkeye.App.ViewModels
         /// <summary>Clear button: blank the meter until your next fight (fights are saved to History first).</summary>
         public void Clear()
         {
+            if (arena.Showing)
+            {
+                arena.Reset();   // in the arena view the bin starts the session's wins and losses again
+                stateKey = string.Empty;
+                return;
+            }
             if (pvp.Active)
             {
                 pvp.Reset();   // in PvP mode the bin starts the PvP count again

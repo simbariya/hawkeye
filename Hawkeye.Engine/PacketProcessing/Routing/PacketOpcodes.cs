@@ -26,4 +26,8 @@ public static class PacketOpcodes
     public const ushort Inventory = 0x5611;           // 11 56  (login inventory: [key][u64 count] records, AP among them)
     public const ushort OwnRanking = 0x8D57;          // 57 8D  (your line in a PvP ranking)
     public const ushort RankingTable = 0x8D55;        // 55 8D  (a PvP ranking table, top 500)
+    public const ushort ArenaRoster = 0xE319;         // 19 E3  (arena: who is in the match, with ratings; v0.2.26)
+    public const ushort ArenaKill = 0xE325;           // 25 E3  (arena: killer key, victim key)
+    public const ushort ArenaResult = 0xE328;         // 28 E3  (arena: match over, your new rating)
+    public const ushort ArenaStandings = 0xE32A;      // 2A E3  (arena: rating, wins, losses per mode, at zone changes)
 }

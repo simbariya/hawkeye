@@ -186,6 +186,35 @@
 .pvp-rank.is-old b, .pvp-rank.is-reached b { font-size: 10px; letter-spacing: 0.3px; opacity: 0.7; }
 .pvp-rank.is-reached span { opacity: 1; color: var(--accent, #8CCFDF); }   /* your points passed the one above */
 .pvp-gain b { font-size: 14px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--accent, #8CCFDF); }
+
+/* PvP panel tabs: World (open-world PvP) | Arena (v0.2.26) */
+.pvp-tabs { display: flex; gap: 2px; margin-bottom: 5px; }
+.pvp-tabs button { flex: 1; padding: 2px 0; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); background: transparent;
+                   color: inherit; font: inherit; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.5; cursor: pointer; }
+.pvp-tabs button:hover { opacity: 0.85; }
+.pvp-tabs button.is-on { opacity: 1; border-bottom-color: var(--accent, #8CCFDF); cursor: default; }
+
+/* Arena view: score, each enemy with their Defiance (red = ready, breaks your stun; green = down, stun now) */
+.arena-score { display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.arena-score b { font-size: 22px; font-weight: 300; font-variant-numeric: tabular-nums; }
+.arena-score span { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.8; }
+.arena-score.is-won span { color: #5FD068; }
+.arena-score.is-lost span { color: #FF6B6B; }
+.arena-foe { margin-bottom: 5px; }
+.foe-name { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 12px; padding: 0 2px 2px; }
+.foe-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foe-name small { opacity: 0.6; font-variant-numeric: tabular-nums; }
+.foe-def { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 4px 6px;
+           background: rgba(0, 0, 0, 0.25); overflow: hidden; }
+.foe-def i { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(95, 208, 104, 0.28); }
+.foe-def span, .foe-def b { position: relative; }
+.foe-def span { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+.foe-def b { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.foe-def.is-ready { box-shadow: inset 2px 0 0 #FF6B6B; }
+.foe-def.is-ready b { color: #FF6B6B; }
+.foe-def.is-down { box-shadow: inset 2px 0 0 #5FD068; }
+.foe-def.is-down b { color: #5FD068; }
+.arena-wait { padding: 6px 2px 8px; font-size: 11px; opacity: 0.55; }
 .status-update { color: var(--accent, #8CCFDF); font-weight: 600; }
 .is-clickable { cursor: pointer; text-decoration: underline dotted; }
 

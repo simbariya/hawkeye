@@ -292,6 +292,22 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou`, `TheostonePlace` (Screen), `TheostoneScale`
   (1), `TheostoneSeconds` (3.5), in Settings > PvP.
 
+## 6h. Arena mode (v0.2.26)
+
+- **Does:** `Engine/Services/Arena/` (`ArenaParser`, `ArenaTracker`), processors in `ArenaProcessors.cs`, Defiance
+  from `SkillCastProcessor` (0x3802, any caster). A match starts with the roster (0xE319: players as 8-byte keys
+  [u32 character id][u16 0][u16 server], name, rating, team); kills (0xE325) give the score; the result (0xE328)
+  gives your new rating (up = win). If the result is missed, the next standings (0xE32A, sent at every zone
+  change: rating, wins, losses per arena mode) settle it. Your team is found by your name in the roster.
+  Defiance counts only during a match, only for players not on your team, with the cooldown from their cast
+  (10 s to 5 min, else 60 s).
+- **Shows:** the Arena tab of the PvP panel (`MeterPage.razor`, `.meter-arena`, `.pvp-tabs`, `.arena-*`,
+  `.foe-*` in `meter.css`); switched on by a match loading (`ArenaTracker.Showing`), off again when you leave
+  if the match switched it on. Stream page: `/state.meter.arena` (`StreamServer.BuildArena`, `renderArena`).
+- **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved yet.
+- **Not yet:** opponent CP and gear score (the RATmeter CP pair is in your own 0x3633 record, 112,790 / 115,866,
+  but not in other players' 0x3645; waiting on ground truth).
+
 ## 7. Settings window
 
 - **Does:** sections LOOK, WINDOW (auto-update, opacity), METER, TRAINING DUMMY, PVP (enemy server for

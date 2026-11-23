@@ -50,8 +50,28 @@
             '<div class="pvp-gain"><span>AP</span><b class="ap"></b></div><div class="pvp-gain"><span>Rank points</span><b class="rp"></b></div>' +
             '<div class="pvp-rank"><span class="st"></span><b class="nx"></b></div>';
         meter.insertBefore(shell._pvp, shell._rows);
+        shell._arena = el('div', 'meter-pvp meter-arena', meter);
+        meter.insertBefore(shell._arena, shell._rows);
         shell._status = el('div', 'meter-status', meter);
         return shell;
+    }
+
+    function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    // Arena view (v0.2.26): score, each enemy's Defiance, the session's wins and losses.
+    function renderArena(box, a) {
+        var html = '';
+        if (a.score) {
+            var cls = a.result === 'Won' ? ' is-won' : a.result === 'Lost' ? ' is-lost' : '';
+            html += '<div class="arena-score' + cls + '"><b>' + esc(a.score) + '</b>' + (a.result ? '<span>' + esc(a.result) + '</span>' : '') + '</div>';
+            a.foes.forEach(function (f) {
+                html += '<div class="arena-foe"><div class="foe-name"><span>' + esc(f.name) + '</span><small>' + esc(f.rating) + '</small></div>' +
+                    '<div class="foe-def ' + (f.down ? 'is-down' : 'is-ready') + '"><i style="width:' + f.bar + '%"></i><span>Defiance</span><b>' + esc(f.text) + '</b></div></div>';
+            });
+        }
+        html += '<div class="pvp-kda"><div><b>' + a.wins + '</b><span>Wins</span></div><div><b>' + a.losses + '</b><span>Losses</span></div><div><b>' +
+            esc(a.change) + '</b><span>Rating</span></div></div><div class="pvp-gain"><span>Arena rating</span><b>' + esc(a.rating) + '</b></div>';
+        if (box._html !== html) { box.innerHTML = html; box._html = html; }
     }
 
     function renderMeter(m) {
@@ -66,10 +86,12 @@
         meterEl.style.opacity = m.opacity;
         var shellClass = 'shell ' + (m.look || 'theme-monolith');
         if (meterEl.className !== shellClass) meterEl.className = shellClass;
-        setText(meterEl._target, m.pvp ? 'PvP' : m.target);
-        setText(meterEl._timer, m.pvp ? m.pvp.time : m.duration);
-        meterEl._pvp.style.display = m.pvp ? '' : 'none';
-        meterEl._rows.style.display = m.pvp ? 'none' : '';
+        setText(meterEl._target, m.arena ? 'Arena' : m.pvp ? 'PvP' : m.target);
+        setText(meterEl._timer, m.arena ? m.arena.time : m.pvp ? m.pvp.time : m.duration);
+        meterEl._arena.style.display = m.arena ? '' : 'none';
+        meterEl._pvp.style.display = m.pvp && !m.arena ? '' : 'none';
+        meterEl._rows.style.display = m.pvp || m.arena ? 'none' : '';
+        if (m.arena) renderArena(meterEl._arena, m.arena);
         if (m.pvp) {
             setText(meterEl._pvp.querySelector('.k'), String(m.pvp.kills));
             setText(meterEl._pvp.querySelector('.d'), String(m.pvp.deaths));

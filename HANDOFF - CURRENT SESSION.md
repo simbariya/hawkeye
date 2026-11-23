@@ -302,3 +302,9 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   XX26xxxx etc. named "Defiance" (Sorcerer 15240000): 0x3802 cast + 0x382A 5 s buff + 0x382C cleanse.
   WAITING on the owner: CP/GS ground truth, Defiance cooldown, what "combat record" means.
 - v0.2.25 released 2026-11-23 15:3x (AP by key); smoke start clean; GitHub v0.2.24 deleted.
+- 0.2.26 local, NOT pushed, NOT released: ARENA MODE built (Arena tab in the PvP panel, auto on match load,
+  opponent + rating, Defiance countdown from the cast's own cooldown, score, session W/L/rating, stream page).
+  Replayed arena-1123 through it (scratchpad arenareplay): right score, Defiance 51.3 s, win +25. Preview:
+  scratchpad meterpreview/arena.png. 120 tests. Still waiting on the owner for CP/GS ground truth; "combat
+  record" meaning not answered (session W/L/rating built; no saved history yet).
+- v0.2.26 released 2026-11-23 16:1x (arena mode); smoke start clean; GitHub v0.2.25 deleted.

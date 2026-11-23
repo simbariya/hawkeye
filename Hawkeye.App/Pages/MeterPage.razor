@@ -16,6 +16,7 @@
 @inject Hawkeye.Engine.Services.Pvp.PvpTracker Pvp
 @inject Hawkeye.Engine.Services.Pvp.PvpHistory PvpHistory
 @inject PvpView PvpView
+@inject Hawkeye.Engine.Services.Arena.ArenaTracker Arena
 @inject Hawkeye.Engine.Services.Theostone.TheostoneAlerts Theostones
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
@@ -46,14 +47,14 @@
         }
         @if (vm.SideVisible > 2)
         {
-            <button type="button" class="side-btn @(vm!.PvpMode ? "is-on" : "")" title="@(vm.PvpMode ? "Back to the DPS meter" : "PvP mode: kills, deaths, assists, AP and rank points")"
+            <button type="button" class="side-btn @(vm!.PvpButtonOn ? "is-on" : "")" title="@(vm.PvpButtonOn ? "Back to the DPS meter" : "PvP mode: kills, deaths, assists, AP and rank points; Arena tab inside")"
                     @onclick="() => vm.TogglePvp()" @onmousedown:stopPropagation="true">
                 <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5l8 8M13.5 2.5l-8 8M9.5 12.5l3 -3M3.5 9.5l3 3M11 11l2.5 2.5M5 11l-2.5 2.5" /></svg>
             </button>
         }
         @if (vm.SideVisible > 3)
         {
-            <button type="button" class="side-btn" title="@(vm.PvpMode ? "Start the PvP count again" : "Clear: blank the meter until your next fight (fights are kept in History)")"
+            <button type="button" class="side-btn" title="@(vm.ArenaMode ? "Start the arena wins and losses again" : vm.PvpMode ? "Start the PvP count again" : "Clear: blank the meter until your next fight (fights are kept in History)")"
                     @onclick="() => vm!.Clear()" @onmousedown:stopPropagation="true">
                 <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4.5h10M6.2 4.5V3h3.6v1.5M4.6 4.5l.7 8.5h5.4l.7-8.5" /></svg>
             </button>
@@ -108,9 +109,48 @@
             </div>
         }
 
-        @if (vm.PvpMode)
+        @if (vm.ArenaMode)
+        {
+            <div class="meter-pvp meter-arena" @onmousedown="() => vm.BeginDrag()">
+                <div class="pvp-tabs" @onmousedown:stopPropagation="true">
+                    <button type="button" @onclick="() => vm.ShowArena(false)">World</button>
+                    <button type="button" class="is-on">Arena</button>
+                </div>
+                @if (vm.HasArenaMatch)
+                {
+                    <div class="arena-score @(vm.ArenaResult == "Won" ? "is-won" : vm.ArenaResult == "Lost" ? "is-lost" : "")"
+                         title="Kills this match: your team, then theirs"><b>@vm.ArenaScore</b>@if (vm.ArenaResult != "") {<span>@vm.ArenaResult</span>}</div>
+                    @foreach (var f in vm.ArenaFoes)
+                    {
+                        <div class="arena-foe">
+                            <div class="foe-name"><span>@f.Name</span><small>@f.Rating</small></div>
+                            <div class="foe-def @(f.DefianceDown ? "is-down" : "is-ready")"
+                                 title="@(f.DefianceDown ? "Their Defiance is on cooldown: your stuns land" : "Their Defiance is ready: it breaks your stun")">
+                                <i style="width:@(f.DefianceBar.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></i>
+                                <span>Defiance</span><b>@f.DefianceText</b>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="arena-wait">Shows your opponent and their Defiance when a match loads</div>
+                }
+                <div class="pvp-kda">
+                    <div><b>@vm.ArenaWins</b><span>Wins</span></div>
+                    <div><b>@vm.ArenaLosses</b><span>Losses</span></div>
+                    <div><b>@vm.ArenaChange</b><span>Rating</span></div>
+                </div>
+                <div class="pvp-gain"><span>Arena rating</span><b>@vm.ArenaRating</b></div>
+            </div>
+        }
+        else if (vm.PvpMode)
         {
             <div class="meter-pvp" @onmousedown="() => vm.BeginDrag()">
+                <div class="pvp-tabs" @onmousedown:stopPropagation="true">
+                    <button type="button" class="is-on">World</button>
+                    <button type="button" @onclick="() => vm.ShowArena(true)">Arena</button>
+                </div>
                 <div class="pvp-kda">
                     <div class="is-clickable" title="Who you killed" @onclick="() => vm.OpenPvpList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Kill)" @onmousedown:stopPropagation="true"><b>@vm.Kills</b><span>Kills</span></div>
                     <div class="is-clickable" title="Who killed you" @onclick="() => vm.OpenPvpList(Hawkeye.Engine.Services.Pvp.PvpEventKind.Death)" @onmousedown:stopPropagation="true"><b>@vm.Deaths</b><span>Deaths</span></div>
@@ -181,7 +221,7 @@
     private MeterViewModel? vm;
 
     protected override void OnInitialized() =>
-        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, PvpHistory, PvpView, Theostones, () => InvokeAsync(StateHasChanged));
+        vm = new MeterViewModel(Sessions, Stats, Settings, Overlays, Source, Details, Updates, Pvp, PvpHistory, PvpView, Theostones, Arena, () => InvokeAsync(StateHasChanged));
 
     // A row is clicked for its breakdown, but holding the button and moving still drags the meter.
     private double downX, downY;
@@ -210,7 +250,7 @@
         if (vm is null) return;
         await MeasureSideAsync();
         if (!vm.AutoHeight) { measuredKey = string.Empty; return; }
-        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}|{vm.PvpMode}|{vm.SideExpanded}";
+        var key = $"{vm.FitRows}|{vm.StatusItems.Count}|{vm.TargetName}|{vm.ShowDummyButton}|{vm.LookClass}|{vm.PvpMode}|{vm.ArenaMode}|{vm.ArenaFoes.Count}|{vm.HasArenaMatch}|{vm.SideExpanded}";
         if (key == measuredKey) return;
         measuredKey = key;
         try

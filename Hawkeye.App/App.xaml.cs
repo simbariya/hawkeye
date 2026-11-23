@@ -60,6 +60,7 @@ namespace Hawkeye.App
                     services.AddSingleton<CombatSessionManager>();
                     services.AddSingleton<Hawkeye.Engine.Services.Odyle.OdyleTracker>();
                     services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpTracker>();
+                    services.AddSingleton<Hawkeye.Engine.Services.Arena.ArenaTracker>();
                     services.AddSingleton<Hawkeye.Engine.Services.Theostone.TheostoneAlerts>();
                     services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpHistory>();
                     services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpTotalsStore>();

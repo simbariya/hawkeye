@@ -36,6 +36,7 @@ namespace Hawkeye.App.Services.Streaming
         private readonly ITimedEventTracker buffs;
         private readonly ILogger<StreamServer> logger;
         private readonly Hawkeye.Engine.Services.Pvp.PvpTracker pvp;
+        private readonly Hawkeye.Engine.Services.Arena.ArenaTracker arena;
         private readonly DispatcherTimer timer;
         private readonly DispatcherTimer captureTimer;
 
@@ -49,6 +50,36 @@ namespace Hawkeye.App.Services.Streaming
         /// </summary>
         private static readonly string Instance = Guid.NewGuid().ToString("N");
 
+        /// <summary>The arena view for the stream page: the same as the meter's (v0.2.26).</summary>
+        private object BuildArena()
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var m = arena.Match;
+            return new
+            {
+                score = m is null ? "" : $"{m.OurKills} - {m.TheirKills}",
+                result = m?.Won switch { true => "Won", false => "Lost", _ => "" },
+                wins = arena.Wins,
+                losses = arena.Losses,
+                change = (arena.RatingChange > 0 ? "+" : "") + arena.RatingChange.ToString("N0", ci),
+                rating = arena.Rating?.ToString("N0", ci) ?? "-",
+                time = (DateTime.Now - (m is { Won: null } ? m.At : arena.StartedAt)).ToString(@"mm\:ss"),
+                foes = m is null ? [] : m.Enemies.Select(e =>
+                {
+                    var left = arena.DefianceLeft(e);
+                    bool down = left > TimeSpan.Zero;
+                    return new
+                    {
+                        name = e.Name,
+                        rating = e.Rating > 0 ? e.Rating.ToString("N0", ci) : "",
+                        down,
+                        text = down ? $"{Math.Ceiling(left.TotalSeconds):0}s" : "Ready",
+                        bar = down ? Math.Round(100 * left.TotalMilliseconds / e.DefianceCooldown.TotalMilliseconds, 1) : 0,
+                    };
+                }).ToList(),
+            };
+        }
+
         /// <summary>Shown in Settings: "Running", or why it is not.</summary>
         public string Status { get; private set; } = "Off";
         public string Url => $"http://localhost:{settings.Current.StreamerPort}/";
@@ -58,9 +89,11 @@ namespace Hawkeye.App.Services.Streaming
             [FromKeyedServices(TimerKeys.Cooldowns)] ITimedEventTracker cooldowns,
             [FromKeyedServices(TimerKeys.Buffs)] ITimedEventTracker buffs,
             Hawkeye.Engine.Services.Pvp.PvpTracker pvp,
+            Hawkeye.Engine.Services.Arena.ArenaTracker arena,
             ILogger<StreamServer> logger)
         {
             this.pvp = pvp;
+            this.arena = arena;
             this.settings = settings;
             this.meter = meter;
             this.stats = stats;
@@ -228,6 +261,7 @@ namespace Hawkeye.App.Services.Streaming
                         width = main.ActualWidth,
                         opacity = s.Opacity,
                         look = Looks.ClassFor(s.Look),
+                        arena = !arena.Showing ? null : BuildArena(),
                         pvp = !pvp.Active ? null : new
                         {
                             kills = pvp.Kills,

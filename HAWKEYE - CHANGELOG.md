@@ -3,6 +3,24 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.26 (2026-11-23)
+
+Added (owner: "an arena mode, something that will on load show your opponent ... and track when they use defiance,
+so I know when it's on cooldown and I can use my stun skills"; "kinda like pvp mode that tracks your rank
+wins/losses in a session"):
+- **Arena view:** the PvP panel has two tabs, World and Arena. An arena match loading switches the meter to Arena
+  on its own (and back to what you had when you leave the arena). It shows the score (kills, your team first),
+  each opponent with their arena rating, and their **Defiance**: red "Ready" (it would break your stun), or a
+  green bar counting down while it is on cooldown (stun now). The countdown uses the cooldown the game sends with
+  their cast (51.3 s for the Sorcerer in the owner's match; 60 s if none is sent). Below: wins, losses and rating
+  change this session, and your arena rating. The bin starts the session again. Same on the stream page.
+- Read from the owner's recorded 1v1 (won 3-0, 1500 to 1525): roster 0xE319, kills 0xE325, result 0xE328,
+  standings 0xE32A; Defiance from the cast 0x3802. Replayed through the new code: same score, the opponent's
+  Defiance at 15:18:55 with its 51.3 s, the win and +25.
+- Not yet: the opponent's CP and gear score (waiting for the numbers the game showed, to find them in the data);
+  a saved arena history.
+120 tests (6 new).
+
 ## v0.2.25 (2026-11-23)
 
 Fixed (owner: "farming mobs on chanter now in abyss in pvp mode - it doesn't count the kills which is right, but

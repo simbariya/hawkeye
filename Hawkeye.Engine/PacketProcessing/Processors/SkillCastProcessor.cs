@@ -7,7 +7,7 @@ using Hawkeye.Engine.Services.Session;
 namespace Hawkeye.Engine.PacketProcessing.Processors
 {
     [PacketOpcode(PacketOpcodes.SkillCast)]
-    internal class SkillCastProcessor(CombatSessionManager sessionManager) : IOpcodeProcessor
+    internal class SkillCastProcessor(CombatSessionManager sessionManager, Hawkeye.Engine.Services.Arena.ArenaTracker? arena = null) : IOpcodeProcessor
     {
         private const byte MaskHas01 = 0x01;
         private const byte MaskHasUnknown02 = 0x02;
@@ -45,6 +45,9 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             if ((mask & MaskHasCount) != 0) r.ReadVarInt(); //count
 
             var skill = gameData.GetSkillOrDefault((int)skillId);
+
+            // An enemy's Defiance in the arena; the cast carries their real cooldown (v0.2.26).
+            arena?.OnSkillCast((int)sourceId, skill.Name, TimeSpan.FromMilliseconds(cooldownMilliseconds));
 
             sessionManager.RegisterSkillCastEvent(new SkillCastEvent()
             {

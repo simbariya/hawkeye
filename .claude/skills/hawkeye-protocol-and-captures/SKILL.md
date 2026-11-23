@@ -163,6 +163,18 @@ character's numbers and the stream was searched for them.
   recordings for the dummy codes). Training dummies keep their entity ids: all 7 in login-1122 and target-run had
   the same ids on 2026-11-21 and 2026-11-22. Dummy max HP is small (50,540 and 119,700), so HP cannot spot them.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
+- **Arena (2026-11-23, owner's recorded 1v1, won 3-0, 1500 to 1525; scratchpad arena-1123):** a player is an
+  8-byte key `[u32 character id][u16 0][u16 server id]`. **0xE319 roster** as the match loads: per player
+  `[u8 team][u32 rating]...[key][u8 name length][name][u32 ?][u8 1][u32 level]...` (team 22 bytes before the key,
+  rating 21; found by the key + name shape). **0xE325 kill** `[killer key][victim key]`. **0xE326** round score
+  per player (not used). **0xE328 result** `[u8][u32 new rating][u8][u8][your key]...`. **0xE32A standings**
+  (every zone change) `[u8 count]` then 14 bytes per mode `[u8 mode][u32 rating][u32 ?][u8 wins][u8 losses]
+  [u16 ?][u8 ?]` (mode 1: 1500/0/0 to 1525/1/0; the owner's mode 3: 1532/9/7; the last byte 4 there is unknown).
+  0xE31C / E31B / E31D / E33x / E34x also come with arena loading, not decoded.
+- **Defiance** (every class's crowd-control breaker; skill name "Defiance", ids per class such as 14260000 Ranger,
+  15240000 Sorcerer, 18200000 Chanter): an enemy's use is a **0x3802 cast whose cooldown field is their real
+  cooldown** (51,300 ms in the recording; others in the Abyss 36,900 and 28,700 ms), then 0x3804 self-hits, a
+  0x382A 5 s buff on themselves and 0x382C removals (the CC it broke).
 
 ## 5. Record a fight, replay it, test a decoder
 
