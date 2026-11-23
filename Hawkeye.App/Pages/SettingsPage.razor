@@ -88,10 +88,10 @@
             </ValueSlot>
         </SettingRow>
 
-        <SettingRow Title="Theostone: yours" Description="A small alert on the meter when your Theostone procs">
+        <SettingRow Title="Theostone: yours" Description="A small tile when your Theostone procs (Damage 1%, Blind...). A debuff you put on an enemy counts down until it ends">
             <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsYours" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsYours = v)" /></ValueSlot>
         </SettingRow>
-        <SettingRow Title="Theostone: on you" Description="A red alert when someone's Theostone hits you. A debuff (blind, silence...) stays with its time left until it ends or you cleanse it">
+        <SettingRow Title="Theostone: on you" Description="A red tile when someone's Theostone hits you. A debuff (Silence, Blind, Poison...) stays with its time left until it ends or you cleanse it, a potion too">
             <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsOnYou" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsOnYou = v)" /></ValueSlot>
         </SettingRow>
         <SettingRow Title="Theostone: where" Description="@(S.TheostonePlace == TheostonePlace.Screen ? "Its own box: while Settings is open it shows a dashed outline you can drag anywhere" : "Over the top of the meter")">
@@ -118,7 +118,7 @@
                 </ValueSlot>
             </SettingRow>
         }
-        <SettingRow Title="Theostone: how long" Description="How long a proc alert stays. Debuffs on you stay until they end">
+        <SettingRow Title="Theostone: how long" Description="How long a proc tile stays. Debuffs stay until they end">
             <ValueSlot>
                 <div class="hs-mode">
                     @foreach (var v in new[] { 2.0, 3.5, 5.0 })

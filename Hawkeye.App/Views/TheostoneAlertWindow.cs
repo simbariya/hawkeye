@@ -20,12 +20,16 @@ namespace Hawkeye.App.Views
     /// Settings is open it shows a dashed box with two sample alerts and can be dragged; the spot is saved.
     /// Plain WPF like the tracker icons. Streamer mode draws the same alerts at the same spot.
     ///
-    /// Rows: THEOSTONE (your proc, cyan edge), HIT BY (someone's hit you, red edge). A debuff on you shows its time
-    /// left and a bar running down, and stays until it ends or the game removes it (potion).
+    /// Tiles side by side (owner, 2026-11-23: "instead of line message, a box that takes less space but taller, like a
+    /// button that appears"): YOURS (cyan top edge) or ON YOU (red), the effect in a word ("Silence", "Damage 2%"),
+    /// then the damage, or for a debuff its seconds left and a bar running down. A debuff stays until it ends or the
+    /// game removes it (a potion).
     /// </summary>
     public sealed class TheostoneAlertWindow : Window
     {
-        public const double BaseWidth = 300;
+        public const double TileWidth = 92;
+        public const double TileHeight = 66;
+        public const double TileGap = 3;
         private const double Pad = 6;
         private const double LabelRoom = 14;   // above the rows, for the "drag to move" label in edit mode
 
@@ -72,7 +76,7 @@ namespace Hawkeye.App.Views
             SizeToContent = SizeToContent.WidthAndHeight;
             WindowStartupLocation = WindowStartupLocation.Manual;
 
-            rows = new StackPanel();
+            rows = new StackPanel { Orientation = Orientation.Horizontal };
             editOutline = new Rectangle
             {
                 Stroke = Brushes.White, StrokeThickness = 1, StrokeDashArray = new DoubleCollection { 3, 2 },
@@ -125,8 +129,8 @@ namespace Hawkeye.App.Views
         /// <summary>Two made-up alerts to place the window by.</summary>
         public static IReadOnlyList<TheostoneProc> Samples(DateTime now) =>
         [
-            new(now, true, "Tassin's Command", 12_400, "", 2),
-            new(now, false, "Khrudgelmir's Silence", 0, "Bravo", 0, now.AddSeconds(3.4), 1, TimeSpan.FromSeconds(4)),
+            new(now, true, "Traufnir's Courage", 10_400, "", 1, Label: "Damage 1%"),
+            new(now, false, "Khrudgelmir's Silence", 0, "Bravo", 0, now.AddSeconds(3.4), 1, TimeSpan.FromSeconds(4), "Silence"),
         ];
 
         private void Refresh()
@@ -138,7 +142,7 @@ namespace Hawkeye.App.Views
             Shown = onScreen ? live : [];   // the samples are only for placing it, not for the stream
 
             double scale = Scale;
-            var key = string.Join("|", list.Select(p => $"{p.Name}{p.Yours}{p.Hits}{p.Damage}{p.IsDebuff}")) + scale;
+            var key = string.Join("|", list.Select(p => $"{p.Name}{p.Yours}{p.Hits}{p.Damage}{p.IsDebuff}{p.From}")) + scale;
             if (key != lastKey)
             {
                 lastKey = key;
@@ -155,9 +159,9 @@ namespace Hawkeye.App.Views
                 {
                     var left = until - now;
                     if (left < TimeSpan.Zero) left = TimeSpan.Zero;
-                    parts.Amount.Text = AmountText(p, left);
+                    parts.Main.Text = MainText(p, left);
                     double frac = p.Duration.TotalMilliseconds > 0 ? Math.Clamp(left.TotalMilliseconds / p.Duration.TotalMilliseconds, 0, 1) : 0;
-                    parts.Bar.Width = Math.Max(0, (BaseWidth * scale - 2) * frac);
+                    parts.Bar.Width = Math.Max(0, TileWidth * scale * frac);
                     row.Opacity = 1;
                 }
                 else
@@ -168,61 +172,59 @@ namespace Hawkeye.App.Views
             }
         }
 
-        private sealed record RowParts(TextBlock Amount, Rectangle Bar);
+        private sealed record RowParts(TextBlock Main, Rectangle Bar);
 
-        public static string TagText(TheostoneProc p) => p.Yours ? "THEOSTONE" : "HIT BY";
+        /// <summary>Top line of a tile: whose it is.</summary>
+        public static string TagText(TheostoneProc p) => p.Yours ? "YOURS" : "ON YOU";
 
-        public static string AmountText(TheostoneProc p, TimeSpan left)
+        /// <summary>The big line: seconds left on a debuff, else the damage (empty when it did none).</summary>
+        public static string MainText(TheostoneProc p, TimeSpan left) =>
+            p.IsDebuff ? left.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture) + "s"
+            : p.Damage > 0 ? MeterViewModel.Compact(p.Damage, shortThousands: true) : "";
+
+        /// <summary>The small line: a debuff's damage so far, who it came from, or how many hits.</summary>
+        public static string SubText(TheostoneProc p)
         {
-            var parts = new List<string>();
-            if (p.Damage > 0) parts.Add(MeterViewModel.Compact(p.Damage, shortThousands: true) + (p.Hits > 1 ? $" x{p.Hits}" : ""));
-            if (p.IsDebuff) parts.Add(left.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture) + "s");
-            return string.Join("  ", parts);
+            if (p.IsDebuff && p.Damage > 0) return MeterViewModel.Compact(p.Damage, shortThousands: true);
+            if (!p.Yours && p.From.Length > 0) return p.From;
+            return p.Hits > 1 ? $"x{p.Hits}" : "";
         }
 
         private static Border BuildRow(TheostoneProc p, double scale)
         {
-            double fs = 12 * scale;
-            var tag = new TextBlock
+            TextBlock Line(string text, double size, Brush brush, FontWeight weight) => new()
             {
-                Text = TagText(p), FontFamily = Font, FontSize = 9 * scale, Foreground = p.Yours ? CyanBrush : TagRed,
-                VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8 * scale, 0),
+                Text = text, FontFamily = Font, FontSize = size * scale, Foreground = brush, FontWeight = weight,
+                TextTrimming = TextTrimming.CharacterEllipsis, HorizontalAlignment = HorizontalAlignment.Center,
+                Visibility = text.Length > 0 ? Visibility.Visible : Visibility.Collapsed,
             };
-            var name = new TextBlock
-            {
-                Text = MeterViewModel.ProcText(p), FontFamily = Font, FontSize = fs, Foreground = Text,
-                TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center,
-            };
-            var amount = new TextBlock
-            {
-                Text = AmountText(p, p.Until is { } u ? u - DateTime.Now : TimeSpan.Zero), FontFamily = Font, FontSize = fs,
-                Foreground = Dim, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8 * scale, 0, 0, 0),
-            };
+            var tag = Line(TagText(p), 8.5, p.Yours ? CyanBrush : TagRed, FontWeights.SemiBold);
+            var word = Line(p.Word, 13, Text, FontWeights.SemiBold);
+            var main = Line(MainText(p, p.Until is { } u ? u - DateTime.Now : TimeSpan.Zero), 16, Text, FontWeights.Bold);
+            main.Visibility = Visibility.Visible;   // keeps its room so a countdown does not jump
+            var sub = Line(SubText(p), 9, Dim, FontWeights.Normal);
+            var stack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            stack.Children.Add(tag); stack.Children.Add(word); stack.Children.Add(main); stack.Children.Add(sub);
+
             var bar = new Rectangle
             {
-                Height = Math.Max(2, 2 * scale), Fill = RedBrush, HorizontalAlignment = HorizontalAlignment.Left,
+                Height = Math.Max(2, 3 * scale), Fill = p.Yours ? CyanBrush : RedBrush, HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Bottom, Visibility = p.IsDebuff ? Visibility.Visible : Visibility.Collapsed,
-                Opacity = 0.8,
+                Opacity = 0.85,
             };
-            var line = new Grid();
-            line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            Grid.SetColumn(tag, 0); Grid.SetColumn(name, 1); Grid.SetColumn(amount, 2);
-            line.Children.Add(tag); line.Children.Add(name); line.Children.Add(amount);
-
             var body = new Grid();
-            body.Children.Add(new Border { Child = line, Padding = new Thickness(8 * scale, 4 * scale, 8 * scale, 4 * scale) });
+            body.Children.Add(new Border { Child = stack, Padding = new Thickness(4 * scale, 3 * scale, 4 * scale, 4 * scale) });
             body.Children.Add(bar);
             return new Border
             {
-                Width = BaseWidth * scale,
+                Width = TileWidth * scale,
+                Height = TileHeight * scale,
                 Background = p.Yours ? YoursBack : OnYouBack,
                 BorderBrush = p.Yours ? CyanBrush : RedBrush,
-                BorderThickness = new Thickness(2, 0, 0, 0),
-                Margin = new Thickness(0, 0, 0, 1),
+                BorderThickness = new Thickness(0, 2, 0, 0),
+                Margin = new Thickness(0, 0, TileGap, 0),
                 Child = body,
-                Tag = new RowParts(amount, bar),
+                Tag = new RowParts(main, bar),
             };
         }
 
@@ -239,7 +241,7 @@ namespace Hawkeye.App.Views
                 return;
             }
             // Not placed yet: a little above the screen centre, where your eyes are anyway.
-            Left = SystemParameters.PrimaryScreenWidth / 2 - BaseWidth / 2 - Pad;
+            Left = SystemParameters.PrimaryScreenWidth / 2 - TileWidth - Pad;
             Top = SystemParameters.PrimaryScreenHeight * 0.28;
         }
 

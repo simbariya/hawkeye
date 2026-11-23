@@ -3,6 +3,27 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.21 (2026-11-23, not released yet)
+
+Changed (owner: "instead of those big names, just call it Silence/Blind/Paralyze etc. Damage ones should be
+Damage 1%, Damage 2% depending on the type. Instead of line message, a box that takes less space but taller,
+like a button that appears. When using a pot it should disappear, so it should match the status effects"):
+- **Theostone alerts are tiles now**, side by side: YOURS or ON YOU, what it does in a word, then the damage, or
+  for a debuff its seconds left with a bar running down, and who it came from. Same on the meter and on stream.
+- **Words instead of stone names:** Blind, Silence, Root, Stun, Paralyze, Slow, Attack Slow, Poison, Bleed.
+  Damage stones say "Damage N%", N being their proc chance, which is what tells them apart (Fire 1%, Water 2%,
+  Earth 5%, Wind 10%; their area versions 2%, 4%, 10%, 20%). Worked out from the skill id; checked against all
+  51 stones in the public tables and the 4 debuffs in the owner's recording (Paralyze 3 s, Poison 20 s,
+  Silence 4 s and 3 s, all matching).
+- **Poison and Bleed** ticks add their damage to the tile; a potion ends it the moment the game says so
+  (recording: the owner's potion cleansed a 20 s Poison at 9.4 s).
+- **Your own debuff on an enemy** (if your stone is a Blind, Silence...) counts down on its tile until it ends on
+  that enemy.
+- Note from the recording: a debuff stone's hit comes first and does not mean the debuff landed (three Bleed hits
+  and one Silence hit on the owner never became a debuff), so a hit alone stays a short tile.
+100 tests (6 new: every published stone gets its word, Poison ticks and a real potion cleanse, your debuff on an
+enemy, ticks never make their own tile, someone else's debuff stays hidden).
+
 ## v0.2.20 (2026-11-23)
 
 Added (owner: "fetch my kofi link from salsa manga project and insert in the meter"):

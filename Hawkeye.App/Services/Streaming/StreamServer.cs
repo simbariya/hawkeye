@@ -332,14 +332,15 @@ namespace Hawkeye.App.Services.Streaming
                 where = screen ? "screen" : "meter",
                 left = w.ContentLeft,
                 top = w.ContentTop,
-                width = Hawkeye.App.Views.TheostoneAlertWindow.BaseWidth,
+
                 scale = screen ? w.Scale : 1.0,
                 items = list.Select(p => new
                 {
                     yours = p.Yours,
                     tag = Hawkeye.App.Views.TheostoneAlertWindow.TagText(p),
-                    name = MeterViewModel.ProcText(p),
-                    amount = Hawkeye.App.Views.TheostoneAlertWindow.AmountText(p, alerts.TimeLeft(p)),
+                    name = p.Word,
+                    amount = Hawkeye.App.Views.TheostoneAlertWindow.MainText(p, alerts.TimeLeft(p)),
+                    sub = Hawkeye.App.Views.TheostoneAlertWindow.SubText(p),
                     bar = p.IsDebuff && p.Duration.TotalMilliseconds > 0
                         ? Math.Round(100 * alerts.TimeLeft(p).TotalMilliseconds / p.Duration.TotalMilliseconds, 1) : -1,
                     fade = p.IsDebuff ? 1 : Math.Round(Math.Clamp((alerts.ShowFor - (now - p.At)).TotalSeconds / 0.5, 0, 1), 2),

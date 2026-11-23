@@ -80,7 +80,7 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             var instance = (int)r.ReadVarInt(); // the game's number for this buff; its removal (0x382C) names it
             var buffId =(int)r.ReadU32() / 10;
 
-            // A Theostone debuff (on you, it becomes an alert until it ends). Layout from the owner's recording,
+            // A Theostone debuff (on you, or yours on an enemy: an alert until it ends). Layout from the owner's recording,
             // 2026-11-21: [id x10][u32 duration ms][5 bytes][u64 time][caster varint]...
             if (theostones is not null && gameData.IsTheostone(buffId))
             {
@@ -88,7 +88,7 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
                 int caster = 0;
                 try { r.Skip(5 + 8); caster = (int)r.ReadVarInt(); } catch (Exception) { /* caster is optional */ }
                 if (ms >= 100 && ms <= MaxReasonableBuffDurationMs)
-                    theostones.OnDebuff(entityId, instance, gameData.GetSkillOrDefault(buffId).Name, ms, caster);
+                    theostones.OnDebuff(entityId, instance, gameData.GetSkillOrDefault(buffId).Name, ms, caster, buffId);
                 return null;
             }
 

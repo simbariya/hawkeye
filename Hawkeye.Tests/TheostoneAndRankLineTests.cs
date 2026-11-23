@@ -91,7 +91,7 @@ public sealed class TheostoneAndRankLineTests : IDisposable
     {
         BuffReader().Process(Msg(Silence4s));
         var d = Assert.Single(alerts.Showing);
-        Assert.Equal(("Khrudgelmir's Silence", 1383, TimeSpan.FromSeconds(4)), (d.Name, d.Instance, d.Duration));
+        Assert.Equal(("Khrudgelmir's Silence", "Silence", 1383, TimeSpan.FromSeconds(4)), (d.Name, d.Word, d.Instance, d.Duration));
 
         now = now.AddSeconds(3.9);                                  // longer than a plain alert, still on
         Assert.Single(alerts.Showing);
@@ -118,6 +118,112 @@ public sealed class TheostoneAndRankLineTests : IDisposable
         alerts.OnDebuff(Me, 1383, "Theostone: Khrudgelmir's Silence", 4_000, Enemy);
         var one = Assert.Single(alerts.Showing);
         Assert.Equal((3_000L, true, "Bravo"), (one.Damage, one.IsDebuff, one.From));
+    }
+
+    // ---- short words on the tiles (owner, 2026-11-23: "just call it Silence/Blind/Paralyze etc., damage ones Damage 1%, 2%") ----
+
+    // Every stone in the public tables (metabot.gg, timesaver.gg, expcarry.com, aion.xtopolis.com; 2026-11-23), by the
+    // game's own names, with what the tables say it does. The label comes from the skill id alone, so this checks
+    // the id pattern against all 51.
+    private static readonly Dictionary<string, string> Published = new()
+    {
+        // damage: Fire 1%, Water 2%, Earth 5%, Wind 10% single target; area 2%, 4%, 10%, 20%
+        ["Zikel's Vestige"] = "Damage 1%", ["Traufnir's Courage"] = "Damage 1%", ["Tiamat's Rage"] = "Damage 1%",
+        ["Tassin's Command"] = "Damage 2%", ["Sif's Knowledge"] = "Damage 2%", ["Triniel's Rationality"] = "Damage 2%",
+        ["Ulgorn's Will"] = "Damage 5%", ["Freyr's Wisdom"] = "Damage 5%", ["Vaizel's Oath"] = "Damage 5%",
+        ["Aultross's Promise"] = "Damage 10%", ["Sigyn's Brilliance"] = "Damage 10%", ["Meslamtaeda's Regret"] = "Damage 10%",
+        ["Bargott's Ember"] = "Damage 2%", ["Boreas's Encouragement"] = "Damage 2%", ["Tiamat's Counterstrike"] = "Damage 2%",
+        ["Aulvicar's Hex"] = "Damage 4%", ["Charna's Acumen"] = "Damage 4%", ["Marchutan's Justice"] = "Damage 4%",
+        ["Gartua's Strength"] = "Damage 10%", ["Thrasymedes's Wisdom"] = "Damage 10%", ["Yustiel's Compassion"] = "Damage 10%",
+        ["Rathman's Greed"] = "Damage 20%", ["Jumentis's Dexterity"] = "Damage 20%", ["Beritra's Selfishness"] = "Damage 20%",
+        // debuffs
+        ["Kaisinel's Vestige"] = "Blind", ["Bollvig's Tragedy"] = "Blind", ["Fregion's Schemes"] = "Blind",
+        ["Perion's Tragedy"] = "Silence", ["Khrudgelmir's Silence"] = "Silence", ["Beritra's Conspiracy"] = "Silence",
+        ["Heladrir's Chains"] = "Root", ["Charna's Root"] = "Root", ["Nezekan's March"] = "Root",
+        ["Aulak's Roar"] = "Stun", ["Fasimedes's Dignity"] = "Stun", ["Meslamtaeda's Greed"] = "Stun",
+        ["Nua's Scheme"] = "Paralyze", ["Vidar's Dignity"] = "Paralyze", ["Ereshkigal's Honor"] = "Paralyze",
+        ["Reda's Tenacity"] = "Slow", ["Deltras's Loyalty"] = "Slow", ["Kaisinel's Illusion"] = "Slow",
+        ["Notun's Craft"] = "Attack Slow", ["Io's Sadness"] = "Attack Slow", ["Lumiel's Interference"] = "Attack Slow",
+        ["Santras's Secret"] = "Poison", ["Orissan's Blood"] = "Poison", ["Zikel's Arrogance"] = "Poison",
+        ["Feruk's Instinct"] = "Bleed", ["Mahisha's Wrath"] = "Bleed", ["Fregion's Strategy"] = "Bleed",
+    };
+
+    [Fact]
+    public void EveryPublishedStone_GetsItsWord()
+    {
+        var skills = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
+            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "GameData", "Assets", "skills.json")))!;
+        var byName = skills.Where(kv => kv.Value.StartsWith("Theostone: ")).ToDictionary(kv => kv.Value["Theostone: ".Length..], kv => int.Parse(kv.Key));
+        Assert.Equal(51, Published.Count);
+        foreach (var (name, word) in Published)
+        {
+            int id = byName[name];
+            Assert.Equal((name, word), (name, TheostoneKinds.Label(id, name)));
+            Assert.Equal((name, word), (name, TheostoneKinds.Label(id / 10, name)));   // the 7-digit form damage messages carry
+        }
+        Assert.Equal("Gerod's Curse", TheostoneKinds.Label(byName["Gerod's Curse"], "Gerod's Curse"));   // not in the tables: own name
+        Assert.Equal("Odd", TheostoneKinds.Label(0, "Odd"));
+    }
+
+    [Fact]
+    public void Hits_ShowTheWord()
+    {
+        alerts.OnHit(Me, Mob, "Theostone: Traufnir's Courage", 10_000, 3000117);
+        alerts.OnHit(Enemy, Me, "Theostone: Vidar's Dignity", 0, 3001112);
+        Assert.Equal(["Damage 1%", "Paralyze"], alerts.Showing.Select(p => p.Word));
+    }
+
+    // Santras's Secret (Poison, 20 s) on the owner, instance 1221 (C5 09); the game's removal 9.4 s later when he used a
+    // potion: reason 7 for instance 1232 (D0 09) and 1221 (C5 09). Real bytes from the 2026-11-21 recording.
+    private const string PoisonCleansed = "252C38EE610207D0090BEE6106D31E00636E0A0C07C5090BEE6106D31E00636E0A0C";
+
+    [Fact]
+    public void Poison_TicksAddUp_AndAPotionEndsIt()
+    {
+        alerts.OnDebuff(Me, 1221, "Theostone: Santras's Secret", 20_000, Enemy, 3001015);
+        now = now.AddSeconds(2);
+        alerts.OnTick(Enemy, Me, "Theostone: Santras's Secret", 300);
+        now = now.AddSeconds(2);
+        alerts.OnTick(Enemy, Me, "Theostone: Santras's Secret", 300);
+        var p = Assert.Single(alerts.Showing);
+        Assert.Equal(("Poison", 600L, false), (p.Word, p.Damage, p.Yours));
+
+        now = now.AddSeconds(5.4);
+        new Hawkeye.Engine.PacketProcessing.Processors.BuffRemovedProcessor(alerts).Process(Msg(PoisonCleansed));
+        Assert.Empty(alerts.Showing);
+    }
+
+    [Fact]
+    public void Ticks_NeverMakeATileOfTheirOwn()
+    {
+        alerts.OnTick(Enemy, Me, "Theostone: Santras's Secret", 300);
+        Assert.Empty(alerts.Showing);
+    }
+
+    [Fact]
+    public void YourDebuffOnAnEnemy_CountsDown_AndEndsWithIt()
+    {
+        alerts.OnHit(Me, Enemy, "Theostone: Bollvig's Tragedy", 0, 3001107);
+        alerts.OnDebuff(Enemy, 1221, "Theostone: Bollvig's Tragedy", 6_000, Me, 3001107);
+        var p = Assert.Single(alerts.Showing);
+        Assert.Equal(("Blind", true, true, Enemy), (p.Word, p.Yours, p.IsDebuff, p.Target));
+
+        // The same instance number removed from YOU says nothing about the enemy's debuff.
+        new Hawkeye.Engine.PacketProcessing.Processors.BuffRemovedProcessor(alerts).Process(Msg(PoisonCleansed));
+        Assert.Single(alerts.Showing);
+
+        var removal = Convert.FromHexString("0B2C38BF150107C509");    // [len][op][entity 2751][count 1][reason 7][instance 1221]
+        alerts.OnRemoved(Bystander, removal, 6);                       // someone else's: still there
+        Assert.Single(alerts.Showing);
+        alerts.OnRemoved(Enemy, removal, 6);
+        Assert.Empty(alerts.Showing);
+    }
+
+    [Fact]
+    public void SomeoneElsesDebuff_OnSomeoneElse_IsNotShown()
+    {
+        alerts.OnDebuff(Enemy, 77, "Theostone: Bollvig's Tragedy", 6_000, Bystander, 3001107);
+        Assert.Empty(alerts.Showing);
     }
 
     // ---- rank line: always there, nudges you to open Abyss Rank ----

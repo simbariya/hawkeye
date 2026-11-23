@@ -51,15 +51,14 @@ namespace Hawkeye.App.ViewModels
         /// <summary>Theostone procs to flash on the meter (yours, and others' hitting you), oldest first.</summary>
         public IReadOnlyList<Hawkeye.Engine.Services.Theostone.TheostoneProc> Theostones { get; private set; } = [];
 
-        public static string ProcText(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
-            p.Yours || p.From.Length == 0 ? p.Name : $"{p.Name} from {p.From}";
 
         /// <summary>Debuff time left as a percentage for its bar, or -1 for a plain hit.</summary>
         public double ProcBar(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
             p.IsDebuff && p.Duration.TotalMilliseconds > 0 ? 100 * theostones.TimeLeft(p).TotalMilliseconds / p.Duration.TotalMilliseconds : -1;
 
-        public string ProcAmount(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
-            Hawkeye.App.Views.TheostoneAlertWindow.AmountText(p, theostones.TimeLeft(p));
+        /// <summary>The tile's big line: seconds left on a debuff, else the damage.</summary>
+        public string ProcMain(Hawkeye.Engine.Services.Theostone.TheostoneProc p) =>
+            Hawkeye.App.Views.TheostoneAlertWindow.MainText(p, theostones.TimeLeft(p));
         private readonly DetailsState details;
         private readonly Func<Task> redraw;
         private readonly Dictionary<long, PlayerRow> rows = new();

@@ -247,21 +247,27 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   "reached" shows "official at HH:mm" until the update.
 - **Messages:** layouts in the protocol skill, `PvpParser` and `PvpRanking.cs`.
 
-## 6g. Theostone alerts (v0.2.17, own window and debuffs v0.2.19)
+## 6g. Theostone alerts (v0.2.17, own window and debuffs v0.2.19, tiles and words v0.2.21)
 
 - **Does:** `Engine/Services/Theostone/TheostoneAlerts`.
   - Procs: `DamagePacketProcessor` hands every hit with a Theostone skill code to `OnHit` before its
     own player check. Yours (actor is you) or on you (target is you) only; same stone and direction
-    within 1.5 s merge; shown `TheostoneSeconds`.
-  - Debuffs on you: `BuffPacketProcessor` reads Theostone ids (it used to drop them) and calls
-    `OnDebuff(target, instance, name, ms, caster)` (layout: [id x10][u32 ms][5 bytes][u64 time][caster]).
-    The alert stays until its time runs out or `BuffRemovedProcessor` (0x382C) brings a removal naming
-    its instance (`OnRemoved`; each entry is [reason][instance varint], reason 0 ran out, 7 cleansed).
+    within 1.5 s merge; shown `TheostoneSeconds`. A debuff stone's hit does not mean the debuff landed.
+  - Debuffs: `BuffPacketProcessor` reads Theostone ids and calls `OnDebuff(target, instance, name, ms, caster, id)`
+    (layout: [id x10][u32 ms][5 bytes][u64 time][caster varint]). On you, or cast by you on an enemy. The tile
+    stays until its time runs out or `BuffRemovedProcessor` (0x382C) brings a removal for that entity naming its
+    instance (`OnRemoved`; each entry is [reason][instance varint], reason 0 ran out, 7 cleansed, a potion too).
+  - Poison/Bleed ticks: `DotDamagePacketProcessor` (0x3805) calls `OnTick`, which only adds to a showing tile.
   - At most 4 at once; plain hits make room first.
-- **Shows:** `Views/TheostoneAlertWindow` (plain WPF, topmost, click-through; edit mode with Settings
-  open = dashed box, samples, drag, saved to `TheostoneLeft/Top`), created by `OverlayManager.Start`.
-  Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter. Stream page:
-  `/state.theo` (where, position, scale, items with countdown, bar and fade), drawn by `renderTheo`.
+  - Words: `TheostoneKinds.Label(id, name)`: id / 10 = 300 F G SS (F family 0 damage / 1 debuff, G grade, SS slot).
+    Debuff slots 07 Blind, 09 Silence, 10 Root, 11 Stun, 12 Paralyze, 13 Slow, 14 Attack Slow, 15 Poison,
+    16 Bleed; damage slots 17 to 24 = "Damage N%" with the proc chance. Others keep the stone's name.
+- **Shows:** tiles side by side (92 x 66 at size M): YOURS / ON YOU, the word, the damage or seconds left, a small
+  line (damage so far, who, or xN), a bar for debuffs. `Views/TheostoneAlertWindow` (plain WPF, topmost,
+  click-through; edit mode with Settings open = dashed box, samples, drag, saved to `TheostoneLeft/Top`), created
+  by `OverlayManager.Start`. Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter.
+  Stream page: `/state.theo` (where, position, scale, items: tag, name, amount, sub, bar, fade), drawn by
+  `renderTheo`. Texts shared: `TheostoneAlertWindow.TagText / MainText / SubText`, `TheostoneProc.Word`.
 - **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou`, `TheostonePlace` (Screen), `TheostoneScale`
   (1), `TheostoneSeconds` (3.5), in Settings > PvP.
 

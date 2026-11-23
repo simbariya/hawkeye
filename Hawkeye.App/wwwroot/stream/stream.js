@@ -238,7 +238,7 @@
         });
     }
 
-    // ------------------------------------------------------------------ Theostone alerts (v0.2.19)
+    // ------------------------------------------------------------------ Theostone alerts (v0.2.19, tiles v0.2.21)
     // Drawn from /state.theo: in their own box at the streamer's spot, or over the meter, same look as on screen.
 
     var theoEl = null;
@@ -256,14 +256,13 @@
         if (t.where !== 'meter') {
             theoEl.style.left = t.left + 'px';
             theoEl.style.top = t.top + 'px';
-            theoEl.style.width = t.width + 'px';
             theoEl.style.transform = 'scale(' + t.scale + ')';
         }
         var html = t.items.map(function (p) {
             var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
             return '<div class="theo-alert ' + (p.yours ? 'is-yours' : 'is-on-you') + '" style="opacity:' + p.fade + '">' +
                 '<span class="theo-tag">' + esc(p.tag) + '</span><span class="theo-name">' + esc(p.name) + '</span>' +
-                '<b class="theo-dmg">' + esc(p.amount) + '</b>' +
+                '<b class="theo-dmg">' + esc(p.amount) + '</b><span class="theo-sub">' + esc(p.sub || '') + '</span>' +
                 (p.bar >= 0 ? '<i class="theo-bar" style="width:' + p.bar + '%"></i>' : '') + '</div>';
         }).join('');
         if (theoEl._html !== html) { theoEl.innerHTML = html; theoEl._html = html; }

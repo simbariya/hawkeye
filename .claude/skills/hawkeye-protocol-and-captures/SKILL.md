@@ -146,6 +146,12 @@ character's numbers and the stream was searched for them.
   [u64 time ms][caster varint]...`. **0x382C** = buffs ending: `[len][op][entity varint][u8 count]` then per
   entry `[u8 reason][instance varint]...` (reason 0 ran out: 3 s debuff gone at 3.03 s; reason 7 cleansed:
   a 20 s one at 9.4 s, a 4 s one at 1.4 s, with 11 more bytes per entry). A death removed 6 at once.
+- **Theostone kinds and ticks (2026-11-23):** skill id / 10 = 300 F G SS: F 0 damage / 1 debuff, G grade
+  (0 Rare, 1 Epic, 2 Unique), SS slot (debuff 07 Blind, 08 unknown, 09 Seal, 10 Root, 11 Stun, 12 Paralyze,
+  13 Move Slow, 14 Combat Slow, 15 Poison, 16 Bleed; damage 17-20 Fire/Water/Earth/Wind single, 21-24 area).
+  A debuff stone sends a 0x3804 hit first; the 0x382A debuff only follows if it lands (3 Bleed and 1 Seal hits on
+  the owner never did). Poison/Bleed ticks come as 0x3805 every ~2 s with the 7-digit code x100 (skill / 100).
+  The owner's potion: 0x382C reason 7 naming the Poison's instance at 9.4 s of 20, ticks stopped.
 - **AP is never resent unasked:** searched a 30-minute session; the AP total appears only in 0x561B.
 
 ## 5. Record a fight, replay it, test a decoder

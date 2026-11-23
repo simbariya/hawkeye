@@ -6,6 +6,7 @@ using Hawkeye.Engine.PacketProcessing.Routing;
 using Hawkeye.Engine.PacketProcessing.Shared;
 using Hawkeye.Engine.Services.Entity;
 using Hawkeye.Engine.Services.Session;
+using Hawkeye.Engine.Services.Theostone;
 using Microsoft.Extensions.Logging;
 
 namespace Hawkeye.Engine.PacketProcessing.Processors
@@ -19,9 +20,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         private readonly EntityTracker entityTracker;
         private readonly CombatSessionManager sessionManager;
         private readonly ILogger<DotDamagePacketProcessor> logger;
+        private readonly TheostoneAlerts? theostones;
 
-        public DotDamagePacketProcessor(EntityTracker entityTracker, CombatSessionManager sessionManager, ILogger<DotDamagePacketProcessor> logger)
+        public DotDamagePacketProcessor(EntityTracker entityTracker, CombatSessionManager sessionManager, ILogger<DotDamagePacketProcessor> logger, TheostoneAlerts? theostones = null)
         {
+            this.theostones = theostones;
             this.entityTracker = entityTracker ?? throw new ArgumentNullException(nameof(entityTracker));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.gameData = GameDataProvider.Instance;
@@ -50,6 +53,10 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             var damage = reader.ReadVarInt();
 
             if (targetId == actorId) return;
+
+            // A Poison or Bleed tick from a Theostone: adds to its alert tile (v0.2.21).
+            if (theostones is not null && gameData.IsTheostone(skillCode))
+                theostones.OnTick((int)actorId, (int)targetId, gameData.GetSkillOrDefault(skillCode).Name, damage);
 
             CharacterClass? characterClass;
             if (!gameData.IsTheostone(skillCode))
