@@ -3,7 +3,7 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## v0.2.21 (2026-11-23, not released yet)
+## v0.2.21 (2026-11-23)
 
 Changed (owner: "instead of those big names, just call it Silence/Blind/Paralyze etc. Damage ones should be
 Damage 1%, Damage 2% depending on the type. Instead of line message, a box that takes less space but taller,

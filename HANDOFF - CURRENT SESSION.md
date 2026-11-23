@@ -265,3 +265,4 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.21 local, NOT pushed: Theostone tiles with words (Silence, Damage 1%...), Poison/Bleed ticks on the tile,
   your debuff on an enemy counts down; 100 tests; WPF tiles rendered (scratchpad theorender) and the CSS tiles
   in headless Edge (scratchpad meterpreview/tiles.html). Not seen live yet.
+- v0.2.21 released 2026-11-23 (Theostone tiles); packaged exe smoke-started clean.
