@@ -29,6 +29,7 @@ description: >
 | I14 | Misread I15 as a WebView2 timing race; shipped a fix for the wrong cause | WRONG DIAGNOSIS, see I15 |
 | I15 | 0.2.9 and 0.2.10 never showed a window: PvpTracker had two constructors DI could fill | FIXED in v0.2.11 |
 | I16 | After a character switch the capture locked onto port 443 (web) and the meter stayed blank | FIXED v0.2.24, awaiting in-game proof |
+| I17 | Release cleanup deleted the files of the folder the owner's Hawkeye was running from | RESTORED same minute; rule tightened |
 
 ## The incidents in full
 
@@ -205,7 +206,7 @@ description: >
 - **Lesson:** a new service is not tested until something builds it the way the app does; and a release
   is not checked until the packaged exe has been started once.
 
-Next free number: **I17**.
+Next free number: **I18**.
 
 ## CHANGES
 
@@ -234,3 +235,15 @@ Next free number: **I17**.
   for 5 minutes; resync searches the data. Checked by replaying 4 raw recordings (same messages, a few more at
   the start) and 3 tests with real and random bytes.
 - Lesson: a 3-byte signature is not proof; a lock needs evidence the stream parses as the game's.
+
+## 2026-11-23 (I17): cleanup deleted the running install's files
+
+- What happened: after releasing 0.2.26 the cleanup removed the previous spare, `release\0.2.25-github`, assuming
+  the owner still ran `0.2.23-github` from earlier in the day. He had restarted Hawkeye at 15:44 from the
+  0.2.25 spare. Remove-Item stopped at the locked Hawkeye.exe, but GameData, wwwroot and the rest were already
+  gone. The running copy kept working (it loads them at startup); a restart would have failed.
+- Fix: copied the files back from the 0.2.26 package at once (GameData identical between the two; checked with
+  git diff); 31 files, same as a full install.
+- Rule (build-and-run section 4): before deleting ANY release folder, read the Content root of the NEWEST log
+  across all of today's log files, and match it to the running process's start time. Never go by memory of where
+  it ran earlier: the owner starts Hawkeye from whichever folder he likes.

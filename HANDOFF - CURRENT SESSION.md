@@ -308,3 +308,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   scratchpad meterpreview/arena.png. 120 tests. Still waiting on the owner for CP/GS ground truth; "combat
   record" meaning not answered (session W/L/rating built; no saved history yet).
 - v0.2.26 released 2026-11-23 16:1x (arena mode); smoke start clean; GitHub v0.2.25 deleted.
+- I17: the 0.2.26 cleanup deleted the files of release\0.2.25-github while the owner's Hawkeye ran from it (since
+  15:44); restored from the 0.2.26 package the same minute. Local now: 0.2.23-github (old, not running),
+  0.2.25-github (owner's install, running), 0.2.26-github\full (spare). Check the newest log before deleting.
