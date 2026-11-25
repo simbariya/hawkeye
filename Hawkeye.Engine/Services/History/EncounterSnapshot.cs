@@ -55,6 +55,8 @@ namespace Hawkeye.Engine.Services.History
         public string? Icon { get; set; }
         public bool IsDot { get; set; }
         public bool[] Spec { get; set; } = [];
+        /// <summary>Your level of this skill during the fight (from the game's skill list); 0 = not known (others, or before v0.2.34).</summary>
+        public int Level { get; set; }
         public int Hits { get; set; }
         public int Critical { get; set; }
         public int Perfect { get; set; }

@@ -31,4 +31,5 @@ public static class PacketOpcodes
     public const ushort ArenaResult = 0xE328;         // 28 E3  (arena: match over, your new rating)
     public const ushort ArenaStandings = 0xE32A;      // 2A E3  (arena: rating, wins, losses per mode, at zone changes)
     public const ushort ArenaOwnKey = 0xE343;         // 43 E3  (arena: your key, as you enter; v0.2.28)
+    public const ushort SkillList = 0x5100;           // 00 51  (your skills with their levels, at login / zone change; v0.2.34)
 }

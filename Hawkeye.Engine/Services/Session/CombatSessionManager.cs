@@ -25,6 +25,7 @@ namespace Hawkeye.Engine.Services.Session
         private readonly ITimedEventTracker buffEventTracker;
         private readonly ITimedEventTracker skillCdEventTracker;
         private readonly IEncounterHistory? history;
+        private readonly Hawkeye.Engine.Services.Skills.SkillLevels? skillLevels;
 
 
         public CombatSessionManager(
@@ -33,9 +34,11 @@ namespace Hawkeye.Engine.Services.Session
             ISettingsService settingsService,
             [FromKeyedServices(TimerKeys.Buffs)] ITimedEventTracker buffEventTracker,
             [FromKeyedServices(TimerKeys.Cooldowns)] ITimedEventTracker skillCdEventTracker,
-            IEncounterHistory? history = null)
+            IEncounterHistory? history = null,
+            Hawkeye.Engine.Services.Skills.SkillLevels? skillLevels = null)
         {
             this.history = history;
+            this.skillLevels = skillLevels;
             this.entityTracker = entityTracker;
             this.settingsService = settingsService;
             this.buffEventTracker = buffEventTracker;
@@ -115,6 +118,7 @@ namespace Hawkeye.Engine.Services.Session
                 if (entityTracker.HasCurrentUser && !stats.Any(p => p.IsUser)) return; // someone else's fight
                 session.Recorded = true;
                 var snapshot = EncounterBuilder.Build(session, DeathsFor(session.TargetInfo));
+                skillLevels?.Stamp(snapshot);
                 history.Add(snapshot);
                 logger.LogInformation("[HISTORY] Saved {Target}, {Seconds:0} s, {Players} players", snapshot.TargetName, snapshot.DurationSeconds, snapshot.Players.Count);
             }
@@ -130,7 +134,10 @@ namespace Hawkeye.Engine.Services.Session
             lock (lockObject)
             {
                 var session = GetActiveTargetSession();
-                return session is null ? null : EncounterBuilder.Build(session, DeathsFor(session.TargetInfo));
+                if (session is null) return null;
+                var snapshot = EncounterBuilder.Build(session, DeathsFor(session.TargetInfo));
+                skillLevels?.Stamp(snapshot);
+                return snapshot;
             }
         }
 

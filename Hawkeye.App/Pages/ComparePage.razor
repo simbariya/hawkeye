@@ -1,0 +1,195 @@
+@page "/compare"
+@using System.Globalization
+@using Hawkeye.App.Services
+@using Hawkeye.App.Services.Windowing
+@using Hawkeye.Engine.Services.History
+@implements IDisposable
+@inject CompareState Compare
+@inject DetailsState Details
+@inject OverlayManager Overlays
+@inject Hawkeye.Engine.Settings.ISettingsService Settings
+
+@*
+    Compare: fights from history side by side, your skills and their levels in each (owner, 2026-11-25: "which is
+    better at lvl 20 if can have only one ... compare the two to see which one is more dps when the skills differ
+    in level"). Fights are lettered A, B, C... oldest first; differences are against A.
+*@
+<div class="cmp @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
+    <header class="cmp-header" @onmousedown="() => Overlays.DragPage(typeof(ComparePage))">
+        <span class="cmp-title">COMPARE</span>
+        @if (fights.Count > 0)
+        {
+            <span class="cmp-sub">@fights.Count fights · your skills</span>
+        }
+        <span class="cmp-spacer"></span>
+        <button type="button" class="cmp-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(ComparePage))" @onmousedown:stopPropagation="true">✕</button>
+    </header>
+
+    @if (fights.Count < 2)
+    {
+        <div class="cmp-empty">Pick two or more fights to compare: in History, press Compare, tick the fights, then Compare again.</div>
+    }
+    else
+    {
+        var cols = $"grid-template-columns: 220px repeat({fights.Count}, minmax(150px, 1fr));";
+        var dps = fights.Select(f => FightComparison.PlayerOf(f)?.Dps ?? 0).ToList();
+        double best = dps.Max();
+        var changed = rows.Where(r => r.LevelDiffers).ToList();
+        bool missingLevels = fights.Any(f => FightComparison.PlayerOf(f)?.Skills.All(s => s.Level == 0) ?? true);
+
+        <div class="cmp-scroll">
+        <div class="cmp-content" style="min-width:@(230 + fights.Count * 160)px">
+            <div class="cmp-grid cmp-fights" style="@cols">
+                <span></span>
+                @for (int i = 0; i < fights.Count; i++)
+                {
+                    var f = fights[i];
+                    var p = FightComparison.PlayerOf(f);
+                    <div class="cmp-fight @(dps[i] == best ? "is-best" : "")" title="Open this fight's combat analysis" @onclick="() => Open(f)">
+                        <div class="cmp-letter">
+                            <b>@Letter(i)</b>
+                            @if (dps[i] == best) { <span class="cmp-best">BEST</span> }
+                            <span class="cmp-spacer"></span>
+                            @if (fights.Count > 2)
+                            {
+                                <button type="button" class="cmp-remove" title="Take this fight out of the comparison"
+                                        @onclick="() => Compare.Remove(f.Id)" @onclick:stopPropagation="true">✕</button>
+                            }
+                        </div>
+                        <div class="cmp-target" title="@f.TargetName">@f.TargetName</div>
+                        <div class="cmp-when">@f.StartedAt.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture) · @Dur(f.DurationSeconds)</div>
+                        <div class="cmp-dps">@N(dps[i])<small> DPS</small></div>
+                        @if (i > 0)
+                        {
+                            <div class="cmp-diff @Sign(dps[i], dps[0])">@Diff(dps[i], dps[0]) vs A</div>
+                        }
+                        @if (p is not null && !p.IsUser)
+                        {
+                            <div class="cmp-who" title="Hawkeye did not know your character yet in this fight">top player: @p.Name</div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @Stat("Total damage", cols, f => FightComparison.PlayerOf(f) is { } p ? N(p.TotalDamage) : "-")
+            @Stat("Hits", cols, f => FightComparison.PlayerOf(f) is { } p ? N(p.Hits) : "-")
+            @Stat("Critical", cols, f => FightComparison.PlayerOf(f) is { } p ? Rate(p.Critical, p.Hits) : "-")
+            @Stat("Back attack", cols, f => FightComparison.PlayerOf(f) is { } p ? Rate(p.Back, p.Hits) : "-")
+
+            @if (changed.Count > 0)
+            {
+                <div class="cmp-note">
+                    <b>Levels differ:</b>
+                    @string.Join(", ", changed.Select(r => $"{r.Name} ({string.Join(", ", r.Cells.Select((c, i) => c is { Level: > 0 } ? $"{Letter(i)} Lv {c.Level}" : null).Where(t => t is not null))})"))
+                </div>
+            }
+            @if (missingLevels)
+            {
+                <div class="cmp-note is-dim">Fights saved before v0.2.34, or before the game sent your skill list (it does at every teleport), have no skill levels.</div>
+            }
+
+            <div class="cmp-table">
+                <div class="cmp-grid cmp-row cmp-head" style="@cols">
+                    <span class="cmp-skill">SKILL</span>
+                    @for (int i = 0; i < fights.Count; i++) { <span>@Letter(i): DPS · share</span> }
+                </div>
+                @foreach (var r in rows)
+                {
+                    bool differs = r.LevelDiffers || r.SpecDiffers;
+                    <div class="cmp-grid cmp-row @(differs ? "is-changed" : "")" style="@cols">
+                        <span class="cmp-skill">
+                            @if (!string.IsNullOrEmpty(r.Icon)) { <img src="@r.Icon" alt="" /> } else { <em></em> }
+                            <span class="cmp-skill-name" title="@r.Name">@r.Name</span>
+                            @if (r.LevelDiffers) { <span class="cmp-tag" title="This skill's level is not the same in every fight">level</span> }
+                            else if (r.SpecDiffers) { <span class="cmp-tag" title="This skill's specialisations are not the same in every fight">spec</span> }
+                        </span>
+                        @for (int i = 0; i < r.Cells.Count; i++)
+                        {
+                            var c = r.Cells[i];
+                            if (c is null)
+                            {
+                                <span class="cmp-cell is-none" title="Not used in this fight">not used</span>
+                                continue;
+                            }
+                            var a = r.Cells[0];
+                            <span class="cmp-cell" title="@($"{N(c.TotalDamage)} damage, {c.Hits} hits")">
+                                <span class="cmp-line">
+                                    <b class="@(c.Dps == r.BestDps && r.Cells.Count(x => x is not null) > 1 ? "is-top" : "")">@Short(c.Dps)</b>
+                                    <small>@c.SharePercent.ToString("0.#", CultureInfo.InvariantCulture)%</small>
+                                    @if (i > 0 && a is not null)
+                                    {
+                                        <small class="cmp-diff @Sign(c.Dps, a.Dps)">@Diff(c.Dps, a.Dps)</small>
+                                    }
+                                </span>
+                                <span class="cmp-line cmp-meta">
+                                    @(c.Level > 0 ? $"Lv {c.Level}" : "Lv ?")
+                                    @if (FightComparison.SpecText(c.Spec) is { Length: > 0 } spec) { <span title="Specialisations chosen">· @spec</span> }
+                                </span>
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        </div>
+    }
+    <ResizeEdges Page="typeof(ComparePage)" />
+</div>
+
+@code {
+    private IReadOnlyList<EncounterSnapshot> fights = [];
+    private List<FightComparison.SkillRow> rows = new();
+
+    protected override void OnInitialized()
+    {
+        Load();
+        Compare.Changed += OnChanged;
+        Settings.Changed += OnSettingsChanged;
+    }
+
+    private void Load()
+    {
+        fights = Compare.Fights;
+        rows = FightComparison.Rows(fights);
+    }
+
+    private void OnChanged() => InvokeAsync(() => { Load(); StateHasChanged(); });
+    private void OnSettingsChanged(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+
+    private void Open(EncounterSnapshot f)
+    {
+        Details.ShowSaved(f, FightComparison.PlayerOf(f)?.PlayerId);
+        Overlays.OpenDetails();
+    }
+
+    private RenderFragment Stat(string label, string cols, Func<EncounterSnapshot, string> value) => __builder =>
+    {
+        <div class="cmp-grid cmp-stat" style="@cols">
+            <span class="cmp-label">@label</span>
+            @foreach (var f in fights) { <span>@value(f)</span> }
+        </div>
+    };
+
+    private static string Letter(int i) => ((char)('A' + Math.Min(i, 25))).ToString();
+    private static string Dur(double seconds) => TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss");
+    private static string N(double v) => Math.Round(v).ToString("N0", CultureInfo.InvariantCulture);
+    private static string Short(double v) => Hawkeye.App.ViewModels.MeterViewModel.Compact((long)Math.Round(v), shortThousands: true);
+    private static string Rate(int part, int whole) => whole > 0 ? $"{Math.Round(100.0 * part / whole):0}%" : "-";
+
+    /// <summary>"+4.2%" against A; "new" when A had none.</summary>
+    private static string Diff(double value, double baseline)
+    {
+        if (baseline <= 0) return value > 0 ? "new" : "";
+        double pct = 100.0 * (value - baseline) / baseline;
+        return (pct >= 0 ? "+" : "-") + Math.Abs(pct).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static string Sign(double value, double baseline) =>
+        baseline <= 0 || Math.Abs(value - baseline) < 0.0005 * baseline ? "" : value > baseline ? "is-up" : "is-down";
+
+    public void Dispose()
+    {
+        Compare.Changed -= OnChanged;
+        Settings.Changed -= OnSettingsChanged;
+    }
+}

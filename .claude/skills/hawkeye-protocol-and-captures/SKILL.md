@@ -52,6 +52,7 @@ it. Everything marked "unknown" in the code is genuinely unknown. Verify, never 
 | `0x8D00` | RemainHp | Target HP |
 | `0x8D04` | EntityDeath | Deaths |
 | `0x9702` | PartyInfo | Party members |
+| `0x5100` | SkillList | Your skills with their levels (v0.2.34) |
 
 ## 4. Known layouts (after length + opcode)
 
@@ -187,6 +188,17 @@ character's numbers and the stream was searched for them.
   cooldown** (51,300 ms in the recording; others in the Abyss 36,900 and 28,700 ms), then 0x3804 self-hits, a
   0x382A 5 s buff on themselves and 0x382C removals (the CC it broke).
 
+### Skill list `0x5100` (found 2026-11-25)
+
+Your own character's skills, sent at login, at every zone change / teleport (just before 0x3633 names you), and
+when you switch skill setups (together with a 0x5105). `[varint count]`, then per skill
+`[u8 flags][u32 id][u8 level][u8 learned][u8 bonus][u8 ?][u8 bonus][u8 bonus][u8 ?]`
+`(flags & 2: varint cooldown ms left)[u32 ?](flags & 4: u8)(flags & 8: varint)`. The level is the one the game shows
+and always equals learned + the three bonuses outside the arena; in the arena every skill reads 20. Ids carry the
+chosen specialisations (14012450 = Deadshot with 2, 4, 5); entries below 10,000,000 are not class skills. All 59
+lists in the owner's recordings parse to the last byte (scratchpad harness `skillreplay`). Not yet seen: whether
+changing gear with a skill-level bonus re-sends the list without a teleport.
+
 ## 5. Record a fight, replay it, test a decoder
 
 1. Set `"RecordPackets": true` in `%AppData%\Hawkeye\settings.json`, start Hawkeye, fight.
@@ -205,3 +217,4 @@ character's numbers and the stream was searched for them.
 ## CHANGES
 
 - 2026-11-20: written for v0.1.0 from the inherited decoder source and the owner's old meter logs.
+- 2026-11-25: skill list 0x5100 (levels) added.

@@ -137,10 +137,13 @@ namespace Hawkeye.App.Services.Windowing
         private readonly Dictionary<Type, Window> pageWindows = new();
 
         /// <summary>Combat analysis for whatever <see cref="DetailsState"/> holds (set it first).</summary>
-        public void OpenDetails() => OpenPage(typeof(DetailsPage), 900, 640);
+        public void OpenDetails() => OpenPage(typeof(DetailsPage), 900, 640, resizable: true);
+
+        /// <summary>Fights side by side, your skills and their levels in each (set CompareState first).</summary>
+        public void OpenCompare() => OpenPage(typeof(ComparePage), 820, 620, resizable: true);
 
         /// <summary>The last 50 fights and the ones kept forever.</summary>
-        public void OpenHistory() => OpenPage(typeof(HistoryPage), 520, 600);
+        public void OpenHistory() => OpenPage(typeof(HistoryPage), 520, 600, resizable: true);
 
         /// <summary>Who your PvP kills, deaths and assists were about (live or from history; set PvpView first).</summary>
         public void OpenPvp() => OpenPage(typeof(PvpPage), 460, 420);
@@ -175,6 +178,18 @@ namespace Hawkeye.App.Services.Windowing
 
         public void DragPage(Type page) => TryDragMove(pageWindows.GetValueOrDefault(page));
 
+        /// <summary>
+        /// Resizes a page window from one of its invisible edges ("right", "bottom", "corner"; <c>ResizeEdges</c>),
+        /// then remembers the size for next time. The resize runs to the end inside TryResize (Windows' own loop).
+        /// </summary>
+        public void ResizePage(Type page, string edge)
+        {
+            if (pageWindows.GetValueOrDefault(page) is not { } window) return;
+            TryResize(window, edge);
+            double w = Math.Round(window.ActualWidth), h = Math.Round(window.ActualHeight);
+            settings.Update(s => s.WindowSizes[page.Name] = [w, h]);
+        }
+
         /// <summary>Every open Hawkeye window besides the meter and icons, with a short id. Streamer mode mirrors them. UI thread only.</summary>
         public IReadOnlyList<(string Id, ICapturableWindow Window)> OpenPageWindows
         {
@@ -189,7 +204,7 @@ namespace Hawkeye.App.Services.Windowing
             }
         }
 
-        private void OpenPage(Type page, double width, double height)
+        private void OpenPage(Type page, double width, double height, bool resizable = false)
         {
             if (pageWindows.TryGetValue(page, out var existing))
             {
@@ -198,6 +213,19 @@ namespace Hawkeye.App.Services.Windowing
             }
 
             var window = new BlazorWindow(services, page) { Width = width, Height = height };
+            if (resizable)
+            {
+                // Resized from invisible edges on the page (ResizeEdges), like the meter; the last size is kept.
+                window.ResizeMode = ResizeMode.CanResize;
+                window.MinWidth = 380;
+                window.MinHeight = 240;
+                if (settings.Current.WindowSizes.TryGetValue(page.Name, out var size) && size is [var w, var h])
+                {
+                    var area = SystemParameters.WorkArea;
+                    window.Width = Math.Clamp(w, window.MinWidth, Math.Max(window.MinWidth, area.Width));
+                    window.Height = Math.Clamp(h, window.MinHeight, Math.Max(window.MinHeight, area.Height));
+                }
+            }
             var main = Application.Current.MainWindow;
             if (main is not null) PlaceBeside(window, main);
             window.Closed += (_, _) => pageWindows.Remove(page);

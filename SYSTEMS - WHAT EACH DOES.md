@@ -168,6 +168,17 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   (live fight via `CombatSessionManager.BuildLiveSnapshot`, refreshed each second, or a history
   fight). Opened by clicking a meter row or a history entry. `Pages/HistoryPage.razor` lists kept
   and recent fights. Windows: `OverlayManager.OpenDetails/OpenHistory`.
+- **Skill levels (v0.2.34):** `Engine/Services/Skills/SkillListParser` reads your skill list (0x5100, at login,
+  every zone change and skill setup switch; `SkillListProcessor`); `SkillLevels` keeps the levels per class in
+  `%AppData%\Hawkeye\skill-levels.json` and stamps your skills (`EncounterSkill.Level`, 0 = unknown) when a fight is
+  saved or shown live (`CombatSessionManager`). Keyed by base id (`id / 10000 * 10000`, no specialisation digits).
+- **Compare (v0.2.34):** History > Fights > Compare ticks fights; `Services/CompareState` holds them (oldest first),
+  `Pages/ComparePage.razor` (+ `.css`) shows them, rows from `Engine/Services/History/FightComparison` (your skills,
+  or the top player in fights from before Hawkeye knew you). `OverlayManager.OpenCompare`.
+- **Resizable page windows (v0.2.34):** analysis, Compare and History open with `resizable: true`
+  (`OverlayManager.OpenPage`); `Pages/Components/ResizeEdges.razor` puts the meter's invisible edges on the page and
+  `OverlayManager.ResizePage` saves the size to `WindowSizes` (settings, by page name). The analysis scrolls as one
+  (`.hd-scroll`, content at least 860 px wide).
 
 ## 6c. Streamer mode (v0.1.6)
 

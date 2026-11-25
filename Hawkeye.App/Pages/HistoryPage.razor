@@ -10,11 +10,12 @@
 @inject Hawkeye.Engine.Settings.ISettingsService Settings
 @inject Hawkeye.Engine.Services.Pvp.PvpHistory PvpHistory
 @inject PvpView PvpView
+@inject CompareState Compare
 
 @*
     Fight history: kept-forever fights first, then the last 100 fights you took part in (oldest drop off).
     PvP tab: Select ticks sessions to delete together (owner 2026-11-22: clear the test sessions).
-    Click a fight for its combat analysis.
+    Click a fight for its combat analysis. Fights tab: Compare ticks fights to put side by side (v0.2.34).
 *@
 <div class="hh @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hh-header" @onmousedown="() => Overlays.DragPage(typeof(HistoryPage))">
@@ -22,6 +23,11 @@
         <button type="button" class="hh-tab @(!pvpTab ? "is-on" : "")" @onclick="() => pvpTab = false" @onmousedown:stopPropagation="true">Fights</button>
         <button type="button" class="hh-tab @(pvpTab ? "is-on" : "")" @onclick="() => pvpTab = true" @onmousedown:stopPropagation="true">PvP</button>
         <span class="hh-spacer"></span>
+        @if (!pvpTab && recent.Count + saved.Count >= 2)
+        {
+            <button type="button" class="hh-tool @(comparing ? "is-on" : "")" title="Tick fights to compare them side by side, with your skill levels"
+                    @onclick="ToggleCompare" @onmousedown:stopPropagation="true">@(comparing ? "Cancel" : "Compare")</button>
+        }
         @if (pvpTab && pvpSessions.Count > 0)
         {
             <button type="button" class="hh-tool @(selecting ? "is-on" : "")" title="Tick sessions to delete several at once"
@@ -76,8 +82,16 @@
             <div class="hh-section">KEPT FOREVER</div>
             @foreach (var e in saved)
             {
-                <div class="hh-row" @onclick="() => Open(e)" title="Open the combat analysis">
-                    <span class="hh-star is-on">★</span>
+                <div class="hh-row @(comparing && toCompare.Contains(e.Id) ? "is-compared" : "")" @onclick="() => FightClick(e)"
+                     title="@(comparing ? "Tick to compare" : "Open the combat analysis")">
+                    @if (comparing)
+                    {
+                        <span class="hh-tick">@(toCompare.Contains(e.Id) ? "✓" : "")</span>
+                    }
+                    else
+                    {
+                        <span class="hh-star is-on">★</span>
+                    }
                     @Line(e)
                     <button type="button" class="hh-del" title="Remove from kept-forever"
                             @onclick="() => History.DeleteSaved(e.Id)" @onclick:stopPropagation="true">✕</button>
@@ -93,14 +107,32 @@
         @foreach (var e in recent)
         {
             bool kept = e.IsSaved || saved.Any(s => s.Id == e.Id);
-            <div class="hh-row" @onclick="() => Open(e)" title="Open the combat analysis">
-                <button type="button" class="hh-star @(kept ? "is-on" : "")" title="@(kept ? "Kept forever" : "Keep this fight forever")"
-                        @onclick="() => History.KeepForever(e.Id)" @onclick:stopPropagation="true">@(kept ? "★" : "☆")</button>
+            <div class="hh-row @(comparing && toCompare.Contains(e.Id) ? "is-compared" : "")" @onclick="() => FightClick(e)"
+                 title="@(comparing ? "Tick to compare" : "Open the combat analysis")">
+                @if (comparing)
+                {
+                    <span class="hh-tick">@(toCompare.Contains(e.Id) ? "✓" : "")</span>
+                }
+                else
+                {
+                    <button type="button" class="hh-star @(kept ? "is-on" : "")" title="@(kept ? "Kept forever" : "Keep this fight forever")"
+                            @onclick="() => History.KeepForever(e.Id)" @onclick:stopPropagation="true">@(kept ? "★" : "☆")</button>
+                }
                 @Line(e)
             </div>
         }
     </div>
+    @if (comparing)
+    {
+        <div class="hh-bar">
+            <span class="hh-hint">@(toCompare.Count < 2 ? "Tick two or more fights" : $"{toCompare.Count} fights ticked")</span>
+            <span class="hh-spacer"></span>
+            <button type="button" class="hh-tool" disabled="@(toCompare.Count == 0)" @onclick="() => toCompare.Clear()">Tick none</button>
+            <button type="button" class="hh-tool is-go" disabled="@(toCompare.Count < 2)" @onclick="OpenCompare">Compare @toCompare.Count</button>
+        </div>
     }
+    }
+    <ResizeEdges Page="typeof(HistoryPage)" />
 </div>
 
 @code {
@@ -123,11 +155,37 @@
         saved = History.Saved.ToList();
         pvpSessions = PvpHistory.Sessions.ToList();
         picked.IntersectWith(pvpSessions.Select(s => s.Id));
+        toCompare.IntersectWith(recent.Select(e => e.Id).Concat(saved.Select(e => e.Id)));
         if (pvpSessions.Count == 0) selecting = false;
     }
 
     private bool selecting;
     private readonly HashSet<Guid> picked = new();
+
+    private bool comparing;
+    private readonly HashSet<Guid> toCompare = new();
+
+    private void ToggleCompare()
+    {
+        comparing = !comparing;
+        toCompare.Clear();
+    }
+
+    private void FightClick(EncounterSnapshot e)
+    {
+        if (!comparing) { Open(e); return; }
+        if (!toCompare.Remove(e.Id)) toCompare.Add(e.Id);
+    }
+
+    private void OpenCompare()
+    {
+        var all = saved.Concat(recent).Where(e => toCompare.Contains(e.Id)).DistinctBy(e => e.Id).ToList();
+        if (all.Count < 2) return;
+        Compare.Show(all);
+        Overlays.OpenCompare();
+        comparing = false;
+        toCompare.Clear();
+    }
 
     private void ToggleSelect()
     {

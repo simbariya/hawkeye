@@ -3,6 +3,24 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.34 (2026-11-25)
+
+Added (owner: "a comparison mode when testing dps between two skills ... which is better at lvl 20 if can have only
+one ... it needs to track the level of the skill, and also make the combat log detail resizable"):
+- **Skill levels.** The game sends your whole skill list (0x5100) at login, at every teleport and zone change, and
+  when you switch skill setups. Each skill has the level the game shows (learned + three bonuses), found in the
+  owner's recordings and checked on all 59 lists in them. Hawkeye keeps the levels per class
+  (`skill-levels.json`) and every fight saved to history now carries your level per skill. The arena sends 20 for
+  every skill. Other players' levels are never sent.
+- **Compare.** History > Fights > Compare: tick two or more fights, press Compare. The Compare window puts them
+  side by side (A, B, C... oldest first): your DPS per fight and the difference against A, the best fight marked,
+  then every skill with its DPS, share, level and specialisations in each fight. Skills whose level or
+  specialisations differ are marked and listed. Click a fight to open its combat analysis.
+- **Resizable windows.** The combat analysis, Compare and History windows resize from their right and bottom edges
+  like the meter and remember their size. In the combat analysis everything below the header scrolls as one, both
+  ways, and each skill shows your level.
+146 tests (11 new).
+
 ## v0.2.33 (2026-11-23)
 
 Added:

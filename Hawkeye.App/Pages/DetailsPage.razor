@@ -45,6 +45,8 @@
     }
     else
     {
+        <div class="hd-scroll">
+        <div class="hd-content">
         <div class="hd-players">
             @foreach (var p in enc.Players)
             {
@@ -95,6 +97,10 @@
                         <i class="hd-bar" style="width:@Pct(s.TotalDamage, topSkill)%"></i>
                         @if (!string.IsNullOrEmpty(s.Icon)) { <img src="@s.Icon" alt="" /> } else { <em></em> }
                         <span class="hd-skill-name" title="@s.Name">@s.Name@(s.IsDot ? " (DoT)" : "")</span>
+                        @if (s.Level > 0)
+                        {
+                            <span class="hd-level" title="Your level of this skill in this fight">Lv @s.Level</span>
+                        }
                     </span>
                     <span>@s.Hits</span>
                     <span>@Rate(s.Critical, s.Hits)</span>
@@ -111,7 +117,10 @@
                 </div>
             }
         </div>
+        </div>
+        </div>
     }
+    <ResizeEdges Page="typeof(DetailsPage)" />
 </div>
 
 @code {

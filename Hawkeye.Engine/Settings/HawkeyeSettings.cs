@@ -117,6 +117,11 @@ namespace Hawkeye.Engine.Settings
         /// <summary>Defiance box size: 0.85, 1, 1.25 or 1.5.</summary>
         public double DefianceScale { get; set; } = 1.0;
 
+        // ---- window sizes (v0.2.34) ----
+
+        /// <summary>Size of each resizable window (combat analysis, compare, history), by page name: [width, height].</summary>
+        public Dictionary<string, double[]> WindowSizes { get; set; } = new();
+
         // ---- training dummy ----
         public DummyMode DummyMode { get; set; } = DummyMode.Timed;
         /// <summary>Length of a Timed dummy run: 1, 2 or 3 minutes.</summary>

@@ -1,0 +1,15 @@
+@using Hawkeye.App.Services.Windowing
+@inject OverlayManager Overlays
+
+@*
+    Invisible resize edges for a page window (right, bottom, bottom-right corner), the same as the meter's.
+    The page's root needs position: relative. Styles: .resize in meter.css.
+*@
+<div class="resize resize--right" @onmousedown='() => Overlays.ResizePage(Page, "right")'></div>
+<div class="resize resize--bottom" @onmousedown='() => Overlays.ResizePage(Page, "bottom")'></div>
+<div class="resize resize--corner" @onmousedown='() => Overlays.ResizePage(Page, "corner")'></div>
+
+@code {
+    /// <summary>The page whose window the edges resize.</summary>
+    [Parameter, EditorRequired] public Type Page { get; set; } = default!;
+}

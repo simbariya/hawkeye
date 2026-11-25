@@ -324,3 +324,7 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.31: 2318 = eu-zikel; server shown by name/code/#id; [ARENA] log has server ids. Recorder arena-1723 running 60 min from 17:2x.
 - 0.2.32: arena server = the one after the name (current); only profile-checked servers named; Korean codes dropped (wrong for global).
 - 0.2.33: servers 1302 Nezekan, 2304 Lumiel. Unnamed: 1303, 1311, 1313.
+- 0.2.34 (2026-11-25): skill levels from 0x5100 stamped into history fights; Compare window (History > Fights >
+  Compare); analysis / Compare / History resizable with remembered size, analysis scrolls both ways. 146 tests.
+  Renders: scratchpad meterpreview/compare.png. NOT verified: whether a gear change (skill-level bonus) re-sends
+  0x5100 without a teleport; the live windows were not clicked through (no scripted input), only rendered.
