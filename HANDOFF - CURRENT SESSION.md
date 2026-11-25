@@ -328,3 +328,7 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   Compare); analysis / Compare / History resizable with remembered size, analysis scrolls both ways. 146 tests.
   Renders: scratchpad meterpreview/compare.png. NOT verified: whether a gear change (skill-level bonus) re-sends
   0x5100 without a teleport; the live windows were not clicked through (no scripted input), only rendered.
+- v0.2.34 released 2026-11-25 15:29 UTC; smoke start clean (LOCKED, SYNCHRONIZED); GitHub v0.2.33 deleted (final
+  downloads: full 2, small 1, one full was the owner's own update). The 0.2.33 small asset was misnamed
+  `-win-x64-small.zip` (updater wants `-small.zip`), so small-package users skipped 0.2.33; 0.2.34 is named right.
+  Owner runs release\0.2.28-github (updated in place, PID started 23 Nov 19:19). Spare: 0.2.34-github\full.
