@@ -5,8 +5,17 @@ namespace Hawkeye.Engine.PacketProcessing.Routing
 {
     public sealed class PacketDispatchService(OpcodeProcessorRegistry registry, ILogger<PacketDispatchService> logger)
     {
+        /// <summary>Every message, before its processor (packet thread). For local add-ons (Hawkeye.App LocalExtras).</summary>
+        public event Action<Packet>? Seen;
+
         public void Dispatch(Packet packet)
         {
+            if (Seen is { } seen)
+            {
+                try { seen(packet); }
+                catch (Exception ex) { logger.LogError(ex, "A local add-on failed on a message."); }
+            }
+
             if (!TryReadOpcode(packet.Data, out ushort opcode))
             {
                 logger.LogTrace("Broken packet, cannot read opcode.");

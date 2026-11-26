@@ -346,3 +346,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   the pop-up timing on screen, the potion lengths against the game's tooltip, debuffs in PvE. Unnamed general
   effects 10000020..10000080 show "Debuff": ask the owner what they are when seen. Still open: opponent rankings
   (General / Marshal titles): not looked into yet.
+- 2026-11-26 (after 0.2.38): local add-on hook (LocalExtras / ILocalExtra, PacketDispatchService.Seen, LOCAL_BUILD
+  skips auto-update), not released yet: it rides the next version. The owner's own local add-ons are documented on
+  his PC outside the repo (see the local memory note). Every new version: the public release as always AND a local
+  build for the owner; before zipping the public one, confirm it holds no local add-on classes. 166 tests.
+

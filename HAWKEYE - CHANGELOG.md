@@ -3,6 +3,15 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## Unreleased (2026-11-26)
+
+Added (owner asked for a personal build of his own next to the public one):
+- **Local add-ons.** A build made on one PC can add its own code (`Hawkeye.App/Services/LocalExtras.cs`,
+  `ILocalExtra`): it gets every game message (`PacketDispatchService.Seen`) and may add a section to the bottom of
+  the Extras window. Public builds have none, so nothing changes for anyone else. Builds made with the
+  `LOCAL_BUILD` constant do not auto-update, because a release would replace them with the public build.
+166 tests.
+
 ## v0.2.38 (2026-11-26)
 
 Added (owner: "pop up meaning the skill tracker, so can configure that it only appears when x seconds left until

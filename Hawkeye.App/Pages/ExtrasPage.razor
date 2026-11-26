@@ -43,6 +43,10 @@
             </div>
         }
         <div class="hx-note">Log in with each alt to get its latest verified Odyle. Current values may not be fully accurate.</div>
+        @foreach (var x in Hawkeye.App.Services.LocalExtras.All)
+        {
+            if (x.ExtrasSection is { } section) { <DynamicComponent Type="section" /> }
+        }
     </div>
 </div>
 

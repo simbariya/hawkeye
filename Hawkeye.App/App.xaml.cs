@@ -124,6 +124,7 @@ namespace Hawkeye.App
             services.GetRequiredService<OverlayManager>().Start();
             services.GetRequiredService<Hawkeye.App.Services.Streaming.StreamServer>().Start();
             services.GetRequiredService<UpdateService>().Start();
+            LocalExtras.Start(services);   // none in public builds
         }
 
         private static bool TryStartCapture(IPacketService packets)
@@ -150,6 +151,7 @@ namespace Hawkeye.App
             try
             {
                 var services = AppHost.Services;
+                LocalExtras.Stop();
                 services.GetRequiredService<CombatSessionManager>().CompleteActiveSessions();
                 // The fight just closed is written to History in the background: wait for it (and for the
                 // Odyle list) before exiting, or it can be lost (found by CI 2026-11-21).

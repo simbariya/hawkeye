@@ -68,6 +68,10 @@ namespace Hawkeye.App.Services
 #if DEBUG
             logger.LogInformation("[UPDATE] Debug build: auto-update off");
             return;
+#elif LOCAL_BUILD
+            // A build made on one PC with local add-ons: a release would replace it with the public build.
+            logger.LogInformation("[UPDATE] Local build: auto-update off");
+            return;
 #else
             CleanOldDownloads();
             timer = new Timer(_ => _ = CheckAsync(), null, TimeSpan.FromSeconds(20), CheckEvery);

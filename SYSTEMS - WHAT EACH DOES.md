@@ -226,6 +226,11 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Refill estimate** (v0.2.5): `Services/Odyle/OdyleRefill.cs`: +15 to current every 3 h on a
   global timer anchored at 2026-11-21 16:00 UTC, capped at 840. Extras shows estimates as "~N"
   until a reading confirms them. Whether the pool feeds the refill is NOT known (pool shown as read).
+- **Local add-ons** (2026-11-26): `Services/LocalExtras.cs` finds `ILocalExtra` classes compiled into the build
+  (none in public builds), starts them after start-up (`App.OnStartup`) and stops them first on exit. Each gets
+  every message through `PacketDispatchService.Seen` (packet thread) and may put a section at the bottom of Extras
+  (`ExtrasSection`, drawn with `DynamicComponent`). Builds with the `LOCAL_BUILD` constant skip auto-update.
+  The owner's local add-ons and how to build them are documented outside the repo, on his PC.
 
 ## 6e. Clear and auto-update (v0.2.7)
 
