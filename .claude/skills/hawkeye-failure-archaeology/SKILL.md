@@ -147,7 +147,8 @@ description: >
   a "refresh while up" rule. No decode errors for `0x382A/B` in that window (only the usual
   `0x3804`). The earlier session showed the same pattern (8 of 34).
 - **Known weakness:** `BuffPacketProcessor` reads one fixed layout and silently drops messages whose
-  id is not a known buff or whose duration is out of range; the caster always reads "161", so the
+  id is not a known buff or whose duration is out of range; the caster always reads "161", so the (Found 2026-11-26: the inherited reader took the caster from inside the time stamp; read right since
+  v0.2.38. The "fixed 161" was a misread, not the game.)
   layout is only partly understood.
 - **Workaround:** your cast of a skill whose buff was seen on you restarts the buff timer at the
   last seen length (`lastBuffOnYou` in `CombatSessionManager`). Test:

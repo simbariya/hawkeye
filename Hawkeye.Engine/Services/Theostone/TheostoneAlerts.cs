@@ -15,9 +15,10 @@ namespace Hawkeye.Engine.Services.Theostone
     /// <param name="Grade">0 Rare, 1 Epic, 2 Unique (-1 unknown): the colour of the word.</param>
     /// <param name="Crit">A hit in it was a critical.</param>
     /// <param name="Double">A hit in it was a double (the game's "double damage").</param>
+    /// <param name="Status">Not a Theostone: some other debuff on you (v0.2.38), named after its skill.</param>
     public sealed record TheostoneProc(DateTime At, bool Yours, string Name, long Damage, string From, int Hits,
         DateTime? Until = null, int Instance = 0, TimeSpan Duration = default, string Label = "", int Target = 0,
-        int Grade = -1, bool Crit = false, bool Double = false)
+        int Grade = -1, bool Crit = false, bool Double = false, bool Status = false)
     {
         public bool IsDebuff => Until is not null;
         public string Word => Label.Length > 0 ? Label : Name;
@@ -45,7 +46,12 @@ namespace Hawkeye.Engine.Services.Theostone
     public sealed class TheostoneAlerts
     {
         public static readonly TimeSpan MergeWithin = TimeSpan.FromSeconds(1.5);
-        private const int MaxShown = 4;
+        private const int MaxShown = 5;
+
+        /// <summary>Debuffs on you shorter than this are left out (knock-backs and staggers of 50 to 500 ms).</summary>
+        public static readonly TimeSpan ShortestStatus = TimeSpan.FromSeconds(1);
+        /// <summary>... and longer than this too (none seen; a guard against a misread length).</summary>
+        public static readonly TimeSpan LongestStatus = TimeSpan.FromMinutes(2);
 
         private readonly EntityTracker entities;
         private readonly ISettingsService settings;
@@ -142,6 +148,32 @@ namespace Hawkeye.Engine.Services.Theostone
                         From = procs[i].From.Length > 0 ? procs[i].From : from };
                 else Add(new TheostoneProc(now, yours, name, 0, from, 0, now + length, instance, length,
                     TheostoneKinds.Label(code, name), targetId, TheostoneKinds.Grade(code)));
+            }
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Any other debuff on you (v0.2.38): a buff message (0x382A new, 0x382B refreshed) on you from someone who is
+        /// not you and was never in your group (BuffPacketProcessor checks that). Shown like a Theostone debuff on you,
+        /// with the skill's name, until it runs out or the game removes it. The same debuff again (same instance, or
+        /// same name) updates its tile instead of adding one.
+        /// </summary>
+        public void OnStatus(int targetId, int instance, string name, uint durationMs, int casterId)
+        {
+            if (!settings.Current.DebuffAlerts || !entities.IsCurrentPlayer(targetId)) return;
+            var length = TimeSpan.FromMilliseconds(durationMs);
+            if (length < ShortestStatus || length > LongestStatus) return;
+            string from = entities.GetPlayerEntity(casterId)?.Name ?? "";
+            if (from.StartsWith("Player_", StringComparison.Ordinal)) from = "";   // a placeholder, not a name
+            lock (gate)
+            {
+                var now = Clock();
+                Expire(now);
+                int i = procs.FindLastIndex(p => p.Status && p.Target == targetId && (p.Instance == instance || p.Name == name));
+                if (i >= 0)
+                    procs[i] = procs[i] with { At = now, Until = now + length, Instance = instance, Duration = length,
+                        From = from.Length > 0 ? from : procs[i].From };
+                else Add(new TheostoneProc(now, false, name, 0, from, 0, now + length, instance, length, name, targetId, Status: true));
             }
             Changed?.Invoke(this, EventArgs.Empty);
         }

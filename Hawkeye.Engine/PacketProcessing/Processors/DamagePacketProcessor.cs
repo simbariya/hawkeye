@@ -34,6 +34,12 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
       
         public void Process(Packet packet)
         {
+            if (theostones is not null && NoDamageTheostone(packet.Data) is { } proc)
+            {
+                theostones.OnHit(proc.Actor, proc.Target, gameData.GetSkillOrDefault(proc.Code).Name, 0, proc.Code);
+                return;
+            }
+
             var parsed = Parse(packet.Data);
             if (!parsed.IsValid)
             {
@@ -151,6 +157,31 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
 
             return new ParsedDamagePacket(data, PacketProcessResult.SUCCES);
 
+        }
+
+        /// <summary>
+        /// A debuff Theostone's proc (Blind, Silence, Poison...) is a hit with no damage: its mask's low bits are 0, which
+        /// the damage layout below refuses (found 2026-11-26: all 96 such procs in the owner's recordings had mask 0,
+        /// every damage stone's had 4 or 6). Until v0.2.38 these never reached the alerts, so your own debuff stones only
+        /// showed when the debuff landed, and then not at all (the buff reader got the caster wrong too).
+        /// Returns the proc, or null for anything else.
+        /// </summary>
+        private (int Actor, int Target, int Code)? NoDamageTheostone(byte[] packet)
+        {
+            try
+            {
+                var reader = new PacketReader(packet);
+                reader.ReadVarInt(); //len
+                reader.ReadU16();    //opcode
+                var targetId = (int)reader.ReadVarInt();
+                var mask = reader.ReadVarInt();
+                if (mask > 255 || (mask & 0x0F) != 0) return null;
+                reader.ReadVarInt(); // unknown flag
+                var actorId = (int)reader.ReadVarInt();
+                var code = (int)reader.ReadU32();
+                return actorId != targetId && gameData.IsTheostone(code) ? (actorId, targetId, code) : null;
+            }
+            catch (Exception) { return null; }
         }
 
         private int ProcessSwitchValue(int switchVar)

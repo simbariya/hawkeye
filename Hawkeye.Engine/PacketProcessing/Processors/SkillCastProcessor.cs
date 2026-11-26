@@ -7,7 +7,7 @@ using Hawkeye.Engine.Services.Session;
 namespace Hawkeye.Engine.PacketProcessing.Processors
 {
     [PacketOpcode(PacketOpcodes.SkillCast)]
-    internal class SkillCastProcessor(CombatSessionManager sessionManager, Hawkeye.Engine.Services.Arena.ArenaTracker? arena = null) : IOpcodeProcessor
+    public class SkillCastProcessor(CombatSessionManager sessionManager, Hawkeye.Engine.Services.Arena.ArenaTracker? arena = null) : IOpcodeProcessor
     {
         private const byte MaskHas01 = 0x01;
         private const byte MaskHasUnknown02 = 0x02;
@@ -37,7 +37,21 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
 
             if ((mask & MaskHasUnknown02) != 0) r.ReadVarInt(); //unknown
             var cooldownMilliseconds = r.ReadVarInt();
-            if(cooldownMilliseconds <1) return;
+            if (cooldownMilliseconds < 1)
+            {
+                // A potion: no cooldown in the message, the length is known (v0.2.38). Starts the timer for every
+                // potion that shares it, so a tracked Superior Healing Potion also counts down after a plain one.
+                if (Hawkeye.Engine.Services.Timed.PotionCooldowns.Cooldown((int)skillId) is { } potionCd)
+                    foreach (var id in Hawkeye.Engine.Services.Timed.PotionCooldowns.SharingWith((int)skillId))
+                    {
+                        var potion = gameData.GetSkillOrDefault(id);
+                        sessionManager.RegisterSkillCastEvent(new SkillCastEvent
+                        {
+                            Name = potion.Name, IconUrl = potion.Icon, SkillId = potion.Id != 0 ? potion.Id : id, EntityId = (int)sourceId, Cd = potionCd,
+                        });
+                    }
+                return;
+            }
 
             if ((mask & MaskHasAutoloadCount) != 0) r.ReadU8(); //autoloadCount
             if ((mask & MaskHasAutoloadTime) != 0) r.ReadVarInt(); //autoloadTime

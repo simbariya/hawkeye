@@ -3,6 +3,36 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.38 (2026-11-26)
+
+Added (owner: "pop up meaning the skill tracker, so can configure that it only appears when x seconds left until
+buff expires or cd almost ready. Debuff mode meaning if you have something negative on you, like blind, heal
+reduction or whatever it shows it"; "GREATER HEALING POTION COOLDOWN CHECK"):
+- **Pop-up tracker icons.** Each tracked skill has a new button next to Cooldown / Buff: "Always" (as before) or
+  "At 3s", "At 5s", "At 10s", "At 15s". Then the icon only appears that many seconds before the cooldown is ready or
+  the buff runs out, and stays 3 seconds after. While Settings is open every icon shows, to place them.
+- **Debuffs on you.** Anything put on you by someone outside your group (an enemy player or a monster) shows in the
+  Theostone box with its name, who did it and its time left, until it ends or you cleanse it (Settings > PvP >
+  "Debuffs on you", on by default). Effects shorter than 1 second (knock-backs) are left out. The game's general
+  effects that have no name in the game data (2 to 5 s, likely stuns and knock-downs) show as "Debuff". In the
+  owner's 30-minute PvP recording this would have shown about 150 debuffs: Fire Mark, Defense Break, Ice Chain,
+  curses, poisons. The box now holds 5 at once.
+- **Potion cooldowns in the tracker.** Healing Potion and Superior Healing Potion (10 s, shared) and Life Potion and
+  Superior Life Potion (30 s, shared) can be added to the tracker in Cooldown mode. The game sends no cooldown for
+  potions, so the lengths were measured on the recordings: the shortest gap between two uses, across every player.
+  The owner's "greater" healing potion is the Superior one (id 2020102). Potions have no icon in the game data, so
+  their icon shows a letter.
+
+Fixed (owner: "godstone when you proc it doesnt seem to show always when using non damage godstones"):
+- **Debuff Theostones (Blind, Silence, Poison...) now show when they proc.** Their proc is a hit with no damage,
+  which the damage reader refused, so nothing showed unless the debuff landed. And when it landed on an enemy, the
+  buff reader took the wrong bytes for who cast it, so your own never counted as yours. Both fixed: all 96 such
+  procs in the recordings now reach the box. The name of whoever put a Theostone debuff on you shows too now.
+- Buff messages: who cast a buff is now read right (it read part of the time stamp, which is why it was always
+  "161"), and refreshed buffs (0x382B) are read with their own layout. Buff mode still follows only the buff on you,
+  as proven in game.
+166 tests (13 new).
+
 ## v0.2.37 (2026-11-26)
 
 Changed (owner: "can we also have CP shown in green and without the CP word, maybe also make the DPS number

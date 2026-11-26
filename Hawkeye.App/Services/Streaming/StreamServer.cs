@@ -295,7 +295,8 @@ namespace Hawkeye.App.Services.Streaming
                     windows = BuildWindows(s),
                     theo = BuildTheostones(s),
                     defiance = BuildDefiance(),
-                    icons = !s.StreamShowIcons || !overlays.IconsVisible ? Array.Empty<object>() : overlays.IconWindows.Select(object (w) =>
+                    icons = !s.StreamShowIcons || !overlays.IconsVisible ? Array.Empty<object>() : overlays.IconWindows.Where(w => w.IsVisible).Select(object (w) =>   // pop-up icons only while up (v0.2.38)
+
                     {
                         var tracked = s.TrackedSkills.FirstOrDefault(t => t.SkillId == w.SkillId);
                         var mode = tracked?.Mode ?? TrackMode.Cooldown;

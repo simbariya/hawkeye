@@ -74,11 +74,14 @@ namespace Hawkeye.App.Services.Windowing
         private void UpdateIconVisibility()
         {
             bool show = IsEditMode || settings.Current.TrackerAlwaysVisible || sessions.IsInBossFight(DateTime.Now);
-            if (show == iconsShown) return;
             iconsShown = show;
+            var nowUtc = DateTime.UtcNow;
             foreach (var icon in icons.Values)
             {
-                if (show) { icon.Show(); icon.BringToFront(); }
+                // Pop-up icons (v0.2.38) come and go on their own within that; all show while Settings is open.
+                bool want = show && (IsEditMode || icon.WantsShown(nowUtc));
+                if (want == icon.IsVisible) continue;
+                if (want) { icon.Show(); icon.BringToFront(); }
                 else icon.Hide();
             }
         }
@@ -277,7 +280,7 @@ namespace Hawkeye.App.Services.Windowing
                 icons[id] = icon;
                 icon.Show();
                 icon.SetEditMode(IsEditMode);
-                if (!iconsShown) icon.Hide();
+                if (!iconsShown || !(IsEditMode || icon.WantsShown(DateTime.UtcNow))) icon.Hide();
             }
         }
 

@@ -203,6 +203,16 @@ namespace Hawkeye.App.Views
         private TrackMode Mode =>
             settings.Current.TrackedSkills.FirstOrDefault(t => t.SkillId == skillId)?.Mode ?? TrackMode.Cooldown;
 
+        private DateTime lastActiveUtc = DateTime.MinValue;   // last time a timer was running on this icon
+
+        /// <summary>Pop up (v0.2.38): whether the icon should be on screen now (<see cref="PopUp.Visible"/>).</summary>
+        public bool WantsShown(DateTime nowUtc)
+        {
+            int popUp = settings.Current.TrackedSkills.FirstOrDefault(t => t.SkillId == skillId)?.PopUpSeconds ?? 0;
+            return PopUp.Visible(popUp, (Mode == TrackMode.Buff ? buffs : cooldowns).Get(unchecked((uint)skillId))?.TimeLeft,
+                lastActiveUtc, nowUtc);
+        }
+
         /// <summary>Edit mode = Settings is open: draggable, outlined, raised above everything.</summary>
         public void SetEditMode(bool editMode)
         {
@@ -234,6 +244,7 @@ namespace Hawkeye.App.Views
             modeTag.Background = mode == TrackMode.Buff ? GreenBrush : ReadyFrame;
             modeTagText.Text = mode == TrackMode.Buff ? "BUFF" : "CD";
 
+            if (active) lastActiveUtc = now;
             if (mode == TrackMode.Cooldown) RefreshCooldown(state, active, now);
             else RefreshBuff(state, active, now);
 

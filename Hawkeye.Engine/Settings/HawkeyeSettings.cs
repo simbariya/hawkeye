@@ -54,6 +54,13 @@ namespace Hawkeye.Engine.Settings
         /// </summary>
         public bool Active { get; set; } = true;
 
+        /// <summary>
+        /// Pop up (v0.2.38; owner, 2026-11-26: "it only appears when x seconds left until buff expires or cd almost
+        /// ready"): 0 = always on screen; otherwise the icon shows only from this many seconds before the cooldown ends
+        /// or the buff runs out, and a moment after.
+        /// </summary>
+        public int PopUpSeconds { get; set; }
+
         /// <summary>Screen position of the icon (null = not placed yet).</summary>
         public double? Left { get; set; }
         public double? Top { get; set; }
@@ -93,6 +100,12 @@ namespace Hawkeye.Engine.Settings
 
         /// <summary>Flash a small red alert on the meter when someone's Theostone hits you (v0.2.17).</summary>
         public bool TheostoneAlertsOnYou { get; set; } = true;
+
+        /// <summary>
+        /// Debuffs on you (v0.2.38; owner, 2026-11-26: "if you have something negative on you, like blind, heal reduction
+        /// or whatever it shows it"): anything put on you by someone outside your group, in the Theostone alert box.
+        /// </summary>
+        public bool DebuffAlerts { get; set; } = true;
 
         /// <summary>Theostone alerts in their own draggable window (default) or over the meter (v0.2.19).</summary>
         public TheostonePlace TheostonePlace { get; set; } = TheostonePlace.Screen;

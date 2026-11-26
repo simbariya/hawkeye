@@ -340,3 +340,9 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   "enemies", you not found, then every Defiance caster was added). A battlefield still switches the meter to the
   arena view by itself (not asked to change). 153 tests.
 - 0.2.37 (2026-11-26): CP green without the "CP" word; DPS bold in all three looks. Render: scratchpad meterpreview/cp.png.
+- 0.2.38 (2026-11-26): pop-up tracker icons (At 3/5/10/15 s), debuffs on you in the Theostone box, potion
+  cooldowns (Healing 10 s, Life 30 s, measured), debuff Theostone procs fixed (mask 0 hits; buff caster misread).
+  166 tests. Replay harness: scratchpad debuffreplay (pvp-run: ~150 debuff tiles in 30 min). NOT verified in game:
+  the pop-up timing on screen, the potion lengths against the game's tooltip, debuffs in PvE. Unnamed general
+  effects 10000020..10000080 show "Debuff": ask the owner what they are when seen. Still open: opponent rankings
+  (General / Marshal titles): not looked into yet.

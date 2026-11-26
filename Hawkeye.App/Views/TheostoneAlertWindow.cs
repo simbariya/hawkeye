@@ -96,7 +96,7 @@ namespace Hawkeye.App.Views
             this.settings = settings;
             this.alerts = alerts;
 
-            Title = "Hawkeye - Theostone alerts";
+            Title = "Hawkeye - Theostones and debuffs";
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
             Background = Brushes.Transparent;
@@ -115,7 +115,7 @@ namespace Hawkeye.App.Views
             };
             editLabel = new TextBlock
             {
-                Text = "THEOSTONE ALERTS  (drag to move)", FontFamily = Font, FontSize = 9, Foreground = Brushes.White,
+                Text = "THEOSTONES AND DEBUFFS  (drag to move)", FontFamily = Font, FontSize = 9, Foreground = Brushes.White,
                 Margin = new Thickness(0, -16, 0, 0), VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed,
             };

@@ -142,7 +142,14 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Cooldown updates** (`TimedEventTracker.UpdateTimeLeft`, v0.1.4): a running cooldown keeps its
   full length and only the time left moves (cuts make the sweep jump forward). An update within
   1.5 s of the start sets the full length (the real cooldown; the cast only knows the base one).
-- **Buff mode** reads only buffs ON you (the game's caster field is a fixed 161 for these, so "by
+- **Pop up (v0.2.38):** `TrackedSkill.PopUpSeconds` (0 = always; the Settings button cycles 3, 5, 10, 15).
+  `Engine/Services/Timed/PopUp.Visible`: shown from N s before the timer ends until `PopUp.Linger` (3 s) after;
+  `TrackerIconWindow.WantsShown`, applied every 250 ms by `OverlayManager.UpdateIconVisibility` within the boss-fight
+  rule; the stream page sends only visible icons.
+- **Potions (v0.2.38):** `Engine/Services/Timed/PotionCooldowns` (Healing family 10 s, Life family 30 s, measured on
+  recordings). Your potion cast (0x3802, cooldown field 0) starts the cooldown for the whole family
+  (`SkillCastProcessor`). The skill picker lists class skills plus these potions.
+- **Buff mode** reads only buffs ON you (until v0.2.38 the caster was misread as a fixed 161, so "by
   you" never matches). Your Marking Shot buff is 10 s; other rangers' are 15 s.
 - **When the icons show:** by default only during a boss or dummy fight
   (`CombatSessionManager.IsInBossFight`: the shown fight is open, not a stopped dummy run, and was
@@ -282,12 +289,19 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   - Procs: `DamagePacketProcessor` hands every hit with a Theostone skill code to `OnHit` before its
     own player check. Yours (actor is you) or on you (target is you) only; same stone and direction
     within 1.5 s merge; shown `TheostoneSeconds`. A debuff stone's hit does not mean the debuff landed.
+  - No-damage procs (v0.2.38): a debuff stone's proc has mask low bits 0, which the damage layout refuses;
+    `DamagePacketProcessor.NoDamageTheostone` reads actor, target and code first and calls `OnHit` with 0 damage.
   - Debuffs: `BuffPacketProcessor` reads Theostone ids and calls `OnDebuff(target, instance, name, ms, caster, id)`
-    (layout: [id x10][u32 ms][5 bytes][u64 time][caster varint]). On you, or cast by you on an enemy. The tile
+    (layout, corrected v0.2.38: [id x10][u32 ms][4 bytes][u64 time][caster varint]; 0x382A has a u8 before the
+    type, 0x382B does not). On you, or cast by you on an enemy. The tile
     stays until its time runs out or `BuffRemovedProcessor` (0x382C) brings a removal for that entity naming its
     instance (`OnRemoved`; each entry is [reason][instance varint], reason 0 ran out, 7 cleansed, a potion too).
   - Poison/Bleed ticks: `DotDamagePacketProcessor` (0x3805) calls `OnTick`, which only adds to a showing tile.
-  - At most 4 at once; plain hits make room first.
+  - Debuffs on you (v0.2.38): any other buff message on you whose caster is not `EntityTracker.IsFriendly` (you,
+    anyone named in a group list since start, their summons) goes to `OnStatus` (1 s to 2 min; `Status` tiles,
+    named after the skill, "Debuff" when unnamed). Same instance or same name updates the tile. Setting
+    `DebuffAlerts`.
+  - At most 5 at once; plain hits make room first.
   - Words: `TheostoneKinds.Label(id, name)`: id / 10 = 300 F G SS (F family 0 damage / 1 debuff, G grade, SS slot).
     Debuff slots 07 Blind, 09 Silence, 10 Root, 11 Stun, 12 Paralyze, 13 Slow, 14 Attack Slow, 15 Poison,
     16 Bleed; damage slots 17 to 24 = "Damage N%" with the proc chance. Others keep the stone's name.
@@ -303,7 +317,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   by `OverlayManager.Start`. Or `.theo-alerts` over the meter (`MeterPage.razor`) when `TheostonePlace` is Meter.
   Stream page: `/state.theo` (where, position, scale, items: tag, name, amount, sub, bar, fade), drawn by
   `renderTheo`. Texts shared: `TheostoneAlertWindow.TagText / MainText / SubText`, `TheostoneProc.Word`.
-- **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou`, `TheostonePlace` (Screen), `TheostoneScale`
+- **Settings:** `TheostoneAlertsYours`, `TheostoneAlertsOnYou`, `DebuffAlerts`, `TheostonePlace` (Screen), `TheostoneScale`
   (1), `TheostoneSeconds` (3.5), in Settings > PvP.
 
 ## 6h. Arena mode (v0.2.26)

@@ -284,6 +284,24 @@ html, body {
 
         .hs-mode button.is-on { background: var(--accent); color: #111; font-weight: 700; }
 
+/* Pop up (v0.2.38): "Always" or "At 3s"; click cycles 3, 5, 10, 15 seconds */
+.hs-popup {
+    flex: 0 0 auto;
+    min-width: 46px;
+    padding: 3px 6px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--dim);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+    .hs-popup.is-on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    .hs-popup:hover { border-color: var(--accent); }
+
+.hs-tracked-row.is-off .hs-popup { opacity: 0.4; }
+
 .hs-remove {
     flex: 0 0 auto;
     width: 24px;

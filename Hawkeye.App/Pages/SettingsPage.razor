@@ -97,6 +97,9 @@
         <SettingRow Title="Theostone: on you" Description="A red tile when someone's Theostone hits you. A debuff (Silence, Blind, Poison...) stays with its time left until it ends or you cleanse it, a potion too">
             <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsOnYou" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsOnYou = v)" /></ValueSlot>
         </SettingRow>
+        <SettingRow Title="Debuffs on you" Description="Anything an enemy or monster puts on you (blind, slows, heal cuts, stuns...) shows in the same box with its time left, until it ends or you cleanse it. Effects from your group are left out">
+            <ValueSlot><ToggleSwitch Checked="S.DebuffAlerts" CheckedChanged="v => Settings.Update(s => s.DebuffAlerts = v)" /></ValueSlot>
+        </SettingRow>
         <SettingRow Title="Theostone: where" Description="@(S.TheostonePlace == TheostonePlace.Screen ? "Its own box: while Settings is open it shows a dashed outline you can drag anywhere" : "Over the top of the meter")">
             <ValueSlot>
                 <div class="hs-mode">
@@ -228,6 +231,9 @@
                         <button type="button" class="@(t.Mode == TrackMode.Buff ? "is-on" : "")" title="Track the buff it gives, so you know when to reapply"
                                 @onclick="() => SetMode(t.SkillId, TrackMode.Buff)">Buff</button>
                     </div>
+                    <button type="button" class="hs-popup @(t.PopUpSeconds > 0 ? "is-on" : "")"
+                            title="@(t.PopUpSeconds > 0 ? $"Pops up {t.PopUpSeconds} seconds before the {(t.Mode == TrackMode.Buff ? "buff runs out" : "cooldown is ready")}, then hides again. Click to change" : "Always on screen. Click to make it pop up only near the end: 3, 5, 10 or 15 seconds before")"
+                            @onclick="() => NextPopUp(t.SkillId)">@(t.PopUpSeconds > 0 ? $"At {t.PopUpSeconds}s" : "Always")</button>
                     <button type="button" class="hs-remove" title="Stop tracking" @onclick="() => Remove(t.SkillId)">✕</button>
                 </div>
             }
@@ -303,8 +309,9 @@
     private int OpacityPercent => (int)Math.Round(S.Opacity * 100);
     private int IconSize => (int)Math.Round(S.TrackerIconSize);
 
+    // Class skills, plus the potions whose cooldown Hawkeye knows (v0.2.38).
     private static readonly List<Skill> AllSkills = GameDataProvider.Instance.Skills.Skills
-        .Where(kv => kv.Key > 10_000_000)
+        .Where(kv => kv.Key > 10_000_000 || Hawkeye.Engine.Services.Timed.PotionCooldowns.IsKnown(kv.Key))
         .Select(kv => kv.Value)
         .OrderBy(s => s.Name)
         .ToList();
@@ -344,6 +351,16 @@
     {
         var t = s.TrackedSkills.FirstOrDefault(x => x.SkillId == skillId);
         if (t is not null) t.Active = on;
+    });
+
+    private static readonly int[] PopUpSteps = [0, 3, 5, 10, 15];
+
+    private void NextPopUp(int skillId) => Settings.Update(s =>
+    {
+        var t = s.TrackedSkills.FirstOrDefault(x => x.SkillId == skillId);
+        if (t is null) return;
+        int i = Array.IndexOf(PopUpSteps, t.PopUpSeconds);
+        t.PopUpSeconds = PopUpSteps[(i + 1) % PopUpSteps.Length];
     });
 
     private void SetMode(int skillId, TrackMode mode) => Settings.Update(s =>

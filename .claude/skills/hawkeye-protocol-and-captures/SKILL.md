@@ -69,9 +69,19 @@ lost hit. First step: capture a dummy fight and count failures against hits seen
 **Cooldowns `0x3847`**: `u8 count`, then per entry `u32 skillId`, `varint msLeft`. `msLeft = 0`
 clears the timer (reset).
 
-**Buff `0x382A/B`**: `varint entity` (who has it), `u8 ?`, `u8 type`, `varint ?`,
-`u32 buffId*10` (divide by 10), `u32 durationMs` (100 ms to 1 h accepted), 4 unknown bytes,
-`u32 timestamp`, `varint caster`. Hawkeye counts it when the entity OR the caster is you.
+**Buff `0x382A` (new) / `0x382B` (refreshed)**, checked on every buff message in the recordings 2026-11-26:
+`varint entity` (who has it), `u8 ?` (0x382A only), `u8 type` (17 or 19), `varint instance` (0x382C removals name
+it), `u32 buffId*10` (divide by 10), `u32 durationMs`, 4 zero bytes, `u64 time` (ms since 1970), `varint caster`.
+Until v0.2.38 Hawkeye read the caster 8 bytes early (inside the time: always "161") and the Theostone path one
+byte late. With the caster right: your own buffs on you are cast by you; enemies' debuffs on you by them.
+
+**No-damage hits**: a debuff Theostone's proc is a 0x3804 whose mask low bits are 0 (all 96 in the recordings;
+damage stones 4 or 6). Read up to the skill code like a damage hit; no damage follows in the same layout.
+
+**Potions**: drinking one is a 0x3802 cast with cooldown field 0 (the varint before it is 10000 for every
+potion, not the cooldown). 0x3847 never lists potions. Healing Potion 2020101 / Superior 2020102 (cleanse; shortest
+gaps between uses 10.7 to 11.1 s) and Life Potion 2011101 / Superior 2011102 (10 s heal over time; 29.9 to 30.1 s).
+Item use also sends 0x5613 (healing) / 0x5616 (life) `[u32 item][u32 key]` and an item count 0x561B: no cooldown.
 
 **Cast `0x3802`**: `varint source`, `u8 mask`, `u32 skillId`, `u8 ?`, optional fields by mask,
 target block, `varint ?`, `u8 ?`, optional varint, `varint cooldownMs`, optional autoload fields.
@@ -222,3 +232,4 @@ changing gear with a skill-level bonus re-sends the list without a teleport.
 - 2026-11-20: written for v0.1.0 from the inherited decoder source and the owner's old meter logs.
 - 2026-11-25: skill list 0x5100 (levels) added.
 - 2026-11-26: group members' CP in 0x9702; 0x3656 read.
+- 2026-11-26: buff message layout corrected (caster, 0x382B), no-damage Theostone procs, potions.

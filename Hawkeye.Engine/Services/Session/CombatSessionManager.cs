@@ -17,6 +17,9 @@ namespace Hawkeye.Engine.Services.Session
         private readonly ConcurrentDictionary<int, TargetEntry> targetEntries = new();
         private readonly ActiveTargetResolver targetResolver;
         private readonly EntityTracker entityTracker;
+
+        /// <summary>Who is who (the buff reader asks it whether a caster is friendly).</summary>
+        public EntityTracker Entities => entityTracker;
         private readonly ILogger<CombatSessionManager> logger;
         private readonly Lock lockObject = new();
         private readonly ISettingsService settingsService;
@@ -533,16 +536,18 @@ namespace Hawkeye.Engine.Services.Session
                     buffEvent.BuffName, buffEvent.BuffId, buffEvent.EntityId, buffEvent.CasterId, buffEvent.DurationMs, onMe, byMe, meKnown);
 
             else if (byMe)
-                logger.LogInformation("[SEEN] buff you cast: {Name} ({BuffId}) on {EntityId} for {Ms} ms",
+                logger.LogDebug("[SEEN] buff you cast: {Name} ({BuffId}) on {EntityId} for {Ms} ms",
                     buffEvent.BuffName, buffEvent.BuffId, buffEvent.EntityId, buffEvent.DurationMs);
 
-            // Buffs on you, plus anything you put on something else (e.g. a mark on the boss).
+            // Buffs on you only. Since v0.2.38 the caster is read right, so "by you" is real now, but the timers stay as
+            // proven in game (until then "by you" never matched): your Drill Dart is a 3 s buff on you and a 6 s mark on
+            // the enemy under the same id, and both would drive the one icon.
             // Until Hawkeye knows who you are, a TRACKED buff counts only if YOUR cooldown for it started within
             // OwnCastWindow of it (the cooldown message holds only your skills), and only when one player got it
             // (owner, 2026-11-23: in a crowd other rangers' Marking Shot "kept resetting the buff as if I got it";
             // the old rule took a tracked buff from anyone while you were unknown, and in a crowd you stayed
             // unknown because several rangers cast the same skills at once).
-            if (onMe || byMe)
+            if (onMe)
             {
                 AcceptBuff(buffEvent, onMe);
                 return;

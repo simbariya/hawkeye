@@ -3,6 +3,7 @@ using Hawkeye.Core.GameData.Services;
 using Hawkeye.Core.Models;
 using Hawkeye.Engine.PacketProcessing.Routing;
 using Hawkeye.Engine.PacketProcessing.Shared;
+using Hawkeye.Engine.Services.Entity;
 using Hawkeye.Engine.Services.Session;
 using Hawkeye.Engine.Services.Theostone;
 using Microsoft.Extensions.Logging;
@@ -20,10 +21,12 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         private readonly ILogger<BuffPacketProcessor> logger;
         private readonly CombatSessionManager sessionManager;
         private readonly TheostoneAlerts? theostones;
+        private readonly EntityTracker entities;
 
         public BuffPacketProcessor(ILogger<BuffPacketProcessor> logger, CombatSessionManager sessionManager, TheostoneAlerts? theostones = null)
         {
             this.theostones = theostones;
+            this.entities = sessionManager.Entities;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.gameData = GameDataProvider.Instance;
             this.sessionManager = sessionManager;
@@ -66,43 +69,47 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             }
         }
 
-        /// <summary>Returns null when the buff was passed on, or why it was dropped.</summary>
+        /// <summary>
+        /// Returns null when the buff was passed on, or why it was dropped.
+        ///
+        /// Layout (checked 2026-11-26 on every buff message in the owner's recordings): 0x382A (new) is
+        /// [entity varint][u8 ?][u8 type][instance varint], 0x382B (refreshed) the same without the u8 before the type;
+        /// then [u32 id x10][u32 ms][4 bytes][u64 time, ms since 1970][caster varint]. Until v0.2.38 Hawkeye read the
+        /// caster from inside the time (so it was always 161, "the fixed caster" of I9/I10), Theostone debuffs read it
+        /// one byte late, and 0x382B was read as if it had the extra byte.
+        /// </summary>
         private string? TryProcess(Packet packet)
         {
             var r = new PacketReader(packet.Data);
 
             r.ReadVarInt(); //len
-            r.ReadU16();    //opcode
+            var opcode = r.ReadU16();
 
             var entityId = (int)r.ReadVarInt();
-            r.ReadU8();     //unknown
+            if (opcode == PacketOpcodes.BuffEffectA) r.ReadU8();     //unknown, only in a new buff
             byte type = r.ReadU8();
             var instance = (int)r.ReadVarInt(); // the game's number for this buff; its removal (0x382C) names it
             var buffId =(int)r.ReadU32() / 10;
+            var durationMs = r.ReadU32();
+            int casterId = 0;
+            try { r.Skip(4 + 8); casterId = (int)r.ReadVarInt(); } catch (Exception) { /* caster missing: a short message */ }
 
-            // A Theostone debuff (on you, or yours on an enemy: an alert until it ends). Layout from the owner's recording,
-            // 2026-11-21: [id x10][u32 duration ms][5 bytes][u64 time][caster varint]...
+            // A Theostone debuff (on you, or yours on an enemy: an alert until it ends).
             if (theostones is not null && gameData.IsTheostone(buffId))
             {
-                uint ms = r.ReadU32();
-                int caster = 0;
-                try { r.Skip(5 + 8); caster = (int)r.ReadVarInt(); } catch (Exception) { /* caster is optional */ }
-                if (ms >= 100 && ms <= MaxReasonableBuffDurationMs)
-                    theostones.OnDebuff(entityId, instance, gameData.GetSkillOrDefault(buffId).Name, ms, caster, buffId);
+                if (durationMs >= 100 && durationMs <= MaxReasonableBuffDurationMs)
+                    theostones.OnDebuff(entityId, instance, gameData.GetSkillOrDefault(buffId).Name, durationMs, casterId, buffId);
                 return null;
             }
+
+            // Any other debuff on you: put there by someone who is not you and was never in your group (v0.2.38).
+            if (theostones is not null && casterId != 0 && !entities.IsFriendly(casterId) && entities.IsCurrentPlayer(entityId))
+                theostones.OnStatus(entityId, instance, StatusName(buffId), durationMs, casterId);
 
             if (!gameData.IsBuff(buffId)) return $"id {buffId} not a known buff, type {type}";
             var skill = gameData.GetSkillOrDefault(buffId);
 
-            var durationMs = r.ReadU32();
             if (durationMs < 100 || durationMs > MaxReasonableBuffDurationMs) return $"duration {durationMs} ms out of range, type {type}";
-
-            r.Skip(4); //unknown data
-
-            r.ReadU32(); //timestamp
-
-            var casterId = (int)r.ReadVarInt();
 
             logger.LogTrace("[BUFF] entityId={EntityId} buffId={BuffId} buffName={BuffName} type={Type} durationMs={DurationMs} casterId={CasterId}",
                 entityId, buffId, skill.Name, type, durationMs, casterId);
@@ -126,6 +133,19 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
             return null;
         }
 
+        /// <summary>
+        /// The tile's word for a debuff: its skill's name, or "Debuff" when the game data has no name for it. Class
+        /// skills (11,000,000 and up) carry variant digits and are looked up by their base; anything else only by its
+        /// exact id (the game's general effects 10000020 to 10000080, 2 to 5 s in PvP, have no name, and the base
+        /// lookup turned them into "Glide").
+        /// </summary>
+        private string StatusName(int buffId)
+        {
+            var name = buffId >= 11_000_000 && buffId < 20_000_000
+                ? gameData.Skills.GetName(gameData.Skills.NormalizeSkillCode(buffId))
+                : gameData.Skills.GetName(buffId);
+            return string.IsNullOrWhiteSpace(name) ? "Debuff" : name;
+        }
        
     }
 }

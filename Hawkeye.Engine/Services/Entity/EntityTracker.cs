@@ -34,6 +34,29 @@ namespace Hawkeye.Engine.Services.Entity
         /// <summary>Members in your group from the last party message (0 = no group seen). Sizes the meter.</summary>
         public int PartySize { get; set; }
 
+        // Everyone who was in a group with you since Hawkeye started (group lists, 0x9702). Replaced as a whole on each
+        // change, so readers need no lock. Only added to: a group list that reads short (a partial update, a parse
+        // miss) must not turn a group member's buff into a "debuff", and a past group member is no enemy.
+        private HashSet<string> groupNames = new(StringComparer.Ordinal);
+
+        /// <summary>Names from a group list (PartyProcessor).</summary>
+        public void AddToGroup(IEnumerable<string> names)
+        {
+            var add = names.Where(n => !string.IsNullOrEmpty(n) && !groupNames.Contains(n)).ToList();
+            if (add.Count > 0) groupNames = new HashSet<string>(groupNames.Concat(add), StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// You, someone who was in your group, or a summon of either. Used to tell a buff
+        /// from a debuff on you: anything put on you by someone else counts as a debuff (v0.2.38).
+        /// </summary>
+        public bool IsFriendly(int entityId)
+        {
+            if (summons.TryGetValue(entityId, out var owner)) entityId = owner;
+            if (IsCurrentPlayer(entityId)) return true;
+            return sessionPlayers.TryGetValue(entityId, out var p) && p.IsIdentified && groupNames.Contains(p.Name);
+        }
+
         private const int UnknownEntityHpThreshold = 1_000_000;
 
         /// <summary>Dummies seen before, by entity id, so one met without its appear message is still a dummy (v0.2.23).</summary>
