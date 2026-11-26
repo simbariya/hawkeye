@@ -3,6 +3,16 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.36 (2026-11-26)
+
+Fixed (owner: "WHEN IM DOINg battlefield it tracks everyone's defiance - instead if pvp mode is off dont track
+defiance"):
+- **Enemy Defiance only with PvP mode on.** A battlefield loads with the same roster message as an arena match, so
+  Hawkeye took it for one and added every player who cast Defiance (66 casts in the owner's first battlefield).
+  Defiance is now tracked and the Defiance box shown only while you have PvP mode on: the World tab, or the Arena
+  tab picked by hand. A match switching the meter to the arena view by itself no longer counts.
+153 tests (2 new).
+
 ## v0.2.35 (2026-11-26)
 
 Added (owner: "can you make it so it shows CP of a person next to the name when the dungeon loads?"):

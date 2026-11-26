@@ -322,6 +322,9 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved yet. Wins and
   Losses open the PvP window's Arena list (v0.2.27, `PvpView.ShowArena`, `PvpPage.razor`): opponent, class (looked
   up when the match ends), rating, score, rating change.
+- **Defiance only with PvP mode on (v0.2.36):** `ArenaTracker.DefianceTracked` = the Arena tab picked by hand, or
+  World PvP on (`WorldPvpOn`, set in `App.xaml.cs` from `PvpTracker.Active`). A battlefield sends the arena roster
+  too, so a match switching the view on by itself does not count.
 - **Defiance box (v0.2.27):** `Views/DefianceAlertWindow.cs`, Theostone style with the Defiance icon (all classes'
   Defiance share ICON_CO_SKILL_002, loaded through `SkillIconCache`); shown during a running match. Settings:
   `DefianceAlert`, `DefianceLeft/Top`, `DefianceScale`. Stream page: `/state.defiance`, `renderDefiance`.

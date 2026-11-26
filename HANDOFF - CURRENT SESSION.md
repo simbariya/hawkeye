@@ -336,3 +336,6 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   never shown), own CP also from 0x3656. Checked by replaying odyle-spend (scratchpad partyreplay): group members'
   rows got their CP; the owner's matched 0x3656. Render: scratchpad meterpreview/cp.png. Arena opponents and
   strangers: still no CP in any message. 151 tests.
+- 0.2.36 (2026-11-26): enemy Defiance tracked only with PvP mode on (battlefield sends the arena roster E319, 2
+  "enemies", you not found, then every Defiance caster was added). A battlefield still switches the meter to the
+  arena view by itself (not asked to change). 153 tests.

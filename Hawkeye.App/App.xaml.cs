@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using Hawkeye.App.Services;
 using Hawkeye.App.Services.Windowing;
@@ -109,6 +109,8 @@ namespace Hawkeye.App
             await AppHost.StartAsync();
 
             var services = AppHost.Services;
+            var pvpMode = services.GetRequiredService<Hawkeye.Engine.Services.Pvp.PvpTracker>();
+            services.GetRequiredService<Hawkeye.Engine.Services.Arena.ArenaTracker>().WorldPvpOn = () => pvpMode.Active;
             if (!TryStartCapture(services.GetRequiredService<IPacketService>()))
             {
                 Shutdown();

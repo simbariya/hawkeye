@@ -48,6 +48,17 @@ namespace Hawkeye.Engine.Services.Arena
         private bool showing;
         private bool shownByMatch;   // switched on by a match loading: switched off again when you leave the arena
 
+        /// <summary>The World PvP mode is on (set by the app from <c>PvpTracker.Active</c>).</summary>
+        public Func<bool>? WorldPvpOn { get; set; }
+
+        /// <summary>
+        /// Enemy Defiance is tracked only while YOU have PvP mode on: the World tab, or the Arena tab picked by hand
+        /// (owner, 2026-11-26: "WHEN IM DOINg battlefield it tracks everyone's defiance - instead if pvp mode is off
+        /// dont track defiance"). A battlefield loads with the same roster message as an arena match, so a match
+        /// switching the view on by itself does not count.
+        /// </summary>
+        public bool DefianceTracked => (showing && !shownByMatch) || (WorldPvpOn?.Invoke() ?? false);
+
         public DateTime StartedAt { get; private set; }
         public int Wins { get; private set; }
         public int Losses { get; private set; }
@@ -218,7 +229,7 @@ namespace Hawkeye.Engine.Services.Arena
         /// <summary>Any skill cast (0x3802). Only an enemy's Defiance matters.</summary>
         public void OnSkillCast(int entityId, string skillName, TimeSpan cooldown)
         {
-            if (skillName != DefianceName || entities.IsCurrentPlayer(entityId)) return;
+            if (skillName != DefianceName || entities.IsCurrentPlayer(entityId) || !DefianceTracked) return;
             lock (gate)
             {
                 // Only during a match: in the open Abyss other players' Defiance is cast too (seen in the recording).

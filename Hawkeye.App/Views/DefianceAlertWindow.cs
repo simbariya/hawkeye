@@ -154,9 +154,9 @@ namespace Hawkeye.App.Views
             if (hwnd != IntPtr.Zero) SetWindowPos(hwnd, new IntPtr(-1), 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010);
         }
 
-        /// <summary>The tiles to show now: each enemy in a running match.</summary>
+        /// <summary>The tiles to show now: each enemy in a running match, only while you have PvP mode on.</summary>
         public static IReadOnlyList<Tile> Live(ArenaTracker arena, bool enabled) =>
-            !enabled || arena.Match is not { Won: null } m ? []
+            !enabled || !arena.DefianceTracked || arena.Match is not { Won: null } m ? []
             : m.Enemies.Select(e => new Tile(e.Name, arena.DefianceLeft(e), e.DefianceCooldown)).ToList();
 
         private static IReadOnlyList<Tile> Samples() =>

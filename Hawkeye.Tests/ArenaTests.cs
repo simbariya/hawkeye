@@ -62,6 +62,7 @@ public sealed class ArenaTests : IDisposable
     [Fact]
     public void AMatch_ScoreDefianceAndResult()
     {
+        arena.WorldPvpOn = () => true;                    // PvP mode on: Defiance is tracked
         arena.OnStandings(ArenaParser.ParseStandings(Hex(StandingsBefore))!);
         Assert.False(arena.Showing);
 
@@ -99,11 +100,40 @@ public sealed class ArenaTests : IDisposable
         var cast = (IOpcodeProcessor)Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             null, [sessions, arena], null)!;
 
+        arena.WorldPvpOn = () => true;
         arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
         cast.Process(new Packet { Data = Hex(TheirDefiance) });
         var foe = arena.Match!.Enemies[0];
         Assert.Equal(Opponent, foe.EntityId);
         Assert.Equal(TimeSpan.FromMilliseconds(51_300), foe.DefianceCooldown);
+    }
+
+    [Fact]
+    public void DefianceWithPvpModeOff_IsIgnored()
+    {
+        // Owner, 2026-11-26: a battlefield loads like an arena match and every caster was tracked.
+        bool pvpMode = false;
+        arena.WorldPvpOn = () => pvpMode;
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        Assert.True(arena.Showing);                       // the match still switches the view on, by itself
+        Assert.False(arena.DefianceTracked);
+
+        arena.OnSkillCast(Opponent, ArenaTracker.DefianceName, TimeSpan.FromSeconds(37));
+        arena.OnSkillCast(999, ArenaTracker.DefianceName, TimeSpan.FromSeconds(28));   // a stranger
+        Assert.Null(Assert.Single(arena.Match!.Enemies).DefianceAt);   // nobody tracked, nobody added
+
+        pvpMode = true;                                   // World PvP mode switched on
+        arena.OnSkillCast(Opponent, ArenaTracker.DefianceName, TimeSpan.FromSeconds(37));
+        Assert.NotNull(arena.Match.Enemies[0].DefianceAt);
+    }
+
+    [Fact]
+    public void TheArenaTabPickedByHand_CountsAsPvpModeOn()
+    {
+        arena.Showing = true;
+        Assert.True(arena.DefianceTracked);
+        arena.Showing = false;
+        Assert.False(arena.DefianceTracked);
     }
 
     [Fact]
