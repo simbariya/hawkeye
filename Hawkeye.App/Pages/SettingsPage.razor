@@ -1,4 +1,4 @@
-﻿@page "/settings"
+@page "/settings"
 @using System.Globalization
 @using Hawkeye.App.Services.Windowing
 @using Hawkeye.Core.GameData.Services
@@ -52,6 +52,9 @@
         </SettingRow>
         <SettingRow Title="Deaths" Description="A skull and count on each player who died on this boss, over every pull since its last kill">
             <ValueSlot><ToggleSwitch Checked="S.ShowDeaths" CheckedChanged="v => Settings.Update(s => s.ShowDeaths = v)" /></ValueSlot>
+        </SettingRow>
+        <SettingRow Title="Combat power" Description="CP after each name. The game sends it for you and your group only, so other players show none">
+            <ValueSlot><ToggleSwitch Checked="S.ShowCombatPower" CheckedChanged="v => Settings.Update(s => s.ShowCombatPower = v)" /></ValueSlot>
         </SettingRow>
 
         <div class="hs-section">TRAINING DUMMY</div>

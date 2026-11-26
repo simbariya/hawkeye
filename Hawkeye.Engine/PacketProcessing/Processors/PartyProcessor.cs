@@ -1,4 +1,4 @@
-﻿using Hawkeye.Core.Data;
+using Hawkeye.Core.Data;
 using Hawkeye.Core.Models;
 using Hawkeye.Engine.PacketProcessing.Routing;
 using Hawkeye.Engine.PacketProcessing.Shared;
@@ -7,8 +7,14 @@ using System.Diagnostics;
 
 namespace Hawkeye.Engine.PacketProcessing.Processors
 {
+    /// <summary>
+    /// Your group (0x9702): every member's name, level, gear score and combat power, sent when the group forms or
+    /// changes and when a dungeon loads. Combat power reaches the meter rows through the member's identity (linked
+    /// by name to the player doing the damage). Checked 2026-11-26 on 114 real lists: your own entry matched your
+    /// own combat power message (0x3656) exactly. Public for the tests.
+    /// </summary>
     [PacketOpcode(PacketOpcodes.PartyInfo)]
-    internal class PartyProcessor(EntityTracker entityTracker) : IOpcodeProcessor
+    public class PartyProcessor(EntityTracker entityTracker) : IOpcodeProcessor
     {
         private const byte MaskHasUnknown01 = 0x01;
         private const byte MaskHasUnknown02 = 0x02;

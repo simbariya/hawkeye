@@ -3,6 +3,18 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.35 (2026-11-26)
+
+Added (owner: "can you make it so it shows CP of a person next to the name when the dungeon loads?"):
+- **Combat power on the meter.** Each row shows "CP 113k" right after the name (full number when you hover the row),
+  in all three looks and on the stream page. The game sends combat power only for you and your group: the group
+  list (0x9702) carries every member's, which the inherited decoder already read but never showed. Checked on 114
+  real group lists: the owner's own entry matched his own combat power message exactly, and group members' numbers
+  reached their meter rows. Other players (open world, arena opponents) have none, so their rows show no CP.
+- Your own CP now follows 0x3656 (sent at zone loads and when it changes, e.g. a gear swap), not only the login
+  record. Settings > Meter > Combat power (on) turns it off. Fights saved to history keep the CP they had.
+151 tests (5 new).
+
 ## v0.2.34 (2026-11-25)
 
 Added (owner: "a comparison mode when testing dps between two skills ... which is better at lvl 20 if can have only

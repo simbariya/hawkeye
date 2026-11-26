@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
@@ -23,6 +23,8 @@ namespace Hawkeye.App.ViewModels
         public string Total { get; set; } = string.Empty;
         public string Dps { get; set; } = "0";
         public int Deaths { get; set; }
+        /// <summary>Combat power, short ("113k"); empty when the game did not send it.</summary>
+        public string Cp { get; set; } = string.Empty;
         public string Detail { get; set; } = string.Empty;
 
         /// <summary>Bar width in percent of the top player, eased so bars glide instead of jumping.</summary>
@@ -196,6 +198,7 @@ namespace Hawkeye.App.ViewModels
 
         public bool ShowTotals => settings.Current.ShowTotalDamage;
         public bool ShowDeaths => settings.Current.ShowDeaths;
+        public bool ShowCombatPower => settings.Current.ShowCombatPower;
 
         /// <summary>The dummy Start/Stop button: shown only in Start/Stop mode.</summary>
         public bool ShowDummyButton => settings.Current.DummyMode == DummyMode.StartStop;
@@ -289,7 +292,7 @@ namespace Hawkeye.App.ViewModels
 
             int fitRows = Math.Clamp(Math.Max(current.Count, sessions.PartySize), 1, MaxFitRows);
 
-            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}|{TheostoneKey()}|{arena.Showing}|{ArenaKey()}";
+            var key = string.Join("|", status) + $"|{duration}|{target}|{fitRows}|{AutoHeight}|{ShowTotals}|{ShowDeaths}|{ShowCombatPower}|{ShowDummyButton}|{sessions.DummyRun}|{ShowingHistory}|{settings.Current.Look}|{pvp.Active}|{pvp.Kills}|{pvp.Deaths}|{pvp.Assists}|{pvp.ApGained}|{pvp.RankGained}|{(pvp.Active ? RankKey() : "")}|{TheostoneKey()}|{arena.Showing}|{ArenaKey()}";
             if (key != stateKey)
             {
                 Duration = duration;
@@ -319,7 +322,9 @@ namespace Hawkeye.App.ViewModels
                 row.Total = Compact(p.TotalDamage);
                 row.Dps = Compact((long)Math.Round(p.Dps), shortThousands: true);
                 row.Deaths = p.Deaths;
-                row.Detail = $"{p.TotalDamage.ToString("N0", CultureInfo.InvariantCulture)} damage ({p.Share:F1}%)"
+                row.Cp = p.CombatPower > 0 ? Compact(p.CombatPower, shortThousands: true) : string.Empty;
+                row.Detail = (p.CombatPower > 0 ? $"Combat power {p.CombatPower.ToString("N0", CultureInfo.InvariantCulture)}. " : string.Empty)
+                             + $"{p.TotalDamage.ToString("N0", CultureInfo.InvariantCulture)} damage ({p.Share:F1}%)"
                              + (row.Deaths > 0 ? $", died {row.Deaths}x on this boss" : string.Empty)
                              + ". Click for the skill breakdown";
 

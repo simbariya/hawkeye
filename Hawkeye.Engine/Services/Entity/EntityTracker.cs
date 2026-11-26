@@ -202,6 +202,14 @@ namespace Hawkeye.Engine.Services.Entity
 
         public Player? GetPlayerEntity(int sessionId) => sessionPlayers.GetValueOrDefault(sessionId);
 
+        /// <summary>Your combat power changed (0x3656: gear swapped, buffs). Ignored until Hawkeye knows who you are.</summary>
+        public void SetUserCombatPower(int combatPower)
+        {
+            if (combatPower <= 0) return;
+            foreach (var p in sessionPlayers.Values) if (p.IsUser) p.CombatPower = combatPower;
+            foreach (var p in globalPlayers.Values) if (p.IsUser) p.CombatPower = combatPower;
+        }
+
         // ----- Flow 2: server sends global player metadata, any time -----------
 
         public void RegisterOrUpdateGlobalPlayer(Player data)

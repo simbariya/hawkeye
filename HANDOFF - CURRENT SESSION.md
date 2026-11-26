@@ -332,3 +332,7 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   downloads: full 2, small 1, one full was the owner's own update). The 0.2.33 small asset was misnamed
   `-win-x64-small.zip` (updater wants `-small.zip`), so small-package users skipped 0.2.33; 0.2.34 is named right.
   Owner runs release\0.2.28-github (updated in place, PID started 23 Nov 19:19). Spare: 0.2.34-github\full.
+- 0.2.35 (2026-11-26): CP after each name on the meter (and stream page). Group CP from 0x9702 (already parsed,
+  never shown), own CP also from 0x3656. Checked by replaying odyle-spend (scratchpad partyreplay): group members'
+  rows got their CP; the owner's matched 0x3656. Render: scratchpad meterpreview/cp.png. Arena opponents and
+  strangers: still no CP in any message. 151 tests.

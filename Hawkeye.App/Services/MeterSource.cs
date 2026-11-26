@@ -5,7 +5,9 @@ using Hawkeye.Engine.Settings;
 namespace Hawkeye.App.Services
 {
     /// <summary>One player on the meter: from the running fight or from a fight in history.</summary>
-    public readonly record struct MeterRowData(long PlayerId, bool IsUser, int ClassId, string Name, long TotalDamage, double Dps, double Share, int Deaths);
+    /// <summary>CombatPower: 0 when the game has not sent it (it does for you and your group only).</summary>
+    public readonly record struct MeterRowData(long PlayerId, bool IsUser, int ClassId, string Name, long TotalDamage, double Dps, double Share, int Deaths,
+        int CombatPower = 0);
 
     /// <summary>What the meter shows right now. <see cref="Shown"/> is set when it is your last fight from history.</summary>
     public sealed record MeterData(string Target, TimeSpan Duration, EncounterSnapshot? Shown, IReadOnlyList<MeterRowData> Rows);
@@ -40,7 +42,7 @@ namespace Hawkeye.App.Services
                     TimeSpan.FromSeconds(shown.DurationSeconds),
                     shown,
                     shown.Players.Select(p => new MeterRowData(p.PlayerId, p.IsUser, p.ClassId, p.Name, p.TotalDamage, p.Dps, p.SharePercent,
-                        showDeaths ? p.Deaths : 0)).ToList());
+                        showDeaths ? p.Deaths : 0, p.CombatPower)).ToList());
             }
 
             var deaths = showDeaths ? sessions.GetActiveBossDeaths() : new Dictionary<int, int>();
@@ -49,7 +51,7 @@ namespace Hawkeye.App.Services
                 sessions.GetCombatDuration(),
                 null,
                 live.Select(p => new MeterRowData(p.PlayerId, p.IsUser, p.ClassId, p.PlayerName, p.TotalDamage, p.DamagePerSecond,
-                    p.DamagePercentage, deaths.GetValueOrDefault((int)p.PlayerId))).ToList());
+                    p.DamagePercentage, deaths.GetValueOrDefault((int)p.PlayerId), p.CombatPower)).ToList());
         }
     }
 }

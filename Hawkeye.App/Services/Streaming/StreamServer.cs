@@ -277,6 +277,7 @@ namespace Hawkeye.App.Services.Streaming
                         duration = data.Duration.ToString(@"mm\:ss"),
                         fromHistory = data.Shown is not null,
                         showTotals = s.ShowTotalDamage,
+                        showCp = s.ShowCombatPower,
                         status = MeterViewModel.BuildStatusItems(s, stats).Select(i => new { text = i.Text, css = i.Css }),
                         rows = data.Rows.Select(r => new
                         {
@@ -287,6 +288,7 @@ namespace Hawkeye.App.Services.Streaming
                             dps = MeterViewModel.Compact((long)Math.Round(r.Dps), shortThousands: true),
                             total = MeterViewModel.Compact(r.TotalDamage),
                             deaths = r.Deaths,
+                            cp = r.CombatPower > 0 ? MeterViewModel.Compact(r.CombatPower, shortThousands: true) : "",
                             bar = top > 0 ? Math.Round(100.0 * r.TotalDamage / top, 2) : 0,
                         }),
                     },

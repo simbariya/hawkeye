@@ -1,4 +1,4 @@
-﻿namespace Hawkeye.Engine.PacketProcessing.Routing;
+namespace Hawkeye.Engine.PacketProcessing.Routing;
 
 public static class PacketOpcodes
 {
@@ -32,4 +32,5 @@ public static class PacketOpcodes
     public const ushort ArenaStandings = 0xE32A;      // 2A E3  (arena: rating, wins, losses per mode, at zone changes)
     public const ushort ArenaOwnKey = 0xE343;         // 43 E3  (arena: your key, as you enter; v0.2.28)
     public const ushort SkillList = 0x5100;           // 00 51  (your skills with their levels, at login / zone change; v0.2.34)
+    public const ushort OwnCombatPower = 0x3656;      // 56 36  (your combat power: u64 current at 3, u64 highest at 11; v0.2.35)
 }

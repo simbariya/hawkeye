@@ -85,6 +85,8 @@ namespace Hawkeye.Engine.Settings
         public bool ShowTotalDamage { get; set; } = false;
         /// <summary>Show how many times each player died on this boss (all pulls since its last kill).</summary>
         public bool ShowDeaths { get; set; } = true;
+        /// <summary>Show combat power after each name (you and your group: the game sends it for no one else; v0.2.35).</summary>
+        public bool ShowCombatPower { get; set; } = true;
 
         /// <summary>Flash a small alert on the meter when your Theostone procs (v0.2.17).</summary>
         public bool TheostoneAlertsYours { get; set; } = true;

@@ -130,10 +130,12 @@
 }
 
 .meter-fill { position: absolute; left: 0; transition: width 0.3s ease-out; }
-.meter-icon, .meter-name, .meter-deaths, .meter-total, .meter-dps { position: relative; }
+.meter-icon, .meter-name, .meter-cp, .meter-deaths, .meter-total, .meter-dps { position: relative; }
 
 .meter-icon { flex: 0 0 16px; height: 16px; background-size: contain; background-position: center; background-repeat: no-repeat; }
-.meter-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter-name { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* combat power right after the name; it also takes the free space, so what follows stays on the right */
+.meter-cp { flex: 1 0 auto; font-size: 10.5px; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: 0.2px; }
 .meter-total { flex: 0 0 auto; margin-right: 10px; font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .meter-dps { flex: 0 0 auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
     .meter-dps small { font-size: 0.68em; opacity: 0.6; margin-left: 1px; }
@@ -275,6 +277,7 @@
 .theme-monolith .meter-row.is-me .meter-dps { color: var(--accent); font-weight: 400; }
 .theme-monolith .meter-total { color: #A9A59E; font-weight: 400; }
 .theme-monolith .meter-deaths { color: #E08A7E; }
+.theme-monolith .meter-cp { color: var(--ink-3); }
 .theme-monolith .meter-status { margin: 5px 0 0 var(--side); color: var(--ink-3); border-top: none; padding-top: 0; }
 
 /* ============================== Aurora ============================== */
@@ -311,6 +314,7 @@
 .theme-aurora .meter-row.is-me .meter-dps { color: #C8FFF1; font-weight: 400; }
 .theme-aurora .meter-total { color: #A9C6E0; font-weight: 400; }
 .theme-aurora .meter-deaths { color: #ff9aa8; }
+.theme-aurora .meter-cp { color: #8fb0cf; }
 .theme-aurora .meter-status { color: #6c8cab; border-top: 1px solid rgba(160, 220, 255, 0.10); }
 
 /* ============================== Graphite & Vermilion ============================== */
@@ -336,6 +340,7 @@
 .theme-graphite .meter-row.is-me .meter-dps { color: var(--accent); }
 .theme-graphite .meter-total { color: #D2CFCA; font-weight: 500; }
 .theme-graphite .meter-deaths { color: var(--accent); }
+.theme-graphite .meter-cp { color: #8d8f95; }
 .theme-graphite .meter-status { color: #7a7c82; }
 
 /* Theostone alerts (v0.2.17; "Scope" style since v0.2.23, chosen by the owner): no box, the Hawkeye eye in a ring that

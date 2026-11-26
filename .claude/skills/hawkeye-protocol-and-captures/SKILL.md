@@ -116,7 +116,10 @@ character's numbers and the stream was searched for them.
 - **Mob or player:** Abyss mobs killed by you carry your name as killer and give AP. Tell them apart by
   whether the victim was announced by 0x3645 (39 players / 35 mobs in the 2026-11-21 session, no overlap).
 - **Your combat power 0x3656** (19 bytes): u64 current at 3, u64 highest at 11 (owner: 234,776 in the PvP
-  set, 239,918 highest; current follows the gear you wear). Seen at a zone load, 2026-11-21.
+  set, 239,918 highest; current follows the gear you wear). Seen at a zone load, 2026-11-21. Read since v0.2.35.
+- **Group members' combat power is in the group list 0x9702** (found 2026-11-26): `PartyProcessor`'s layout
+  (inherited) reads each member's u64 `_combat_power`; on 114 real lists the owner's own entry equalled his 0x3656
+  current value. Only your group: nobody else's CP was found in any message.
 - **Name card 0x4106:** `[entity varint][u8 flag][u16 server id][name: len + UTF-8]` then, when flag is 12,
   more bytes and `[u16 server][legion: len + UTF-8]`. 417 cards in a home area, all server 1304.
 - **Target's combat power: NOT FOUND yet** (2026-11-21, owner targeted players for ~3 min, 1.3M messages,
@@ -218,3 +221,4 @@ changing gear with a skill-level bonus re-sends the list without a teleport.
 
 - 2026-11-20: written for v0.1.0 from the inherited decoder source and the owner's old meter logs.
 - 2026-11-25: skill list 0x5100 (levels) added.
+- 2026-11-26: group members' CP in 0x9702; 0x3656 read.
