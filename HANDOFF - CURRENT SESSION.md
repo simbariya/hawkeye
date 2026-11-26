@@ -339,3 +339,4 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
 - 0.2.36 (2026-11-26): enemy Defiance tracked only with PvP mode on (battlefield sends the arena roster E319, 2
   "enemies", you not found, then every Defiance caster was added). A battlefield still switches the meter to the
   arena view by itself (not asked to change). 153 tests.
+- 0.2.37 (2026-11-26): CP green without the "CP" word; DPS bold in all three looks. Render: scratchpad meterpreview/cp.png.

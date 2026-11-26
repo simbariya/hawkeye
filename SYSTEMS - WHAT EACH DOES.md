@@ -84,7 +84,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Fit height to group** (`AutoHeight`, on): rows for max(group size from the party message
   `0x9702`, rows on the meter), 1 to 5; the page measures itself (`hawkeyeMeasure` in index.html)
   and sets the window height. Only the right edge resizes then. DPS shown short ("138k/s").
-- **Combat power (v0.2.35):** "CP 113k" after the name (`.meter-cp`, empty when unknown). Others' CP comes only from
+- **Combat power (v0.2.35):** "113k" in green after the name (v0.2.37) (`.meter-cp`, empty when unknown). Others' CP comes only from
   the group list `0x9702` (`PartyProcessor` -> `EntityTracker.RegisterOrUpdateGlobalPlayer`, linked to the damage
   row by name); yours also from `0x3633` and `0x3656` (`OwnCombatPowerProcessor`). `MeterRowData.CombatPower`.
 - **Settings:** `Opacity`, `AutoHeight` (on), `ShowTotalDamage` (off), `ShowDeaths` (on), `ShowCombatPower` (on),

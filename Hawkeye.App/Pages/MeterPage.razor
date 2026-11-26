@@ -163,7 +163,7 @@
                     <div class="meter-fill" style="width:@(Math.Clamp(p.BarPercent, 0, 100).ToString("0.##", CultureInfo.InvariantCulture))%"></div>
                     <div class="meter-icon" style="background-image:url('images/classes/@(p.ClassId).png')"></div>
                     <span class="meter-name">@p.Name</span>
-                    <span class="meter-cp">@(vm.ShowCombatPower && p.Cp.Length > 0 ? "CP " + p.Cp : "")</span>
+                    <span class="meter-cp">@(vm.ShowCombatPower ? p.Cp : "")</span>
                     @if (vm.ShowDeaths && p.Deaths > 0)
                     {
                         <span class="meter-deaths" title="Died @(p.Deaths)x on this boss">

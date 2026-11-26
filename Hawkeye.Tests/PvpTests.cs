@@ -249,6 +249,7 @@ public sealed class PvpTests
     public void FirstKillAfterRestart_CountsAgainstRememberedTotals()
     {
         var dir = Path.Combine(Path.GetTempPath(), "hawkeye-tot-" + Guid.NewGuid().ToString("N"));
+        PvpTotalsStore? after = null;
         try
         {
             var file = Path.Combine(dir, "pvp-totals.json");
@@ -259,7 +260,8 @@ public sealed class PvpTests
             var entities = new EntityTracker();
             entities.SetSessionPlayerName(Me, "Alpha", 0, isUser: true);
             foreach (var enemy in new[] { 13200, 7999 }) entities.SetSessionPlayerName(enemy, "Enemy" + enemy, 0);
-            var pvp = new PvpTracker(entities, null, new PvpTotalsStore(file));
+            after = new PvpTotalsStore(file);
+            var pvp = new PvpTracker(entities, null, after);
             pvp.SetActive(true);
 
             pvp.OnDeath(PvpParser.ParseDeath(Hex(YourKill))!.Value);
@@ -269,7 +271,10 @@ public sealed class PvpTests
         }
         finally
         {
-            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+            // The tracker saves the new totals in the background: wait for it before removing the folder
+            // (deleting under a running save failed this test now and then).
+            after?.FlushAsync().Wait();
+            try { if (Directory.Exists(dir)) Directory.Delete(dir, true); } catch (IOException) { }
         }
     }
 

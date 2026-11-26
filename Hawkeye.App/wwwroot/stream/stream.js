@@ -123,7 +123,7 @@
             row._fill.style.width = r.bar + '%';
             row._icon.style.backgroundImage = "url('/images/classes/" + r.classId + ".png')";
             setText(row._name, r.name);
-            setText(row._cp, m.showCp && r.cp ? 'CP ' + r.cp : '');
+            setText(row._cp, m.showCp && r.cp ? r.cp : '');
             if (r.deaths > 0) {
                 var html = SKULL + r.deaths;
                 if (row._deaths.innerHTML !== html) row._deaths.innerHTML = html;

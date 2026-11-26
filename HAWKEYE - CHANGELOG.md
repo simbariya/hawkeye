@@ -3,6 +3,14 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.37 (2026-11-26)
+
+Changed (owner: "can we also have CP shown in green and without the CP word, maybe also make the DPS number
+standout a bit more, try bold or something"):
+- Combat power after the name is green and just the number ("113k"), in all three looks and on the stream page.
+- DPS is bold: Monolith and Aurora from light (300) to bold (700) and a touch bigger; Graphite's serif from 600 to
+  700 and a touch bigger.
+
 ## v0.2.36 (2026-11-26)
 
 Fixed (owner: "WHEN IM DOINg battlefield it tracks everyone's defiance - instead if pvp mode is off dont track
