@@ -203,7 +203,12 @@ public sealed class ArenaTests : IDisposable
     [InlineData(2301, "eu-israphel")]
     [InlineData(2303, "eu-triniel")]
     [InlineData(2302, "eu-zikel")]       // an opponent's current server, real profile; "SIE" in the Korean list
-    [InlineData(2318, null)]             // the same opponent's key server: not where he plays now
+    [InlineData(2318, "eu-baba")]        // from the pattern; the opponent above had it in the key, not after the name
+    [InlineData(1316, "eu-bakarma")]     // an opponent's real profile, 2026-11-27
+    [InlineData(2305, "eu-marchutan")]   // an opponent's real profile, 2026-11-27
+    [InlineData(1306, "eu-ariel")]       // from the pattern (Korean id + 300)
+    [InlineData(2310, null)]             // HAD: no such EU server on shugo.gg
+    [InlineData(1313, null)]             // PER: no such EU server on shugo.gg
     [InlineData(1302, "eu-nezekan")]     // an opponent's real profile
     [InlineData(2304, "eu-lumiel")]      // an opponent's real profile
     [InlineData(9999, null)]

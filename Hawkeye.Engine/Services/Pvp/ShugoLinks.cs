@@ -23,6 +23,33 @@ namespace Hawkeye.Engine.Services.Pvp
             [2302] = "eu-zikel",
             [2304] = "eu-lumiel",
             [2311] = "eu-ludra",
+            // Checked on real profiles of arena opponents, 2026-11-27.
+            [1316] = "eu-bakarma",
+            [2305] = "eu-marchutan",
+            // From the pattern all ten checked ids follow: global id = Korean id + 300, same server (ServerMap, except
+            // that 2002 there should read Zikel). Added only where the Korean short code clearly names a server that
+            // shugo.gg lists for EU (its page leaderboard/global/eu-<name> exists, checked 2026-11-27).
+            [1301] = "eu-siel",
+            [1303] = "eu-vaizel",
+            [1306] = "eu-ariel",
+            [1307] = "eu-fregion",
+            [1308] = "eu-meslamtaeda",
+            [1309] = "eu-hithanya",
+            [1310] = "eu-nania",
+            [1314] = "eu-daminu",
+            [1320] = "eu-tiamat",
+            [2306] = "eu-azphel",
+            [2307] = "eu-ereshkigal",
+            [2308] = "eu-beritra",
+            [2312] = "eu-ulgorn",
+            [2314] = "eu-odar",
+            [2316] = "eu-kromede",
+            [2318] = "eu-baba",
+            [2320] = "eu-indnath",
+            // Still unknown: 1311 (TAH; no eu-tahabata), 1312, 1313 (PER; no eu-pernon), 1315, 1317, 1318, 1319, 1321,
+            // 2309 (NEM; no eu-nemesis), 2310 (HAD; no eu-hadeath), 2313, 2315, 2317, 2319, 2321. shugo.gg's EU list
+            // also has Atiel, Kochi and Zemurru, which do not match a code for sure. The arena log names opponents on
+            // these servers so they can be looked up.
         };
 
         private static readonly (string Phrase, string Code)[] Regions =
@@ -62,7 +89,7 @@ namespace Hawkeye.Engine.Services.Pvp
         /// <summary>
         /// A global server id to a shugo.gg slug, only for ids checked on real profiles (<see cref="KnownServers"/>).
         /// The Korean short codes (ServerMap, id - 300) do not name global servers: 2302 is "SIE" there but Zikel on EU.
-        /// Unknown: 1303, 1311 (the game showed "TAH"), 1313 and the rest; they get no link rather than a wrong one.
+        /// Ids not in the list (see the end of it) get no link rather than a wrong one.
         /// </summary>
         public static string? SlugFor(int serverId) => KnownServers.TryGetValue(serverId, out var known) ? known : null;
 

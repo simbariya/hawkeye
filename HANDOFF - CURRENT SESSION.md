@@ -368,3 +368,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   omits the meter while minimised. Checked: test copy minimised and restored from outside (ShowWindow), screenshot
   after restore drew normally (scratchpad min_after.png); UI Automation cannot reach buttons inside the web view, so
   the click itself was not scripted. 170 tests.
+- 0.2.41 (2026-11-27): arena profile links for 19 more EU servers (owner: "no link, because the server is seen as
+  #xxxx"). 1316 Bakarma and 2305 Marchutan checked on real profiles; the rest from global id = Korean id + 300,
+  each EU name checked to exist at shugo.gg/leaderboard/global/eu-<name> (an unknown slug shows the generic board).
+  No EU server for TAH, PER, NEM, HAD; Atiel, Kochi, Zemurru exist but match no code for sure. Next: read
+  "(unknown, ...)" in the [ARENA] match log lines, look the names up, add the ids. 175 tests.

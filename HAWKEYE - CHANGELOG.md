@@ -3,6 +3,18 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.41 (2026-11-27)
+
+Fixed (owner: "in the arena mode some of the players are still not displaying profile correctly, there is no
+link, because the server is seen as #xxxx"):
+- **More arena opponents get a profile link.** Hawkeye knew 8 EU servers; it now knows 27. Two more were checked
+  on real opponents' shugo.gg profiles (Bakarma, Marchutan). With those, all ten checked servers follow one rule:
+  the global server number is the Korean one plus 300, same server. The rest were added from that rule, only where
+  the Korean short name clearly matches a server shugo.gg lists for EU (Siel, Vaizel, Ariel, Fregion, Meslamtaeda,
+  Hithanya, Nania, Daminu, Tiamat, Azphel, Ereshkigal, Beritra, Ulgorn, Odar, Kromede, Baba, Indnath). Servers
+  that do not match yet (for example 2310, whose Korean name Hadeath is not an EU server) still show "#2310" with
+  no link rather than a wrong one; the log now names opponents on them so they can be looked up and added.
+175 tests.
 ## v0.2.40 (2026-11-27)
 
 Added (owner: "can we add a minimise button next to X please"):

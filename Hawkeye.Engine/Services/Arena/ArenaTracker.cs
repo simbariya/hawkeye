@@ -107,9 +107,11 @@ namespace Hawkeye.Engine.Services.Arena
                 Assign(match);
                 Match = match;
                 if (!showing) { showing = true; shownByMatch = true; }
-                // Server ids logged so new servers can be named for profile links (shugo.gg).
+                // Server ids logged so new servers can be named for profile links (shugo.gg). For a server with no
+                // known name the opponent's name is logged too, so their profile can be looked up (the log stays local).
                 logger?.LogInformation("[ARENA] match: {Count} enemies ({Foes}){Unknown}", match.Enemies.Count,
-                    string.Join(", ", match.Enemies.Select(e => $"rating {e.Rating}, server {e.Server}")),
+                    string.Join(", ", match.Enemies.Select(e => $"rating {e.Rating}, server {e.Server}"
+                        + (Pvp.ShugoLinks.SlugFor(e.Server) is null && e.Server > 0 ? $" (unknown, \"{e.Name}\")" : ""))),
                     match.MeKey is null ? " (you not found yet)" : "");
             }
             MatchStarted?.Invoke(this, EventArgs.Empty);

@@ -268,7 +268,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   for the live session or a saved one (`PvpView` says which). `ProfileWindow` shows a shugo.gg profile
   in its own web view with its own data folder (`%LocalAppData%\Hawkeye\ProfileBrowser`). Links:
   `Engine/Services/Pvp/ShugoLinks` (known server ids first, else the `PvpEnemyServer` setting turned
-  into a slug like `eu-triniel`). Streamer mode mirrors the popup too (`ICapturableWindow`).
+  into a slug like `eu-triniel`). Known ids (v0.2.41: 27 EU servers): global id = Korean id + 300; ids not
+  listed show as "#id" with no link, and the arena log names opponents on them so they can be looked up. Streamer mode mirrors the popup too (`ICapturableWindow`).
 - **First kill (v0.2.14):** `PvpTotalsStore` remembers AP and rank totals per character; the first
   change after a start compares with them within `PvpTracker.MaxApJumpFromMemory` /
   `MaxRankJumpFromMemory` / `MaxRankDropFromMemory`.
