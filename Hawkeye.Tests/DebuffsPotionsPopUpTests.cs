@@ -101,6 +101,28 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
         Assert.False(d.Yours);
     }
 
+    // PvP recording, general effects on the owner (12526) with no name in the game data. Each caused by a skill whose
+    // effect is known: Shadowstrike Stun 3 s (from 6668), Poach Root 2 s (4547), Doom Shield Knockdown 3 s (14047),
+    // Smoke Bomb Blind 5 s (5626).
+    private const string Stun3s = "342A38EE610113EA072DE2F505B80B0000000000006A1A8FFFA10100008C3401966FC70000A82062C6CA528545C7C22A47";
+    private const string Root2s = "342A38EE6101138209C9E1F505D0070000000000005DE991FFA1010000C323012418B900000C1E2EC6DD8FF944D3212447";
+    private const string Knockdown3s = "342A38EE610113A90941E2F505B80B000000000000995C92FFA1010000DF6D01982CB800007A54C6C52305E3C500D21E47";
+    private const string Blind5s = "342A38EE6101139908BDE3F505881300000000000099EB8FFFA1010000FA2B01F82DCA00007E21BBC5ADDF28C639AC2347";
+
+    [Theory]
+    [InlineData(Stun3s, "Stun", 3)]
+    [InlineData(Root2s, "Root", 2)]
+    [InlineData(Knockdown3s, "Knockdown", 3)]
+    [InlineData(Blind5s, "Blind", 5)]
+    public void AGeneralEffectOnYou_SaysWhatItIs(string message, string word, int seconds)
+    {
+        // Owner 2026-11-27: "can debuff on you be classified? instead of just debuff".
+        var w = World(12526);
+        Buffs(w.Sessions, w.Alerts).Process(Msg(message));
+        var d = Assert.Single(w.Alerts.Showing);
+        Assert.Equal((true, word, TimeSpan.FromSeconds(seconds)), (d.Status, d.Word, d.Duration));
+    }
+
     [Fact]
     public void ADebuffOnYou_EndsWhenCleansed()
     {

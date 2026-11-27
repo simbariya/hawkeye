@@ -304,7 +304,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   - Poison/Bleed ticks: `DotDamagePacketProcessor` (0x3805) calls `OnTick`, which only adds to a showing tile.
   - Debuffs on you (v0.2.38): any other buff message on you whose caster is not `EntityTracker.IsFriendly` (you,
     anyone named in a group list since start, their summons) goes to `OnStatus` (1 s to 2 min; `Status` tiles,
-    named after the skill, "Debuff" when unnamed). Same instance or same name updates the tile. Setting
+    named after the skill; the game's unnamed general effects by what they do, `StatusKinds` (v0.2.39: Stun, Root,
+    Knockdown, Knockback, Blind, Slow, Silence; other unnamed ones "Debuff")). Same instance or same name updates the tile. Setting
     `DebuffAlerts`.
   - At most 5 at once; plain hits make room first.
   - Words: `TheostoneKinds.Label(id, name)`: id / 10 = 300 F G SS (F family 0 damage / 1 debuff, G grade, SS slot).

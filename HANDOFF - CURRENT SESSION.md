@@ -351,3 +351,10 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   his PC outside the repo (see the local memory note). Every new version: the public release as always AND a local
   build for the owner; before zipping the public one, confirm it holds no local add-on classes. 166 tests.
 
+- 0.2.39 (2026-11-27): debuffs on you classified (owner: "can debuff on you be classified? instead of just
+  debuff"). The unnamed general effects are now named by what they do: `StatusKinds` (Engine/Services/Theostone).
+  Found by reading the causing skill from the buff message ([caster][u8][u32 skill]) on every general effect in the
+  pvp-run and arena recordings, then the skills' effects on metabot.gg; lengths match (Poach Root 2 s = 2000 ms,
+  Smoke Bomb Blind 5 s = 5000 ms, Shadowstrike Stun 3 s = 3000 ms). 10000080 = Silence is the one LIKELY guess
+  (Shadowstrike's Seal 5 s). pvp-run replay: 0 "Debuff" tiles left (26 now Stun/Root/Knockdown/Slow/Blind/Silence).
+  Rides with the local add-on hook above. 170 tests.

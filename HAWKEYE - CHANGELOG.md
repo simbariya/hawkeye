@@ -3,14 +3,23 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
-## Unreleased (2026-11-26)
+## v0.2.39 (2026-11-27)
+
+Changed (owner: "can debuff on you be classified? instead of just debuff"):
+- **Debuffs on you say what they are.** The game's general effects that have no name in the game data used to
+  show as "Debuff" (or the wrong "HP Absorption effect"). They now show as **Stun**, **Root**, **Knockdown**,
+  **Knockback**, **Blind**, **Slow** or **Silence**. Worked out from the owner's PvP and arena recordings: each
+  message also names the skill that caused it (Shadowstrike, Poach, Doom Shield, Smoke Bomb...), and those skills'
+  effects and lengths match (Poach roots for 2 s, Smoke Bomb blinds for 5 s). Silence is the one not fully certain.
+  In the 30-minute PvP recording no tile says "Debuff" any more; 26 tiles now name the effect. Debuffs that have a
+  skill name (Fire Mark, Ice Chain...) keep it.
 
 Added (owner asked for a personal build of his own next to the public one):
 - **Local add-ons.** A build made on one PC can add its own code (`Hawkeye.App/Services/LocalExtras.cs`,
   `ILocalExtra`): it gets every game message (`PacketDispatchService.Seen`) and may add a section to the bottom of
   the Extras window. Public builds have none, so nothing changes for anyone else. Builds made with the
   `LOCAL_BUILD` constant do not auto-update, because a release would replace them with the public build.
-166 tests.
+170 tests (4 new).
 
 ## v0.2.38 (2026-11-26)
 

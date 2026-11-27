@@ -137,10 +137,12 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         /// The tile's word for a debuff: its skill's name, or "Debuff" when the game data has no name for it. Class
         /// skills (11,000,000 and up) carry variant digits and are looked up by their base; anything else only by its
         /// exact id (the game's general effects 10000020 to 10000080, 2 to 5 s in PvP, have no name, and the base
-        /// lookup turned them into "Glide").
+        /// lookup turned them into "Glide"). Those general effects say what they are instead where known: "Stun",
+        /// "Root", "Knockdown", "Blind", "Slow", "Silence" (<see cref="StatusKinds"/>).
         /// </summary>
         private string StatusName(int buffId)
         {
+            if (StatusKinds.Kind(buffId) is { } kind) return kind;
             var name = buffId >= 11_000_000 && buffId < 20_000_000
                 ? gameData.Skills.GetName(gameData.Skills.NormalizeSkillCode(buffId))
                 : gameData.Skills.GetName(buffId);
