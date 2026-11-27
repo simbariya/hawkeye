@@ -373,3 +373,12 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   each EU name checked to exist at shugo.gg/leaderboard/global/eu-<name> (an unknown slug shows the generic board).
   No EU server for TAH, PER, NEM, HAD; Atiel, Kochi, Zemurru exist but match no code for sure. Next: read
   "(unknown, ...)" in the [ARENA] match log lines, look the names up, add the ids. 175 tests.
+- 0.2.42 (2026-11-27), five asks in one: (1) arena history: `ArenaHistory` (arena-matches.json) fed by
+  `ArenaTracker.MatchEnded`, History > Arena tab; (2) debuffs on you only from a caster fighting you
+  (`TheostoneAlerts.OnFight` from every 0x3804 header; pvp-run: 124/124 real debuffs kept, buff_types.py showed the
+  type byte (19) is the same for allies' buffs and debuffs, so it cannot tell them apart); (3) Defiance only in arena:
+  >20 casters in a match = battlefield (`BattlefieldCasters`), PvP-mode rule and `WorldPvpOn` removed, strangers never
+  added; replays: arena-1723 W5 L5, select-1123 W4 L2, arena-1123 W1 L0, Defiance still tracked; (4) pop-up icons
+  ignore the boss-fight rule (`PopUp.OnScreen`), "Show" line per tracked skill; (5) Settings tabs. Render:
+  scratchpad meterpreview/ui42.html. NOT verified in game: a battlefield (no recording has one; the 20-caster line is
+  a guess from 1v1 numbers, a 3v3 may come closer), a siege, pop-up icons live. 183 tests.

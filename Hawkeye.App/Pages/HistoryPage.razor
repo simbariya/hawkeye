@@ -9,34 +9,102 @@
 @inject OverlayManager Overlays
 @inject Hawkeye.Engine.Settings.ISettingsService Settings
 @inject Hawkeye.Engine.Services.Pvp.PvpHistory PvpHistory
+@inject Hawkeye.Engine.Services.Arena.ArenaHistory ArenaHistory
 @inject PvpView PvpView
 @inject CompareState Compare
 
 @*
     Fight history: kept-forever fights first, then the last 100 fights you took part in (oldest drop off).
     PvP tab: Select ticks sessions to delete together (owner 2026-11-22: clear the test sessions).
+    Arena tab (v0.2.42): every finished arena match, saved as it ends, so the stats survive updates and restarts.
     Click a fight for its combat analysis. Fights tab: Compare ticks fights to put side by side (v0.2.34).
 *@
 <div class="hh @Hawkeye.App.Services.Looks.ClassFor(Settings.Current.Look)">
     <header class="hh-header" @onmousedown="() => Overlays.DragPage(typeof(HistoryPage))">
         <span class="hh-title">HISTORY</span>
-        <button type="button" class="hh-tab @(!pvpTab ? "is-on" : "")" @onclick="() => pvpTab = false" @onmousedown:stopPropagation="true">Fights</button>
-        <button type="button" class="hh-tab @(pvpTab ? "is-on" : "")" @onclick="() => pvpTab = true" @onmousedown:stopPropagation="true">PvP</button>
+        @foreach (var (t, label) in new[] { (Tab.Fights, "Fights"), (Tab.Pvp, "PvP"), (Tab.Arena, "Arena") })
+        {
+            <button type="button" class="hh-tab @(tab == t ? "is-on" : "")" @onclick="() => Pick(t)" @onmousedown:stopPropagation="true">@label</button>
+        }
         <span class="hh-spacer"></span>
-        @if (!pvpTab && recent.Count + saved.Count >= 2)
+        @if (tab == Tab.Fights && recent.Count + saved.Count >= 2)
         {
             <button type="button" class="hh-tool @(comparing ? "is-on" : "")" title="Tick fights to compare them side by side, with your skill levels"
                     @onclick="ToggleCompare" @onmousedown:stopPropagation="true">@(comparing ? "Cancel" : "Compare")</button>
         }
-        @if (pvpTab && pvpSessions.Count > 0)
+        @if ((tab == Tab.Pvp && pvpSessions.Count > 0) || (tab == Tab.Arena && arena.Count > 0))
         {
-            <button type="button" class="hh-tool @(selecting ? "is-on" : "")" title="Tick sessions to delete several at once"
+            <button type="button" class="hh-tool @(selecting ? "is-on" : "")" title="@(tab == Tab.Arena ? "Tick matches to delete several at once" : "Tick sessions to delete several at once")"
                     @onclick="ToggleSelect" @onmousedown:stopPropagation="true">@(selecting ? "Done" : "Select")</button>
         }
         <button type="button" class="hh-close" title="Close" @onclick="() => Overlays.ClosePage(typeof(HistoryPage))" @onmousedown:stopPropagation="true">✕</button>
     </header>
 
-    @if (pvpTab)
+    @if (tab == Tab.Arena)
+    {
+        var today = arena.Where(r => r.At.Date == DateTime.Today).ToList();
+        <div class="hh-sum">
+            <span title="Every arena match saved here">All <b class="is-win">@arena.Count(r => r.Won) W</b> <b class="is-loss">@arena.Count(r => !r.Won) L</b> @Rate(arena)</span>
+            <span title="Matches played today">Today <b class="is-win">@today.Count(r => r.Won) W</b> <b class="is-loss">@today.Count(r => !r.Won) L</b> @Signed(today.Sum(r => r.RatingChange))</span>
+            @if (arena.FirstOrDefault() is { RatingAfter: > 0 } last)
+            {
+                <span title="Your rating after your last match (@last.Mode)">Rating <b>@last.RatingAfter.ToString("N0", CultureInfo.InvariantCulture)</b></span>
+            }
+        </div>
+        <div class="hh-body">
+            @if (arena.Count == 0)
+            {
+                <div class="hh-empty">No arena matches yet. Every arena match you finish is saved here by itself.</div>
+            }
+            @foreach (var r in arena)
+            {
+                bool ticked = picked.Contains(r.Id);
+                <div class="hh-row hh-arena @(selecting ? "is-selecting" : "") @(ticked ? "is-picked" : "")"
+                     @onclick="() => ArenaClick(r)" title="@(selecting ? "Tick to delete" : r.Character)">
+                    @if (selecting)
+                    {
+                        <span class="hh-tick">@(ticked ? "✓" : "")</span>
+                    }
+                    <span class="hh-when">@r.At.ToString("dd MMM HH:mm", CultureInfo.InvariantCulture)</span>
+                    <span class="hh-result @(r.Won ? "is-win" : "is-loss")">@(r.Won ? "Win" : "Loss")</span>
+                    <span class="hh-foes">
+                        @foreach (var f in r.Opponents)
+                        {
+                            var link = Hawkeye.Engine.Services.Pvp.ShugoLinks.ForArena(f.Name, f.Server);
+                            var server = Hawkeye.Engine.Services.Pvp.ShugoLinks.Code(f.Server);
+                            <span class="hh-foe" title="@($"{f.Name}  {f.ClassName}  rating {f.Rating}  {server}".Trim())">
+                                <span class="hh-class" style="@(f.ClassId != 0 ? $"background-image:url('images/classes/{f.ClassId}.png')" : "")"></span>
+                                @if (link is not null && !selecting)
+                                {
+                                    <span class="is-link" title="Open @f.Name's profile" @onclick="() => Overlays.OpenProfile(link, f.Name)" @onclick:stopPropagation="true">@f.Name</span>
+                                }
+                                else
+                                {
+                                    <span>@(string.IsNullOrEmpty(f.Name) ? "Unknown" : f.Name)</span>
+                                }
+                            </span>
+                        }
+                    </span>
+                    <span class="hh-dur" title="Arena mode">@r.Mode</span>
+                    <span class="hh-dur" title="Score">@r.OurKills-@r.TheirKills</span>
+                    <span class="hh-gain" title="Your rating after the match, and the change">@(r.RatingAfter > 0 ? r.RatingAfter.ToString(CultureInfo.InvariantCulture) : "") @(r.RatingBefore is null ? "" : Signed(r.RatingChange))</span>
+                    <button type="button" class="hh-del" title="Delete this match"
+                            @onclick="() => ArenaHistory.Delete([r.Id])" @onclick:stopPropagation="true">✕</button>
+                </div>
+            }
+        </div>
+        @if (selecting)
+        {
+            <div class="hh-bar">
+                <button type="button" class="hh-tool" @onclick="PickAll">@(picked.Count == arena.Count ? "Tick none" : "Tick all")</button>
+                <span class="hh-spacer"></span>
+                <button type="button" class="hh-tool is-danger" disabled="@(picked.Count == 0)" @onclick="DeletePicked">
+                    Delete @picked.Count @(picked.Count == 1 ? "match" : "matches")
+                </button>
+            </div>
+        }
+    }
+    else if (tab == Tab.Pvp)
     {
         <div class="hh-body">
             @if (pvpSessions.Count == 0)
@@ -139,7 +207,27 @@
     private List<EncounterSnapshot> recent = new();
     private List<EncounterSnapshot> saved = new();
     private List<Hawkeye.Engine.Services.Pvp.PvpSession> pvpSessions = new();
-    private bool pvpTab;
+    private List<Hawkeye.Engine.Services.Arena.ArenaRecord> arena = new();
+    private enum Tab { Fights, Pvp, Arena }
+    private Tab tab;
+
+    private void Pick(Tab t)
+    {
+        if (tab == t) return;
+        tab = t;
+        selecting = comparing = false;
+        picked.Clear();
+        toCompare.Clear();
+    }
+
+    private void ArenaClick(Hawkeye.Engine.Services.Arena.ArenaRecord r)
+    {
+        if (!selecting) return;
+        if (!picked.Remove(r.Id)) picked.Add(r.Id);
+    }
+
+    private static string Rate(IReadOnlyCollection<Hawkeye.Engine.Services.Arena.ArenaRecord> list) =>
+        list.Count == 0 ? "" : $"{100.0 * list.Count(r => r.Won) / list.Count:0}%";
 
     protected override void OnInitialized()
     {
@@ -147,6 +235,7 @@
         History.Changed += OnChanged;
         Settings.Changed += OnChanged;
         PvpHistory.Changed += OnChanged;
+        ArenaHistory.Changed += OnChanged;
     }
 
     private void Load()
@@ -154,9 +243,10 @@
         recent = History.Recent.ToList();
         saved = History.Saved.ToList();
         pvpSessions = PvpHistory.Sessions.ToList();
-        picked.IntersectWith(pvpSessions.Select(s => s.Id));
+        arena = ArenaHistory.Records.ToList();
+        picked.IntersectWith(tab == Tab.Arena ? arena.Select(r => r.Id) : pvpSessions.Select(s => s.Id));
         toCompare.IntersectWith(recent.Select(e => e.Id).Concat(saved.Select(e => e.Id)));
-        if (pvpSessions.Count == 0) selecting = false;
+        if ((tab == Tab.Arena ? arena.Count : pvpSessions.Count) == 0) selecting = false;
     }
 
     private bool selecting;
@@ -201,14 +291,16 @@
 
     private void PickAll()
     {
-        if (picked.Count == pvpSessions.Count) picked.Clear();
-        else foreach (var s in pvpSessions) picked.Add(s.Id);
+        var all = tab == Tab.Arena ? arena.Select(r => r.Id).ToList() : pvpSessions.Select(s => s.Id).ToList();
+        if (picked.Count == all.Count) picked.Clear();
+        else foreach (var id in all) picked.Add(id);
     }
 
     private void DeletePicked()
     {
         if (picked.Count == 0) return;
-        PvpHistory.Delete(picked.ToList());
+        if (tab == Tab.Arena) ArenaHistory.Delete(picked.ToList());
+        else PvpHistory.Delete(picked.ToList());
         picked.Clear();
         selecting = false;
     }
@@ -248,5 +340,6 @@
         History.Changed -= OnChanged;
         Settings.Changed -= OnChanged;
         PvpHistory.Changed -= OnChanged;
+        ArenaHistory.Changed -= OnChanged;
     }
 }

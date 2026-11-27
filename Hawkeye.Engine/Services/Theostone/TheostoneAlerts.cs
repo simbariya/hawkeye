@@ -72,6 +72,30 @@ namespace Hawkeye.Engine.Services.Theostone
             this.settings = settings;
         }
 
+        /// <summary>How long after the last hit between you and someone they still count as fighting you.</summary>
+        public static readonly TimeSpan FoeFor = TimeSpan.FromMinutes(10);
+        private readonly Dictionary<int, DateTime> foes = new();   // entity -> last hit between you and them
+
+        /// <summary>
+        /// A hit (not a heal) between two entities (v0.2.42). If one of them is you, the other is fighting you: only
+        /// such a caster's effects on you count as debuffs (<see cref="OnStatus"/>). Owner, 2026-11-27: "during the big
+        /// siege I was seeing random debuffs of a bunch of different people": players on your side who were not in your
+        /// group put their buffs (Light of Protection, Recuperation...) on you, and every effect from someone outside
+        /// your group was taken for a debuff. Checked on the owner's 30-minute PvP recording: all 124 real debuffs on
+        /// him came from someone who had hit him, or whom he had hit, before or in the same moment.
+        /// </summary>
+        public void OnFight(int actorId, int targetId)
+        {
+            int other = entities.IsCurrentPlayer(actorId) ? targetId : entities.IsCurrentPlayer(targetId) ? actorId : 0;
+            if (other == 0) return;
+            lock (gate) foes[other] = Clock();
+        }
+
+        private bool IsFoe(int entityId)
+        {
+            lock (gate) return foes.TryGetValue(entityId, out var at) && Clock() - at <= FoeFor;
+        }
+
         private static string Short(string skillName) =>
             skillName.StartsWith("Theostone: ", StringComparison.Ordinal) ? skillName["Theostone: ".Length..] : skillName;
 
@@ -154,13 +178,14 @@ namespace Hawkeye.Engine.Services.Theostone
 
         /// <summary>
         /// Any other debuff on you (v0.2.38): a buff message (0x382A new, 0x382B refreshed) on you from someone who is
-        /// not you and was never in your group (BuffPacketProcessor checks that). Shown like a Theostone debuff on you,
+        /// not you and was never in your group (BuffPacketProcessor checks that), and who is fighting you (hit you or was
+        /// hit by you in the last 10 minutes, <see cref="OnFight"/>; since v0.2.42). Shown like a Theostone debuff on you,
         /// with the skill's name, until it runs out or the game removes it. The same debuff again (same instance, or
         /// same name) updates its tile instead of adding one.
         /// </summary>
         public void OnStatus(int targetId, int instance, string name, uint durationMs, int casterId)
         {
-            if (!settings.Current.DebuffAlerts || !entities.IsCurrentPlayer(targetId)) return;
+            if (!settings.Current.DebuffAlerts || !entities.IsCurrentPlayer(targetId) || !IsFoe(casterId)) return;
             var length = TimeSpan.FromMilliseconds(durationMs);
             if (length < ShortestStatus || length > LongestStatus) return;
             string from = entities.GetPlayerEntity(casterId)?.Name ?? "";

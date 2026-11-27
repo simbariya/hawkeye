@@ -62,7 +62,6 @@ public sealed class ArenaTests : IDisposable
     [Fact]
     public void AMatch_ScoreDefianceAndResult()
     {
-        arena.WorldPvpOn = () => true;                    // PvP mode on: Defiance is tracked
         arena.OnStandings(ArenaParser.ParseStandings(Hex(StandingsBefore))!);
         Assert.False(arena.Showing);
 
@@ -100,7 +99,6 @@ public sealed class ArenaTests : IDisposable
         var cast = (IOpcodeProcessor)Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             null, [sessions, arena], null)!;
 
-        arena.WorldPvpOn = () => true;
         arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
         cast.Process(new Packet { Data = Hex(TheirDefiance) });
         var foe = arena.Match!.Enemies[0];
@@ -109,31 +107,54 @@ public sealed class ArenaTests : IDisposable
     }
 
     [Fact]
-    public void DefianceWithPvpModeOff_IsIgnored()
+    public void InAnArenaMatch_DefianceIsTracked_WithoutPvpMode()
     {
-        // Owner, 2026-11-26: a battlefield loads like an arena match and every caster was tracked.
-        bool pvpMode = false;
-        arena.WorldPvpOn = () => pvpMode;
+        // Owner, 2026-11-27: "ensure defiance only works in arena". An arena match switches the view on by itself and
+        // tracks the opponent's Defiance; PvP mode (needed in v0.2.36 to 0.2.41) plays no part any more.
         arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
-        Assert.True(arena.Showing);                       // the match still switches the view on, by itself
-        Assert.False(arena.DefianceTracked);
-
+        Assert.True(arena.DefianceTracked);
         arena.OnSkillCast(Opponent, ArenaTracker.DefianceName, TimeSpan.FromSeconds(37));
-        arena.OnSkillCast(999, ArenaTracker.DefianceName, TimeSpan.FromSeconds(28));   // a stranger
-        Assert.Null(Assert.Single(arena.Match!.Enemies).DefianceAt);   // nobody tracked, nobody added
-
-        pvpMode = true;                                   // World PvP mode switched on
-        arena.OnSkillCast(Opponent, ArenaTracker.DefianceName, TimeSpan.FromSeconds(37));
-        Assert.NotNull(arena.Match.Enemies[0].DefianceAt);
+        Assert.NotNull(Assert.Single(arena.Match!.Enemies).DefianceAt);
     }
 
     [Fact]
-    public void TheArenaTabPickedByHand_CountsAsPvpModeOn()
+    public void AStrangersDefiance_IsNeverAdded()
     {
-        arena.Showing = true;
-        Assert.True(arena.DefianceTracked);
-        arena.Showing = false;
+        // Until v0.2.42 anyone casting Defiance who was not on the list was added as an enemy.
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        entities.SetSessionPlayerName(999, "Stranger", 0);
+        arena.OnSkillCast(999, ArenaTracker.DefianceName, TimeSpan.FromSeconds(28));
+        Assert.Null(Assert.Single(arena.Match!.Enemies).DefianceAt);
+    }
+
+    [Fact]
+    public void ABattlefield_TracksNoDefiance_AndIsNotCounted()
+    {
+        // Owner, 2026-11-27: "not in battlefield as I don't wanna see defiance for 12 other people". A battlefield
+        // loads with the arena's roster message; it is told apart by the number of players casting skills.
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        arena.OnSkillCast(Opponent, ArenaTracker.DefianceName, TimeSpan.FromSeconds(37));
+        for (int id = 5000; id < 5000 + ArenaTracker.BattlefieldCasters; id++) arena.OnSkillCast(id, "Some Skill", TimeSpan.FromSeconds(5));
+        Assert.True(arena.Match!.IsBattlefield);
         Assert.False(arena.DefianceTracked);
+        Assert.False(arena.Showing);                       // the arena view it switched on goes off again
+        Assert.Null(arena.Match.Enemies[0].DefianceAt);    // the Defiance seen before is dropped
+        arena.OnSkillCast(Opponent, ArenaTracker.DefianceName, TimeSpan.FromSeconds(37));
+        Assert.Null(arena.Match.Enemies[0].DefianceAt);
+
+        arena.OnResult(1525);
+        Assert.Equal((0, 0), (arena.Wins, arena.Losses));  // not an arena result
+        Assert.Null(arena.Match);
+    }
+
+    [Fact]
+    public void AnArenaMatch_WithItsUsualCasters_StaysAnArenaMatch()
+    {
+        // The owner's 1v1 matches saw up to 8 casters (you, the opponent, summons).
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        for (int id = 5000; id < 5008; id++) arena.OnSkillCast(id, "Some Skill", TimeSpan.FromSeconds(5));
+        Assert.False(arena.Match!.IsBattlefield);
+        Assert.True(arena.DefianceTracked);
     }
 
     [Fact]
@@ -244,7 +265,57 @@ public sealed class ArenaTests : IDisposable
         Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton(services, typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(NullLogger<>));
         Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<EntityTracker>(services);
         Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<ArenaTracker>(services);
+        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<ArenaHistory>(services);
         using var provider = Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services);
         Assert.NotNull(provider.GetService(typeof(ArenaTracker)));
+        Assert.NotNull(provider.GetService(typeof(ArenaHistory)));
+    }
+
+    // ---- arena history (v0.2.42; owner: "autosaves into a separate tab, so after a version update I do not lose my
+    // stats of the arena") ----
+
+    [Fact]
+    public void AFinishedMatch_IsSaved_AndStillThereAfterARestart()
+    {
+        var history = new ArenaHistory(path);
+        arena.MatchEnded += (_, m) => history.Add(ArenaRecord.From(m, "OwnerName"));
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        for (int i = 0; i < 3; i++) arena.OnKill(ArenaParser.ParseKill(Hex(YouKillThem))!.Value);
+        arena.OnResult(1525);
+        arena.OnStandings(ArenaParser.ParseStandings(Hex(StandingsBefore))!);   // no second save for the same match
+        history.FlushAsync().Wait();
+
+        var again = new ArenaHistory(path);                 // Hawkeye started again (an update)
+        var r = Assert.Single(again.Records);
+        Assert.Equal(("OwnerName", true, 3, 0, 1500, 1525, 25, "1v1"),
+            (r.Character, r.Won, r.OurKills, r.TheirKills, r.RatingBefore, r.RatingAfter, r.RatingChange, r.Mode));
+        var foe = Assert.Single(r.Opponents);
+        Assert.Equal(("Rival123", 1311, 1442), (foe.Name, foe.Server, foe.Rating));
+
+        again.Delete([r.Id]);
+        again.FlushAsync().Wait();
+        Assert.Empty(new ArenaHistory(path).Records);
+    }
+
+    [Fact]
+    public void AMissedResult_IsSavedFromTheStandings()
+    {
+        var saved = new List<ArenaMatch>();
+        arena.MatchEnded += (_, m) => saved.Add(m);
+        arena.OnStandings(ArenaParser.ParseStandings(Hex(StandingsBefore))!);
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        arena.OnStandings(ArenaParser.ParseStandings(Hex(StandingsAfter))!);   // the win shows in the counts
+        Assert.True(Assert.Single(saved).Won);
+    }
+
+    [Fact]
+    public void ABattlefield_IsNotSaved()
+    {
+        var saved = new List<ArenaMatch>();
+        arena.MatchEnded += (_, m) => saved.Add(m);
+        arena.OnRoster(ArenaParser.ParseRoster(Hex(Roster))!);
+        for (int id = 5000; id <= 5000 + ArenaTracker.BattlefieldCasters; id++) arena.OnSkillCast(id, "Some Skill", TimeSpan.FromSeconds(5));
+        arena.OnResult(1525);
+        Assert.Empty(saved);
     }
 }

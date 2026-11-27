@@ -16,258 +16,284 @@
         <button type="button" class="hs-close" title="Close" @onclick="Overlays.CloseSettings" @onmousedown:stopPropagation="true">✕</button>
     </header>
 
+    <nav class="hs-tabs" @onmousedown:stopPropagation="true">
+        @foreach (var (t, label) in Tabs)
+        {
+            <button type="button" class="hs-tab @(tab == t ? "is-on" : "")" @onclick="() => tab = t">@label</button>
+        }
+    </nav>
+
     <div class="hs-body">
-        <div class="hs-section">LOOK</div>
-        <SettingRow Title="Look" Description="The style of the meter, the breakdown and these windows">
-            <ValueSlot>
-                <div class="hs-mode">
-                    @foreach (var look in Enum.GetValues<Look>())
-                    {
-                        <button type="button" class="@(S.Look == look ? "is-on" : "")"
-                                @onclick="() => Settings.Update(s => s.Look = look)">@Hawkeye.App.Services.Looks.NameOf(look)</button>
-                    }
-                </div>
-            </ValueSlot>
-        </SettingRow>
-
-        <div class="hs-section">WINDOW</div>
-        <SettingRow Title="Auto-update" Description="Download new versions from GitHub; they install when you close Hawkeye">
-            <ValueSlot><ToggleSwitch Checked="S.AutoUpdate" CheckedChanged="v => Settings.Update(s => s.AutoUpdate = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Opacity" Description="How solid the meter is (10 to 100%)">
-            <ValueSlot>
-                <div class="hs-slider">
-                    <input type="range" min="10" max="100" step="1" value="@OpacityPercent" @oninput="OnOpacity" />
-                    <span>@OpacityPercent%</span>
-                </div>
-            </ValueSlot>
-        </SettingRow>
-
-        <div class="hs-section">METER</div>
-        <SettingRow Title="Fit height to group" Description="The meter makes room for everyone in your group, up to 5 rows. Off: drag its bottom edge yourself">
-            <ValueSlot><ToggleSwitch Checked="S.AutoHeight" CheckedChanged="v => Settings.Update(s => s.AutoHeight = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Total damage" Description="Each player's total damage next to their DPS">
-            <ValueSlot><ToggleSwitch Checked="S.ShowTotalDamage" CheckedChanged="v => Settings.Update(s => s.ShowTotalDamage = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Deaths" Description="A skull and count on each player who died on this boss, over every pull since its last kill">
-            <ValueSlot><ToggleSwitch Checked="S.ShowDeaths" CheckedChanged="v => Settings.Update(s => s.ShowDeaths = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Combat power" Description="CP after each name. The game sends it for you and your group only, so other players show none">
-            <ValueSlot><ToggleSwitch Checked="S.ShowCombatPower" CheckedChanged="v => Settings.Update(s => s.ShowCombatPower = v)" /></ValueSlot>
-        </SettingRow>
-
-        <div class="hs-section">TRAINING DUMMY</div>
-        <SettingRow Title="Mode" Description="Timed: starts on your first hit and stops by itself. Start/Stop: use the button on the meter">
-            <ValueSlot>
-                <div class="hs-mode">
-                    <button type="button" class="@(S.DummyMode == DummyMode.Timed ? "is-on" : "")"
-                            @onclick="() => Settings.Update(s => s.DummyMode = DummyMode.Timed)">Timed</button>
-                    <button type="button" class="@(S.DummyMode == DummyMode.StartStop ? "is-on" : "")"
-                            @onclick="() => Settings.Update(s => s.DummyMode = DummyMode.StartStop)">Start/Stop</button>
-                </div>
-            </ValueSlot>
-        </SettingRow>
-        @if (S.DummyMode == DummyMode.Timed)
+        @if (tab == SettingsTab.General)
         {
-            <SettingRow Title="Length" Description="How long a timed run lasts. Hit the dummy again after a 10 s pause to start a new run">
+            <div class="hs-section">LOOK</div>
+            <SettingRow Title="Look" Description="The style of the meter, the breakdown and these windows">
                 <ValueSlot>
                     <div class="hs-mode">
-                        @foreach (var m in new[] { 1, 2, 3 })
+                        @foreach (var look in Enum.GetValues<Look>())
                         {
-                            <button type="button" class="@(S.DummyMinutes == m ? "is-on" : "")"
-                                    @onclick="() => Settings.Update(s => s.DummyMinutes = m)">@m min</button>
+                            <button type="button" class="@(S.Look == look ? "is-on" : "")"
+                                    @onclick="() => Settings.Update(s => s.Look = look)">@Hawkeye.App.Services.Looks.NameOf(look)</button>
                         }
                     </div>
                 </ValueSlot>
             </SettingRow>
-        }
 
-        <div class="hs-section">PVP</div>
-        <SettingRow Title="Enemy server" Description="@EnemyServerHint">
-            <ValueSlot>
-                <input type="text" class="hs-text" placeholder="e.g. Triniel EU" value="@S.PvpEnemyServer"
-                       @onchange="e => Settings.Update(s => s.PvpEnemyServer = e.Value?.ToString()?.Trim() ?? string.Empty)" />
-            </ValueSlot>
-        </SettingRow>
-
-        <SettingRow Title="Theostone: yours" Description="A small tile when your Theostone procs (Damage 1%, Blind...). A debuff you put on an enemy counts down until it ends">
-            <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsYours" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsYours = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Theostone: on you" Description="A red tile when someone's Theostone hits you. A debuff (Silence, Blind, Poison...) stays with its time left until it ends or you cleanse it, a potion too">
-            <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsOnYou" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsOnYou = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Debuffs on you" Description="Anything an enemy or monster puts on you (blind, slows, heal cuts, stuns...) shows in the same box with its time left, until it ends or you cleanse it. Effects from your group are left out">
-            <ValueSlot><ToggleSwitch Checked="S.DebuffAlerts" CheckedChanged="v => Settings.Update(s => s.DebuffAlerts = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Theostone: where" Description="@(S.TheostonePlace == TheostonePlace.Screen ? "Its own box: while Settings is open it shows a dashed outline you can drag anywhere" : "Over the top of the meter")">
-            <ValueSlot>
-                <div class="hs-mode">
-                    <button type="button" class="@(S.TheostonePlace == TheostonePlace.Screen ? "is-on" : "")"
-                            @onclick="() => Settings.Update(s => s.TheostonePlace = TheostonePlace.Screen)">Anywhere</button>
-                    <button type="button" class="@(S.TheostonePlace == TheostonePlace.Meter ? "is-on" : "")"
-                            @onclick="() => Settings.Update(s => s.TheostonePlace = TheostonePlace.Meter)">On meter</button>
-                </div>
-            </ValueSlot>
-        </SettingRow>
-        @if (S.TheostonePlace == TheostonePlace.Screen)
-        {
-            <SettingRow Title="Theostone: size" Description="How big the alerts are">
+            <div class="hs-section">WINDOW</div>
+            <SettingRow Title="Auto-update" Description="Download new versions from GitHub; they install when you close Hawkeye">
+                <ValueSlot><ToggleSwitch Checked="S.AutoUpdate" CheckedChanged="v => Settings.Update(s => s.AutoUpdate = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Opacity" Description="How solid the meter is (10 to 100%)">
                 <ValueSlot>
-                    <div class="hs-mode">
-                        @foreach (var (label, v) in new[] { ("S", 0.85), ("M", 1.0), ("L", 1.25), ("XL", 1.5) })
-                        {
-                            <button type="button" class="@(Math.Abs(S.TheostoneScale - v) < 0.01 ? "is-on" : "")"
-                                    @onclick="() => Settings.Update(s => s.TheostoneScale = v)">@label</button>
-                        }
+                    <div class="hs-slider">
+                        <input type="range" min="10" max="100" step="1" value="@OpacityPercent" @oninput="OnOpacity" />
+                        <span>@OpacityPercent%</span>
                     </div>
                 </ValueSlot>
             </SettingRow>
-        }
-        <SettingRow Title="Theostone: how long" Description="How long a proc tile stays. Debuffs stay until they end">
-            <ValueSlot>
-                <div class="hs-mode">
-                    @foreach (var v in new[] { 2.0, 3.5, 5.0 })
-                    {
-                        <button type="button" class="@(Math.Abs(S.TheostoneSeconds - v) < 0.01 ? "is-on" : "")"
-                                @onclick="() => Settings.Update(s => s.TheostoneSeconds = v)">@v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) s</button>
-                    }
-                </div>
-            </ValueSlot>
-        </SettingRow>
 
-        <SettingRow Title="Arena: enemy Defiance" Description="During an arena match, a box per enemy: red Ready while their Defiance can break your stun, green counting down while it is on cooldown. While Settings is open it shows a dashed outline you can drag anywhere">
-            <ValueSlot><ToggleSwitch Checked="S.DefianceAlert" CheckedChanged="v => Settings.Update(s => s.DefianceAlert = v)" /></ValueSlot>
-        </SettingRow>
-        @if (S.DefianceAlert)
-        {
-            <SettingRow Title="Defiance: size" Description="How big the Defiance box is">
+            <div class="hs-section">METER</div>
+            <SettingRow Title="Fit height to group" Description="The meter makes room for everyone in your group, up to 5 rows. Off: drag its bottom edge yourself">
+                <ValueSlot><ToggleSwitch Checked="S.AutoHeight" CheckedChanged="v => Settings.Update(s => s.AutoHeight = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Total damage" Description="Each player's total damage next to their DPS">
+                <ValueSlot><ToggleSwitch Checked="S.ShowTotalDamage" CheckedChanged="v => Settings.Update(s => s.ShowTotalDamage = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Deaths" Description="A skull and count on each player who died on this boss, over every pull since its last kill">
+                <ValueSlot><ToggleSwitch Checked="S.ShowDeaths" CheckedChanged="v => Settings.Update(s => s.ShowDeaths = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Combat power" Description="CP after each name. The game sends it for you and your group only, so other players show none">
+                <ValueSlot><ToggleSwitch Checked="S.ShowCombatPower" CheckedChanged="v => Settings.Update(s => s.ShowCombatPower = v)" /></ValueSlot>
+            </SettingRow>
+
+            <div class="hs-section">TRAINING DUMMY</div>
+            <SettingRow Title="Mode" Description="Timed: starts on your first hit and stops by itself. Start/Stop: use the button on the meter">
                 <ValueSlot>
                     <div class="hs-mode">
-                        @foreach (var (label, v) in new[] { ("S", 0.85), ("M", 1.0), ("L", 1.25), ("XL", 1.5) })
-                        {
-                            <button type="button" class="@(Math.Abs(S.DefianceScale - v) < 0.01 ? "is-on" : "")"
-                                    @onclick="() => Settings.Update(s => s.DefianceScale = v)">@label</button>
-                        }
+                        <button type="button" class="@(S.DummyMode == DummyMode.Timed ? "is-on" : "")"
+                                @onclick="() => Settings.Update(s => s.DummyMode = DummyMode.Timed)">Timed</button>
+                        <button type="button" class="@(S.DummyMode == DummyMode.StartStop ? "is-on" : "")"
+                                @onclick="() => Settings.Update(s => s.DummyMode = DummyMode.StartStop)">Start/Stop</button>
                     </div>
                 </ValueSlot>
             </SettingRow>
-        }
-
-        <div class="hs-section">STATUS LINE</div>
-        <SettingRow Title="Ping" Description="Your latency to the game server">
-            <ValueSlot><ToggleSwitch Checked="S.ShowPing" CheckedChanged="v => Settings.Update(s => s.ShowPing = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="FPS" Description="Game frame rate. Needs Hawkeye to run as administrator">
-            <ValueSlot><ToggleSwitch Checked="S.ShowFps" CheckedChanged="v => Settings.Update(s => s.ShowFps = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="CPU" Description="Whole-system CPU use">
-            <ValueSlot><ToggleSwitch Checked="S.ShowCpu" CheckedChanged="v => Settings.Update(s => s.ShowCpu = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="RAM" Description="Whole-system memory in use">
-            <ValueSlot><ToggleSwitch Checked="S.ShowRam" CheckedChanged="v => Settings.Update(s => s.ShowRam = v)" /></ValueSlot>
-        </SettingRow>
-
-        <div class="hs-section">STREAMER MODE</div>
-        <SettingRow Title="Streamer mode" Description="Shows the meter and skill icons in OBS as one Browser Source, with real transparency">
-            <ValueSlot><ToggleSwitch Checked="S.StreamerMode" CheckedChanged="v => Settings.Update(s => s.StreamerMode = v)" /></ValueSlot>
-        </SettingRow>
-        @if (S.StreamerMode)
-        {
-            <div class="hs-stream">
-                <div class="hs-stream-link">
-                    <code>@Stream.Url</code>
-                    <button type="button" class="hs-button" @onclick="CopyLink">@(copied ? "Copied" : "Copy link")</button>
-                </div>
-                <div class="hs-stream-status @(Stream.Status == "Running" ? "is-ok" : "is-bad")">@Stream.Status</div>
-                <ol class="hs-stream-steps">
-                    <li>In OBS: <b>+</b> &gt; <b>Browser</b>, paste the link as the URL.</li>
-                    <li>Width and height: your screen resolution (for example 1920 x 1080).</li>
-                    <li>Put it above your Game Capture and stretch it over the whole canvas.</li>
-                </ol>
-            </div>
-            <SettingRow Title="Meter on stream" Description="Show the meter in the Browser Source">
-                <ValueSlot><ToggleSwitch Checked="S.StreamShowMeter" CheckedChanged="v => Settings.Update(s => s.StreamShowMeter = v)" /></ValueSlot>
-            </SettingRow>
-            <SettingRow Title="Skill icons on stream" Description="Show the tracker icons in the Browser Source">
-                <ValueSlot><ToggleSwitch Checked="S.StreamShowIcons" CheckedChanged="v => Settings.Update(s => s.StreamShowIcons = v)" /></ValueSlot>
-            </SettingRow>
-            <SettingRow Title="Hawkeye windows on stream" Description="While open, Settings, History, Extras and the combat analysis show on stream exactly as on your screen">
-                <ValueSlot><ToggleSwitch Checked="S.StreamShowDetails" CheckedChanged="v => Settings.Update(s => s.StreamShowDetails = v)" /></ValueSlot>
-            </SettingRow>
-        }
-
-        <div class="hs-section">SKILL TRACKER</div>
-        <SettingRow Title="Enabled" Description="Show each tracked skill as its own icon. While this window is open, drag the icons where you want them">
-            <ValueSlot><ToggleSwitch Checked="S.TrackerEnabled" CheckedChanged="v => Settings.Update(s => s.TrackerEnabled = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Always show" Description="Off: icons only appear during a boss or training dummy fight (and while this window is open). On: always on screen">
-            <ValueSlot><ToggleSwitch Checked="S.TrackerAlwaysVisible" CheckedChanged="v => Settings.Update(s => s.TrackerAlwaysVisible = v)" /></ValueSlot>
-        </SettingRow>
-        <SettingRow Title="Icon size" Description="24 to 96 px">
-            <ValueSlot>
-                <div class="hs-slider">
-                    <input type="range" min="24" max="96" step="1" value="@IconSize" @oninput="OnIconSize" />
-                    <span>@(IconSize)px</span>
-                </div>
-            </ValueSlot>
-        </SettingRow>
-
-        <div class="hs-tracked">
-            @foreach (var t in S.TrackedSkills.ToList())
+            @if (S.DummyMode == DummyMode.Timed)
             {
-                var skill = GameDataProvider.Instance.GetSkillOrDefault(t.SkillId);
-                <div class="hs-tracked-row @(t.Active ? "" : "is-off")">
-                    <button type="button" class="hs-check @(t.Active ? "is-on" : "")"
-                            title="@(t.Active ? "On: shows its icon. Untick to switch it off without removing it" : "Off: tick to show its icon again")"
-                            @onclick="() => SetActive(t.SkillId, !t.Active)">@(t.Active ? "✓" : "")</button>
-                    <span class="hs-skill-icon">
-                        @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
-                    </span>
-                    <span class="hs-skill-name" title="@skill.Name">@skill.Name</span>
-                    <div class="hs-mode">
-                        <button type="button" class="@(t.Mode == TrackMode.Cooldown ? "is-on" : "")" title="Track its cooldown"
-                                @onclick="() => SetMode(t.SkillId, TrackMode.Cooldown)">Cooldown</button>
-                        <button type="button" class="@(t.Mode == TrackMode.Buff ? "is-on" : "")" title="Track the buff it gives, so you know when to reapply"
-                                @onclick="() => SetMode(t.SkillId, TrackMode.Buff)">Buff</button>
-                    </div>
-                    <button type="button" class="hs-popup @(t.PopUpSeconds > 0 ? "is-on" : "")"
-                            title="@(t.PopUpSeconds > 0 ? $"Pops up {t.PopUpSeconds} seconds before the {(t.Mode == TrackMode.Buff ? "buff runs out" : "cooldown is ready")}, then hides again. Click to change" : "Always on screen. Click to make it pop up only near the end: 3, 5, 10 or 15 seconds before")"
-                            @onclick="() => NextPopUp(t.SkillId)">@(t.PopUpSeconds > 0 ? $"At {t.PopUpSeconds}s" : "Always")</button>
-                    <button type="button" class="hs-remove" title="Stop tracking" @onclick="() => Remove(t.SkillId)">✕</button>
-                </div>
+                <SettingRow Title="Length" Description="How long a timed run lasts. Hit the dummy again after a 10 s pause to start a new run">
+                    <ValueSlot>
+                        <div class="hs-mode">
+                            @foreach (var m in new[] { 1, 2, 3 })
+                            {
+                                <button type="button" class="@(S.DummyMinutes == m ? "is-on" : "")"
+                                        @onclick="() => Settings.Update(s => s.DummyMinutes = m)">@m min</button>
+                            }
+                        </div>
+                    </ValueSlot>
+                </SettingRow>
             }
 
-            @if (S.TrackedSkills.Count < MaxTracked)
+            <div class="hs-section">STATUS LINE</div>
+            <SettingRow Title="Ping" Description="Your latency to the game server">
+                <ValueSlot><ToggleSwitch Checked="S.ShowPing" CheckedChanged="v => Settings.Update(s => s.ShowPing = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="FPS" Description="Game frame rate. Needs Hawkeye to run as administrator">
+                <ValueSlot><ToggleSwitch Checked="S.ShowFps" CheckedChanged="v => Settings.Update(s => s.ShowFps = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="CPU" Description="Whole-system CPU use">
+                <ValueSlot><ToggleSwitch Checked="S.ShowCpu" CheckedChanged="v => Settings.Update(s => s.ShowCpu = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="RAM" Description="Whole-system memory in use">
+                <ValueSlot><ToggleSwitch Checked="S.ShowRam" CheckedChanged="v => Settings.Update(s => s.ShowRam = v)" /></ValueSlot>
+            </SettingRow>
+        }
+        else if (tab == SettingsTab.Pvp)
+        {
+            <div class="hs-section">PROFILE LINKS</div>
+            <SettingRow Title="Enemy server" Description="@EnemyServerHint">
+                <ValueSlot>
+                    <input type="text" class="hs-text" placeholder="e.g. Triniel EU" value="@S.PvpEnemyServer"
+                           @onchange="e => Settings.Update(s => s.PvpEnemyServer = e.Value?.ToString()?.Trim() ?? string.Empty)" />
+                </ValueSlot>
+            </SettingRow>
+
+            <div class="hs-section">ALERTS</div>
+            <SettingRow Title="Theostone: yours" Description="A small tile when your Theostone procs (Damage 1%, Blind...). A debuff you put on an enemy counts down until it ends">
+                <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsYours" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsYours = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Theostone: on you" Description="A red tile when someone's Theostone hits you. A debuff (Silence, Blind, Poison...) stays with its time left until it ends or you cleanse it, a potion too">
+                <ValueSlot><ToggleSwitch Checked="S.TheostoneAlertsOnYou" CheckedChanged="v => Settings.Update(s => s.TheostoneAlertsOnYou = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Debuffs on you" Description="Anything an enemy or monster puts on you (stuns, roots, blinds, slows, heal cuts...) shows in the same box with its time left, until it ends or you cleanse it. Only from someone fighting you: buffs from your side are left out">
+                <ValueSlot><ToggleSwitch Checked="S.DebuffAlerts" CheckedChanged="v => Settings.Update(s => s.DebuffAlerts = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Theostone: where" Description="@(S.TheostonePlace == TheostonePlace.Screen ? "Its own box: while Settings is open it shows a dashed outline you can drag anywhere" : "Over the top of the meter")">
+                <ValueSlot>
+                    <div class="hs-mode">
+                        <button type="button" class="@(S.TheostonePlace == TheostonePlace.Screen ? "is-on" : "")"
+                                @onclick="() => Settings.Update(s => s.TheostonePlace = TheostonePlace.Screen)">Anywhere</button>
+                        <button type="button" class="@(S.TheostonePlace == TheostonePlace.Meter ? "is-on" : "")"
+                                @onclick="() => Settings.Update(s => s.TheostonePlace = TheostonePlace.Meter)">On meter</button>
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+            @if (S.TheostonePlace == TheostonePlace.Screen)
             {
-                <div class="hs-add">
-                    <input type="text" placeholder="+ Add a skill: type its name…" value="@query" @oninput="e => query = e.Value?.ToString() ?? string.Empty" />
-                </div>
-                @if (!string.IsNullOrWhiteSpace(query))
+                <SettingRow Title="Theostone: size" Description="How big the alerts are">
+                    <ValueSlot>
+                        <div class="hs-mode">
+                            @foreach (var (label, v) in new[] { ("S", 0.85), ("M", 1.0), ("L", 1.25), ("XL", 1.5) })
+                            {
+                                <button type="button" class="@(Math.Abs(S.TheostoneScale - v) < 0.01 ? "is-on" : "")"
+                                        @onclick="() => Settings.Update(s => s.TheostoneScale = v)">@label</button>
+                            }
+                        </div>
+                    </ValueSlot>
+                </SettingRow>
+            }
+            <SettingRow Title="Theostone: how long" Description="How long a proc tile stays. Debuffs stay until they end">
+                <ValueSlot>
+                    <div class="hs-mode">
+                        @foreach (var v in new[] { 2.0, 3.5, 5.0 })
+                        {
+                            <button type="button" class="@(Math.Abs(S.TheostoneSeconds - v) < 0.01 ? "is-on" : "")"
+                                    @onclick="() => Settings.Update(s => s.TheostoneSeconds = v)">@v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) s</button>
+                        }
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+
+            <div class="hs-section">ARENA</div>
+            <SettingRow Title="Arena: enemy Defiance" Description="In an arena match only (never in a battlefield), a box per enemy: red Ready while their Defiance can break your stun, green counting down while it is on cooldown. While Settings is open it shows a dashed outline you can drag anywhere">
+                <ValueSlot><ToggleSwitch Checked="S.DefianceAlert" CheckedChanged="v => Settings.Update(s => s.DefianceAlert = v)" /></ValueSlot>
+            </SettingRow>
+            @if (S.DefianceAlert)
+            {
+                <SettingRow Title="Defiance: size" Description="How big the Defiance box is">
+                    <ValueSlot>
+                        <div class="hs-mode">
+                            @foreach (var (label, v) in new[] { ("S", 0.85), ("M", 1.0), ("L", 1.25), ("XL", 1.5) })
+                            {
+                                <button type="button" class="@(Math.Abs(S.DefianceScale - v) < 0.01 ? "is-on" : "")"
+                                        @onclick="() => Settings.Update(s => s.DefianceScale = v)">@label</button>
+                            }
+                        </div>
+                    </ValueSlot>
+                </SettingRow>
+            }
+        }
+        else if (tab == SettingsTab.Tracker)
+        {
+            <div class="hs-section">SKILL TRACKER</div>
+            <SettingRow Title="Enabled" Description="Show each tracked skill as its own icon. While this window is open, drag the icons where you want them">
+                <ValueSlot><ToggleSwitch Checked="S.TrackerEnabled" CheckedChanged="v => Settings.Update(s => s.TrackerEnabled = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Always show" Description="Off: icons only appear during a boss or training dummy fight (and while this window is open). On: always on screen. Icons set to pop up (below) follow their own timing">
+                <ValueSlot><ToggleSwitch Checked="S.TrackerAlwaysVisible" CheckedChanged="v => Settings.Update(s => s.TrackerAlwaysVisible = v)" /></ValueSlot>
+            </SettingRow>
+            <SettingRow Title="Icon size" Description="24 to 96 px">
+                <ValueSlot>
+                    <div class="hs-slider">
+                        <input type="range" min="24" max="96" step="1" value="@IconSize" @oninput="OnIconSize" />
+                        <span>@(IconSize)px</span>
+                    </div>
+                </ValueSlot>
+            </SettingRow>
+
+            <div class="hs-tracked">
+                @foreach (var t in S.TrackedSkills.ToList())
                 {
-                    <div class="hs-results">
-                        @foreach (var skill in SearchResults)
-                        {
-                            <button type="button" class="hs-result" @onclick="() => Add(skill.Id)">
-                                <span class="hs-skill-icon">
-                                    @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
-                                </span>
-                                <span class="hs-skill-name">@skill.Name</span>
-                            </button>
-                        }
-                        @if (!SearchResults.Any())
-                        {
-                            <div class="hs-empty">No skills found</div>
-                        }
+                    var skill = GameDataProvider.Instance.GetSkillOrDefault(t.SkillId);
+                    <div class="hs-tracked-row @(t.Active ? "" : "is-off")">
+                        <button type="button" class="hs-check @(t.Active ? "is-on" : "")"
+                                title="@(t.Active ? "On: shows its icon. Untick to switch it off without removing it" : "Off: tick to show its icon again")"
+                                @onclick="() => SetActive(t.SkillId, !t.Active)">@(t.Active ? "✓" : "")</button>
+                        <span class="hs-skill-icon">
+                            @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
+                        </span>
+                        <span class="hs-skill-name" title="@skill.Name">@skill.Name</span>
+                        <div class="hs-mode">
+                            <button type="button" class="@(t.Mode == TrackMode.Cooldown ? "is-on" : "")" title="Track its cooldown"
+                                    @onclick="() => SetMode(t.SkillId, TrackMode.Cooldown)">Cooldown</button>
+                            <button type="button" class="@(t.Mode == TrackMode.Buff ? "is-on" : "")" title="Track the buff it gives, so you know when to reapply"
+                                    @onclick="() => SetMode(t.SkillId, TrackMode.Buff)">Buff</button>
+                        </div>
+                        <button type="button" class="hs-remove" title="Stop tracking" @onclick="() => Remove(t.SkillId)">✕</button>
+                        <div class="hs-when">
+                            <span>Show</span>
+                            <div class="hs-mode">
+                                @foreach (var sec in PopUpSteps)
+                                {
+                                    <button type="button" class="@(t.PopUpSeconds == sec ? "is-on" : "")" title="@PopUpTip(t.Mode, sec)"
+                                            @onclick="() => SetPopUp(t.SkillId, sec)">@(sec == 0 ? "Always" : $"{sec} s")</button>
+                                }
+                            </div>
+                            <span class="hs-when-text">@PopUpText(t.Mode, t.PopUpSeconds)</span>
+                        </div>
                     </div>
                 }
-            }
-        </div>
 
-        <div class="hs-actions">
-            <button type="button" class="hs-button" @onclick="Overlays.PreviewTimers">Test timers</button>
-            <span class="hs-hint">Runs a fake timer on every icon so you can check the look and placement.</span>
-        </div>
+                @if (S.TrackedSkills.Count < MaxTracked)
+                {
+                    <div class="hs-add">
+                        <input type="text" placeholder="+ Add a skill: type its name…" value="@query" @oninput="e => query = e.Value?.ToString() ?? string.Empty" />
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(query))
+                    {
+                        <div class="hs-results">
+                            @foreach (var skill in SearchResults)
+                            {
+                                <button type="button" class="hs-result" @onclick="() => Add(skill.Id)">
+                                    <span class="hs-skill-icon">
+                                        @if (skill.HasIcon) { <img src="@skill.Icon" alt="" /> } else { <span>@Initial(skill.Name)</span> }
+                                    </span>
+                                    <span class="hs-skill-name">@skill.Name</span>
+                                </button>
+                            }
+                            @if (!SearchResults.Any())
+                            {
+                                <div class="hs-empty">No skills found</div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="hs-actions">
+                <button type="button" class="hs-button" @onclick="Overlays.PreviewTimers">Test timers</button>
+                <span class="hs-hint">Runs a fake timer on every icon so you can check the look and placement.</span>
+            </div>
+        }
+        else
+        {
+            <div class="hs-section">STREAMER MODE</div>
+            <SettingRow Title="Streamer mode" Description="Shows the meter and skill icons in OBS as one Browser Source, with real transparency">
+                <ValueSlot><ToggleSwitch Checked="S.StreamerMode" CheckedChanged="v => Settings.Update(s => s.StreamerMode = v)" /></ValueSlot>
+            </SettingRow>
+            @if (S.StreamerMode)
+            {
+                <div class="hs-stream">
+                    <div class="hs-stream-link">
+                        <code>@Stream.Url</code>
+                        <button type="button" class="hs-button" @onclick="CopyLink">@(copied ? "Copied" : "Copy link")</button>
+                    </div>
+                    <div class="hs-stream-status @(Stream.Status == "Running" ? "is-ok" : "is-bad")">@Stream.Status</div>
+                    <ol class="hs-stream-steps">
+                        <li>In OBS: <b>+</b> &gt; <b>Browser</b>, paste the link as the URL.</li>
+                        <li>Width and height: your screen resolution (for example 1920 x 1080).</li>
+                        <li>Put it above your Game Capture and stretch it over the whole canvas.</li>
+                    </ol>
+                </div>
+                <SettingRow Title="Meter on stream" Description="Show the meter in the Browser Source">
+                    <ValueSlot><ToggleSwitch Checked="S.StreamShowMeter" CheckedChanged="v => Settings.Update(s => s.StreamShowMeter = v)" /></ValueSlot>
+                </SettingRow>
+                <SettingRow Title="Skill icons on stream" Description="Show the tracker icons in the Browser Source">
+                    <ValueSlot><ToggleSwitch Checked="S.StreamShowIcons" CheckedChanged="v => Settings.Update(s => s.StreamShowIcons = v)" /></ValueSlot>
+                </SettingRow>
+                <SettingRow Title="Hawkeye windows on stream" Description="While open, Settings, History, Extras and the combat analysis show on stream exactly as on your screen">
+                    <ValueSlot><ToggleSwitch Checked="S.StreamShowDetails" CheckedChanged="v => Settings.Update(s => s.StreamShowDetails = v)" /></ValueSlot>
+                </SettingRow>
+            }
+        }
     </div>
 
     <footer class="hs-footer">
@@ -353,15 +379,32 @@
         if (t is not null) t.Active = on;
     });
 
+    // Tabs (v0.2.42; owner, 2026-11-27: "the settings menu is now very long, so split it into tabs"). The tab you
+    // were on is kept while Hawkeye runs.
+    private enum SettingsTab { General, Pvp, Tracker, Stream }
+    private static readonly (SettingsTab, string)[] Tabs =
+        [(SettingsTab.General, "General"), (SettingsTab.Pvp, "PvP"), (SettingsTab.Tracker, "Skill tracker"), (SettingsTab.Stream, "Streaming")];
+    private static SettingsTab tab = SettingsTab.General;
+
     private static readonly int[] PopUpSteps = [0, 3, 5, 10, 15];
 
-    private void NextPopUp(int skillId) => Settings.Update(s =>
+    private void SetPopUp(int skillId, int seconds) => Settings.Update(s =>
     {
         var t = s.TrackedSkills.FirstOrDefault(x => x.SkillId == skillId);
-        if (t is null) return;
-        int i = Array.IndexOf(PopUpSteps, t.PopUpSeconds);
-        t.PopUpSeconds = PopUpSteps[(i + 1) % PopUpSteps.Length];
+        if (t is not null) t.PopUpSeconds = seconds;
     });
+
+    // Owner, 2026-11-27: "make it clear in the menu". A cooldown icon comes up as the skill is about to be ready;
+    // a buff icon comes up as the buff is about to run out.
+    private static string PopUpText(TrackMode mode, int seconds) => seconds == 0
+        ? "always on screen"
+        : mode == TrackMode.Buff ? $"only {seconds} s before the buff runs out" : $"only {seconds} s before it is ready";
+
+    private static string PopUpTip(TrackMode mode, int seconds) => seconds == 0
+        ? "Always on screen (during boss fights, or always with Always show)"
+        : mode == TrackMode.Buff
+            ? $"Hidden while the buff has more than {seconds} s left. Pops up {seconds} s before it runs out, so you can recast it, and hides 3 s after"
+            : $"Hidden while the skill is on cooldown. Pops up {seconds} s before it is ready, and hides 3 s after it is ready";
 
     private void SetMode(int skillId, TrackMode mode) => Settings.Update(s =>
     {

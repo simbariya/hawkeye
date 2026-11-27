@@ -138,6 +138,28 @@ html, body {
 
     .hs-close:hover { background: rgba(255, 255, 255, 0.1); }
 
+/* Settings tabs (v0.2.42): General, PvP, Skill tracker, Streaming */
+.hs-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--line);
+}
+
+    .hs-tab {
+        padding: 6px 10px 5px;
+        border: none;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: var(--dim);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+        .hs-tab.is-on { color: var(--text); border-bottom-color: var(--accent); font-weight: 700; }
+        .hs-tab:hover { color: var(--text); }
+
 .hs-body {
     flex: 1 1 auto;
     overflow-y: auto;
@@ -284,23 +306,25 @@ html, body {
 
         .hs-mode button.is-on { background: var(--accent); color: #111; font-weight: 700; }
 
-/* Pop up (v0.2.38): "Always" or "At 3s"; click cycles 3, 5, 10, 15 seconds */
-.hs-popup {
-    flex: 0 0 auto;
-    min-width: 46px;
-    padding: 3px 6px;
-    border: 1px solid var(--line);
-    background: transparent;
+/* When the icon shows (v0.2.42): a line under each tracked skill, "Show [Always] [3 s] ... only 3 s before it is ready" */
+.hs-tracked-row { flex-wrap: wrap; }
+
+.hs-when {
+    flex: 1 0 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 26px;
+    box-sizing: border-box;
+    min-width: 0;
+    font-size: 11px;
     color: var(--dim);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
 }
 
-    .hs-popup.is-on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
-    .hs-popup:hover { border-color: var(--accent); }
+    .hs-when .hs-mode button { padding: 1px 6px; font-size: 11px; }
+    .hs-when-text { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.hs-tracked-row.is-off .hs-popup { opacity: 0.4; }
+.hs-tracked-row.is-off .hs-when { opacity: 0.4; }
 
 .hs-remove {
     flex: 0 0 auto;

@@ -3,6 +3,44 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.42 (2026-11-27)
+
+Added (owner: "Add Arena history, that autosaves into a separate tab, so after a version update I do not lose my
+stats of the arena"):
+- **Arena history.** Every arena match you finish is saved as it ends, in a file next to your settings, so updates
+  and restarts keep it. History window > **Arena** tab: wins and losses overall and today, win rate, your last
+  rating, and one row per match (result, opponents with profile links, 1v1 / 2v2, score, rating and change). Select
+  deletes several at once. Matches from before this version were not saved anywhere, so the list starts now.
+
+Fixed (owner: "ensure debuffs on you work properly and only on me as during the big siege I was seeing random
+debuffs of a bunch of different people"):
+- **Debuffs on you: only from someone fighting you.** Players on your side who were not in your group put their
+  buffs on you (heals, protection), and Hawkeye took every effect from outside your group for a debuff. Now an
+  effect counts only if its caster hit you, or you hit them, in the last 10 minutes. Checked on the owner's
+  30-minute PvP recording: every real debuff on him (124) came from someone who had hit him or been hit by him
+  first; replayed, it still shows the same 151 tiles.
+
+Fixed (owner: "ensure defiance only works in arena and not in battlefield as I don't wanna see defiance for 12 other
+people"):
+- **Defiance in arena matches only.** A battlefield loads with the same message as an arena match. Hawkeye now tells
+  them apart by how many players cast skills: more than 20 makes it a battlefield (the owner's 17 recorded 1v1
+  matches saw 3 to 8, counting summons). Then no Defiance is shown, the arena view it switched on goes off, and its
+  result does not count as an arena win or loss. Players not on the match list are never added any more. In a real
+  arena match Defiance is now tracked whether or not PvP mode is on.
+
+Fixed (owner: "timing of skills appearing 3-5 sec before the end does not work properly, the skill icons do not
+appear, and the buffs should work the opposite, i.e 3-5 sec before it ends. Make it clear in the menu"):
+- **Pop-up icons appear.** An icon set to pop up also needed a boss or dummy fight (or Always show), so in PvP and
+  out of combat it never came. It now follows only its own timing: a cooldown icon comes up N seconds before the
+  skill is ready, a buff icon N seconds before the buff runs out, and each hides 3 s after.
+- **Clear in the menu.** Under each tracked skill a "Show" line: Always, 3 s, 5 s, 10 s, 15 s, followed by what it
+  means ("only 3 s before it is ready", "only 5 s before the buff runs out"), with a fuller tooltip.
+
+Changed (owner: "The settings menu is now very long, so split it into tabs"):
+- **Settings in tabs:** General (look, window, meter, training dummy, status line), PvP (profile links, Theostone and
+  debuff alerts, arena Defiance), Skill tracker, Streaming. The tab you were on stays picked while Hawkeye runs.
+Rendered: Settings (Skill tracker and PvP tabs) and History > Arena drawn from the real styles and looked at.
+183 tests (8 new).
 ## v0.2.41 (2026-11-27)
 
 Fixed (owner: "in the arena mode some of the players are still not displaying profile correctly, there is no

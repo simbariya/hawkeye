@@ -34,6 +34,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
       
         public void Process(Packet packet)
         {
+            // Who fights whom, for "debuffs on you" (v0.2.42): only someone who hit you or whom you hit can debuff you.
+            // Read from the header, so hits the damage layout below refuses still count. A heal is not a fight.
+            if (theostones is not null && Header(packet.Data) is { } fight && !gameData.IsHealingSkill(fight.Code))
+                theostones.OnFight(fight.Actor, fight.Target);
+
             if (theostones is not null && NoDamageTheostone(packet.Data) is { } proc)
             {
                 theostones.OnHit(proc.Actor, proc.Target, gameData.GetSkillOrDefault(proc.Code).Name, 0, proc.Code);
@@ -166,7 +171,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         /// showed when the debuff landed, and then not at all (the buff reader got the caster wrong too).
         /// Returns the proc, or null for anything else.
         /// </summary>
-        private (int Actor, int Target, int Code)? NoDamageTheostone(byte[] packet)
+        private (int Actor, int Target, int Code)? NoDamageTheostone(byte[] packet) =>
+            Header(packet) is { } h && (h.Mask & 0x0F) == 0 && gameData.IsTheostone(h.Code) ? (h.Actor, h.Target, h.Code) : null;
+
+        /// <summary>[len][op][target varint][mask varint][flag varint][actor varint][u32 skill], or null.</summary>
+        private static (int Actor, int Target, int Code, long Mask)? Header(byte[] packet)
         {
             try
             {
@@ -175,11 +184,11 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
                 reader.ReadU16();    //opcode
                 var targetId = (int)reader.ReadVarInt();
                 var mask = reader.ReadVarInt();
-                if (mask > 255 || (mask & 0x0F) != 0) return null;
+                if (mask > 255) return null;
                 reader.ReadVarInt(); // unknown flag
                 var actorId = (int)reader.ReadVarInt();
                 var code = (int)reader.ReadU32();
-                return actorId != targetId && gameData.IsTheostone(code) ? (actorId, targetId, code) : null;
+                return actorId != targetId ? (actorId, targetId, code, (long)mask) : null;
             }
             catch (Exception) { return null; }
         }

@@ -95,6 +95,7 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
     {
         var w = World(12526);
         w.Entities.SetSessionPlayerName(6668, "Bravo", 0);
+        w.Alerts.OnFight(6668, 12526);      // he hit you first
         Buffs(w.Sessions, w.Alerts).Process(Msg(DefenseBreak));
         var d = Assert.Single(w.Alerts.Showing);
         Assert.Equal((true, "Defense Break", "Bravo", 1004, TimeSpan.FromSeconds(10)), (d.Status, d.Word, d.From, d.Instance, d.Duration));
@@ -110,14 +111,15 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
     private const string Blind5s = "342A38EE6101139908BDE3F505881300000000000099EB8FFFA1010000FA2B01F82DCA00007E21BBC5ADDF28C639AC2347";
 
     [Theory]
-    [InlineData(Stun3s, "Stun", 3)]
-    [InlineData(Root2s, "Root", 2)]
-    [InlineData(Knockdown3s, "Knockdown", 3)]
-    [InlineData(Blind5s, "Blind", 5)]
-    public void AGeneralEffectOnYou_SaysWhatItIs(string message, string word, int seconds)
+    [InlineData(Stun3s, "Stun", 3, 6668)]
+    [InlineData(Root2s, "Root", 2, 4547)]
+    [InlineData(Knockdown3s, "Knockdown", 3, 14047)]
+    [InlineData(Blind5s, "Blind", 5, 5626)]
+    public void AGeneralEffectOnYou_SaysWhatItIs(string message, string word, int seconds, int caster)
     {
         // Owner 2026-11-27: "can debuff on you be classified? instead of just debuff".
         var w = World(12526);
+        w.Alerts.OnFight(12526, caster);    // you hit them
         Buffs(w.Sessions, w.Alerts).Process(Msg(message));
         var d = Assert.Single(w.Alerts.Showing);
         Assert.Equal((true, word, TimeSpan.FromSeconds(seconds)), (d.Status, d.Word, d.Duration));
@@ -127,6 +129,7 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
     public void ADebuffOnYou_EndsWhenCleansed()
     {
         var w = World(12526);
+        w.Alerts.OnFight(6668, 12526);
         Buffs(w.Sessions, w.Alerts).Process(Msg(DefenseBreak));
         new BuffRemovedProcessor(w.Alerts).Process(Msg("0B2C38EE610107EC07"));   // [entity 12526][1][reason 7][instance 1004]
         Assert.Empty(w.Alerts.Showing);
@@ -136,6 +139,8 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
     public void TheSameDebuffAgain_IsOneTile()
     {
         var w = World(12526);
+        w.Alerts.OnFight(2880, 12526);
+        w.Alerts.OnFight(9213, 12526);
         var reader = Buffs(w.Sessions, w.Alerts);
         reader.Process(Msg(FireMark));
         now = now.AddSeconds(2);
@@ -155,6 +160,40 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
         reader.Process(Msg(DefenseBreak));      // from someone in your group
         reader.Process(Msg(DrillDartSelf));     // your own
         Assert.Empty(w.Alerts.Showing);
+    }
+
+    [Fact]
+    public void EffectsFromSomeoneNotFightingYou_AreNotDebuffs()
+    {
+        // Owner 2026-11-27: "during the big siege I was seeing random debuffs of a bunch of different people". Players
+        // on your side outside your group put their buffs on you; only someone who hit you, or whom you hit, counts.
+        var w = World(12526);
+        var reader = Buffs(w.Sessions, w.Alerts);
+        reader.Process(Msg(DefenseBreak));                  // 6668 never fought you
+        Assert.Empty(w.Alerts.Showing);
+        w.Alerts.OnFight(6668, 31337);                      // a fight between two others does not count either
+        reader.Process(Msg(DefenseBreak));
+        Assert.Empty(w.Alerts.Showing);
+
+        w.Alerts.OnFight(12526, 6668);                      // you hit him: from now on his debuffs show
+        reader.Process(Msg(DefenseBreak));
+        Assert.Single(w.Alerts.Showing);
+
+        now = now.Add(TheostoneAlerts.FoeFor).AddSeconds(30);   // long after the last hit: not a fight any more
+        new BuffRemovedProcessor(w.Alerts).Process(Msg("0B2C38EE610107EC07"));
+        reader.Process(Msg(DefenseBreak));
+        Assert.Empty(w.Alerts.Showing);
+    }
+
+    [Fact]
+    public void AHitBetweenYouAndThem_CountsAsAFight()
+    {
+        // The damage reader marks the fight from the message header (PvP recording: Defense Break's hit on the owner).
+        var w = World(12526);
+        var hit = "230438EE6100018C34" + "00000000";       // [len][op][target 12526][mask 0][flag][actor 6668][skill 0]
+        new DamagePacketProcessor(w.Entities, w.Sessions, NullLogger<DamagePacketProcessor>.Instance, w.Alerts).Process(Msg(hit));
+        Buffs(w.Sessions, w.Alerts).Process(Msg(DefenseBreak));
+        Assert.Single(w.Alerts.Showing);
     }
 
     [Fact]
@@ -224,5 +263,18 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
         Assert.True(PopUp.Visible(3, null, t, t.AddSeconds(2)));                            // ready / ran out 2 s ago
         Assert.False(PopUp.Visible(3, null, t, t + PopUp.Linger + TimeSpan.FromSeconds(0.1)));
         Assert.False(PopUp.Visible(3, null, DateTime.MinValue, t));                         // never ran: hidden
+    }
+
+    [Fact]
+    public void APopUpIcon_ComesUpOutsideBossFightsToo()
+    {
+        // Owner, 2026-11-27: "the skill icons do not appear". A pop-up icon needed a boss fight as well, so in PvP it
+        // never came. Now it follows only its own timing; other icons keep the boss-fight rule.
+        var t = new DateTime(2026, 11, 27, 18, 0, 0, DateTimeKind.Utc);
+        Assert.True(PopUp.OnScreen(false, false, 3, TimeSpan.FromSeconds(2), t, t));     // no fight, 2 s left: up
+        Assert.False(PopUp.OnScreen(false, true, 3, TimeSpan.FromSeconds(8), t, t));     // boss fight, 8 s left: hidden
+        Assert.False(PopUp.OnScreen(false, false, 0, null, t, t));                       // a normal icon, no fight: hidden
+        Assert.True(PopUp.OnScreen(false, true, 0, null, t, t));                         // a normal icon in a fight: up
+        Assert.True(PopUp.OnScreen(true, false, 3, TimeSpan.FromSeconds(8), t, t));      // Settings open: all up
     }
 }

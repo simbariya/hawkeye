@@ -143,10 +143,13 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Cooldown updates** (`TimedEventTracker.UpdateTimeLeft`, v0.1.4): a running cooldown keeps its
   full length and only the time left moves (cuts make the sweep jump forward). An update within
   1.5 s of the start sets the full length (the real cooldown; the cast only knows the base one).
-- **Pop up (v0.2.38):** `TrackedSkill.PopUpSeconds` (0 = always; the Settings button cycles 3, 5, 10, 15).
-  `Engine/Services/Timed/PopUp.Visible`: shown from N s before the timer ends until `PopUp.Linger` (3 s) after;
-  `TrackerIconWindow.WantsShown`, applied every 250 ms by `OverlayManager.UpdateIconVisibility` within the boss-fight
-  rule; the stream page sends only visible icons.
+- **Pop up (v0.2.38):** `TrackedSkill.PopUpSeconds` (0 = always; Settings > Skill tracker has a "Show" line under each
+  skill since v0.2.42: Always, 3, 5, 10, 15 s, with "only N s before it is ready" / "before the buff runs out").
+  `Engine/Services/Timed/PopUp.Visible`: shown from N s before the timer ends until `PopUp.Linger` (3 s) after.
+  `PopUp.OnScreen` (v0.2.42): Settings open = all up; a pop-up icon follows only its own timing, fight or not (until
+  v0.2.42 it also needed a boss fight, so in PvP it never came); other icons keep the boss-fight / Always show rule.
+  `TrackerIconWindow.WantsShown`, applied every 250 ms by `OverlayManager.UpdateIconVisibility`; the stream page sends
+  only visible icons.
 - **Potions (v0.2.38):** `Engine/Services/Timed/PotionCooldowns` (Healing family 10 s, Life family 30 s, measured on
   recordings). Your potion cast (0x3802, cooldown field 0) starts the cooldown for the whole family
   (`SkillCastProcessor`). The skill picker lists class skills plus these potions.
@@ -263,7 +266,7 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   stream page draws the same panel from `/state.meter.pvp`.
 - **Sessions (v0.2.13):** End session (`PvpTracker.EndSession`) hands a `PvpSession` with its `PvpEvent`
   list (who each kill/death/assist was about) to `PvpHistory` (`%AppData%\Hawkeye\pvp-sessions.json`,
-  temp-file save, flushed on exit). History window has Fights / PvP tabs; the PvP tab's Select (v0.2.16) ticks sessions and deletes them
+  temp-file save, flushed on exit). History window has Fights / PvP / Arena (v0.2.42, section 6h) tabs; the PvP tab's Select (v0.2.16) ticks sessions and deletes them
   with one save (`PvpHistory.Delete(ids)`). `PvpPage` lists the events
   for the live session or a saved one (`PvpView` says which). `ProfileWindow` shows a shugo.gg profile
   in its own web view with its own data folder (`%LocalAppData%\Hawkeye\ProfileBrowser`). Links:
@@ -305,7 +308,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
     instance (`OnRemoved`; each entry is [reason][instance varint], reason 0 ran out, 7 cleansed, a potion too).
   - Poison/Bleed ticks: `DotDamagePacketProcessor` (0x3805) calls `OnTick`, which only adds to a showing tile.
   - Debuffs on you (v0.2.38): any other buff message on you whose caster is not `EntityTracker.IsFriendly` (you,
-    anyone named in a group list since start, their summons) goes to `OnStatus` (1 s to 2 min; `Status` tiles,
+    anyone named in a group list since start, their summons) goes to `OnStatus`. Since v0.2.42 only if the caster is
+    fighting you: a hit (not a heal) between you and them in the last 10 min (`TheostoneAlerts.OnFight`, fed from
+    every 0x3804 header by `DamagePacketProcessor`, `FoeFor`); buffs from your own side outside your group showed as
+    debuffs in sieges before. (1 s to 2 min; `Status` tiles,
     named after the skill; the game's unnamed general effects by what they do, `StatusKinds` (v0.2.39: Stun, Root,
     Knockdown, Knockback, Blind, Slow, Silence; other unnamed ones "Debuff")). Same instance or same name updates the tile. Setting
     `DebuffAlerts`.
@@ -341,12 +347,20 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 - **Shows:** the Arena tab of the PvP panel (`MeterPage.razor`, `.meter-arena`, `.pvp-tabs`, `.arena-*`,
   `.foe-*` in `meter.css`): score, opponents and ratings, session (Defiance only in its own box since v0.2.28); switched on by a match loading (`ArenaTracker.Showing`), off again when you leave
   if the match switched it on. Stream page: `/state.meter.arena` (`StreamServer.BuildArena`, `renderArena`).
-- **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved yet. Wins and
+- **Arena history (v0.2.42):** every arena match with a result (not a battlefield) is saved as it ends:
+  `ArenaTracker.MatchEnded` (raised outside the lock) > `ArenaHistory.Add(ArenaRecord.From(match, your name))`, wired
+  in `App.xaml.cs`; file `%AppData%\Hawkeye\arena-matches.json` (temp-file save, flushed on exit; outside the program
+  folder, so updates keep it). History window > Arena tab: All / Today wins and losses, win rate, last rating; one row
+  per match (result, opponents with profile links, mode from the opponent count, score, rating and change); Select
+  deletes several.
+- **Session:** wins, losses, rating change since Hawkeye started or the bin was pressed. Not saved (the history is). Wins and
   Losses open the PvP window's Arena list (v0.2.27, `PvpView.ShowArena`, `PvpPage.razor`): opponent, class (looked
   up when the match ends), rating, score, rating change.
-- **Defiance only with PvP mode on (v0.2.36):** `ArenaTracker.DefianceTracked` = the Arena tab picked by hand, or
-  World PvP on (`WorldPvpOn`, set in `App.xaml.cs` from `PvpTracker.Active`). A battlefield sends the arena roster
-  too, so a match switching the view on by itself does not count.
+- **Defiance in arena matches only (v0.2.42; v0.2.36 needed PvP mode on):** `ArenaTracker.DefianceTracked` = a
+  running match that is not a battlefield. A battlefield sends the arena roster too; it is told apart by casters:
+  more than `BattlefieldCasters` (20) different players casting skills in the match (`ArenaMatch.Casters`; the
+  owner's 17 recorded 1v1s saw 3 to 8) sets `IsBattlefield`: Defiance timers dropped, the view it switched on goes off,
+  its result is not counted or saved. Only enemies on the roster get a Defiance timer (strangers were added before).
 - **Defiance box (v0.2.27):** `Views/DefianceAlertWindow.cs`, Theostone style with the Defiance icon (all classes'
   Defiance share ICON_CO_SKILL_002, loaded through `SkillIconCache`); shown during a running match. Settings:
   `DefianceAlert`, `DefianceLeft/Top`, `DefianceScale`. Stream page: `/state.defiance`, `renderDefiance`.
@@ -355,9 +369,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
 
 ## 7. Settings window
 
-- **Does:** sections LOOK, WINDOW (auto-update, opacity), METER, TRAINING DUMMY, PVP (enemy server for
-  shugo.gg links), STATUS LINE, STREAMER MODE, SKILL TRACKER; footer with the Twitch link and
-  Support (placeholder). Opens beside the meter, square, drag by its header.
+- **Does:** four tabs (v0.2.42; owner: "the settings menu is now very long, so split it into tabs"): General (LOOK,
+  WINDOW: auto-update and opacity, METER, TRAINING DUMMY, STATUS LINE), PvP (PROFILE LINKS: enemy server, ALERTS:
+  Theostones and debuffs on you, ARENA: Defiance), Skill tracker, Streaming. The tab is kept while Hawkeye runs
+  (static field). Footer with the Twitch and Ko-fi links. Opens beside the meter, square, drag by its header.
 - **Files:** `Hawkeye.App/Pages/SettingsPage.razor`, `Pages/Components/`, styles in
   `wwwroot/css/hawkeye.css`, window in `Services/Windowing/BlazorWindow.xaml(.cs)`.
 

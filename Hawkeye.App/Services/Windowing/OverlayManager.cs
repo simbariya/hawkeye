@@ -31,7 +31,7 @@ namespace Hawkeye.App.Services.Windowing
         private bool iconsShown = true;
 
         /// <summary>Whether the tracker icons are on screen right now (streamer mode mirrors this).</summary>
-        public bool IconsVisible => iconsShown && settings.Current.TrackerEnabled;
+        public bool IconsVisible => settings.Current.TrackerEnabled;   // which icons are up: each window's own IsVisible
 
         /// <summary>The icon windows, for streamer mode. UI thread only.</summary>
         public IReadOnlyCollection<TrackerIconWindow> IconWindows => icons.Values;
@@ -78,8 +78,8 @@ namespace Hawkeye.App.Services.Windowing
             var nowUtc = DateTime.UtcNow;
             foreach (var icon in icons.Values)
             {
-                // Pop-up icons (v0.2.38) come and go on their own within that; all show while Settings is open.
-                bool want = show && (IsEditMode || icon.WantsShown(nowUtc));
+                // Pop-up icons come and go on their own timing, fight or not (v0.2.42); all show while Settings is open.
+                bool want = icon.WantsShown(nowUtc, IsEditMode, show);
                 if (want == icon.IsVisible) continue;
                 if (want) { icon.Show(); icon.BringToFront(); }
                 else icon.Hide();
@@ -280,7 +280,7 @@ namespace Hawkeye.App.Services.Windowing
                 icons[id] = icon;
                 icon.Show();
                 icon.SetEditMode(IsEditMode);
-                if (!iconsShown || !(IsEditMode || icon.WantsShown(DateTime.UtcNow))) icon.Hide();
+                if (!icon.WantsShown(DateTime.UtcNow, IsEditMode, iconsShown)) icon.Hide();
             }
         }
 

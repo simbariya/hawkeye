@@ -20,5 +20,15 @@ namespace Hawkeye.Engine.Services.Timed
             if (timeLeft is { } left && left > TimeSpan.FromMilliseconds(50)) return left <= TimeSpan.FromSeconds(popUpSeconds);
             return nowUtc - lastActiveUtc <= Linger;
         }
+
+        /// <summary>
+        /// Whether a tracker icon is on screen. While Settings is open: always (to place it). An icon set to pop up
+        /// follows only its own timing, anywhere: in PvP, the arena, out of combat (v0.2.42; owner, 2026-11-27: "the
+        /// skill icons do not appear". Until then a pop-up icon also needed a boss or dummy fight, or "Always show",
+        /// so in PvP it never came). Any other icon: during a boss or dummy fight, or always with "Always show".
+        /// </summary>
+        public static bool OnScreen(bool settingsOpen, bool fightOrAlways, int popUpSeconds, TimeSpan? timeLeft,
+            DateTime lastActiveUtc, DateTime nowUtc) =>
+            settingsOpen || (popUpSeconds > 0 ? Visible(popUpSeconds, timeLeft, lastActiveUtc, nowUtc) : fightOrAlways);
     }
 }

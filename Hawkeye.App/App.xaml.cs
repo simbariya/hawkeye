@@ -66,6 +66,7 @@ namespace Hawkeye.App
                         sp.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>().CreateLogger("Hawkeye.Skills")));
                     services.AddSingleton<Hawkeye.Engine.Services.Theostone.TheostoneAlerts>();
                     services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpHistory>();
+                    services.AddSingleton<Hawkeye.Engine.Services.Arena.ArenaHistory>();
                     services.AddSingleton<Hawkeye.Engine.Services.Pvp.PvpTotalsStore>();
                     services.AddSingleton<PvpView>();
                     services.AddPacketProcessingRouting();
@@ -109,8 +110,11 @@ namespace Hawkeye.App
             await AppHost.StartAsync();
 
             var services = AppHost.Services;
-            var pvpMode = services.GetRequiredService<Hawkeye.Engine.Services.Pvp.PvpTracker>();
-            services.GetRequiredService<Hawkeye.Engine.Services.Arena.ArenaTracker>().WorldPvpOn = () => pvpMode.Active;
+            // Every finished arena match is saved as it ends (v0.2.42), before the capture starts.
+            var arenaHistory = services.GetRequiredService<Hawkeye.Engine.Services.Arena.ArenaHistory>();
+            var you = services.GetRequiredService<Hawkeye.Engine.Services.Entity.EntityTracker>();
+            services.GetRequiredService<Hawkeye.Engine.Services.Arena.ArenaTracker>().MatchEnded +=
+                (_, m) => arenaHistory.Add(Hawkeye.Engine.Services.Arena.ArenaRecord.From(m, you.CurrentUserName));
             if (!TryStartCapture(services.GetRequiredService<IPacketService>()))
             {
                 Shutdown();
@@ -159,6 +163,7 @@ namespace Hawkeye.App
                     services.GetRequiredService<Hawkeye.Engine.Services.History.IEncounterHistory>().FlushAsync(),
                     services.GetRequiredService<Hawkeye.Engine.Services.Odyle.OdyleTracker>().FlushAsync(),
                     services.GetRequiredService<Hawkeye.Engine.Services.Pvp.PvpHistory>().FlushAsync(),
+                    services.GetRequiredService<Hawkeye.Engine.Services.Arena.ArenaHistory>().FlushAsync(),
                     services.GetRequiredService<Hawkeye.Engine.Services.Pvp.PvpTotalsStore>().FlushAsync(),
                 ], TimeSpan.FromSeconds(3));
                 services.GetRequiredService<IPacketService>().Stop();

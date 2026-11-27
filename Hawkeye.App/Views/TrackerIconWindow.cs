@@ -205,12 +205,12 @@ namespace Hawkeye.App.Views
 
         private DateTime lastActiveUtc = DateTime.MinValue;   // last time a timer was running on this icon
 
-        /// <summary>Pop up (v0.2.38): whether the icon should be on screen now (<see cref="PopUp.Visible"/>).</summary>
-        public bool WantsShown(DateTime nowUtc)
+        /// <summary>Whether the icon should be on screen now (<see cref="PopUp.OnScreen"/>).</summary>
+        public bool WantsShown(DateTime nowUtc, bool settingsOpen, bool fightOrAlways)
         {
             int popUp = settings.Current.TrackedSkills.FirstOrDefault(t => t.SkillId == skillId)?.PopUpSeconds ?? 0;
-            return PopUp.Visible(popUp, (Mode == TrackMode.Buff ? buffs : cooldowns).Get(unchecked((uint)skillId))?.TimeLeft,
-                lastActiveUtc, nowUtc);
+            return PopUp.OnScreen(settingsOpen, fightOrAlways, popUp,
+                (Mode == TrackMode.Buff ? buffs : cooldowns).Get(unchecked((uint)skillId))?.TimeLeft, lastActiveUtc, nowUtc);
         }
 
         /// <summary>Edit mode = Settings is open: draggable, outlined, raised above everything.</summary>

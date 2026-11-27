@@ -38,6 +38,16 @@ namespace Hawkeye.Engine.Services.Arena
         public event EventHandler? Changed;
         /// <summary>A match just loaded: the meter switches to the arena view.</summary>
         public event EventHandler? MatchStarted;
+        /// <summary>An arena match just ended with a result (not a battlefield): the arena history saves it.</summary>
+        public event EventHandler<ArenaMatch>? MatchEnded;
+        private ArenaMatch? justEnded;
+
+        private void RaiseEnded()
+        {
+            ArenaMatch? m;
+            lock (gate) { m = justEnded; justEnded = null; }
+            if (m is not null) MatchEnded?.Invoke(this, m);
+        }
 
         /// <summary>The meter shows the arena view (switched on by hand, or by a match loading).</summary>
         public bool Showing
@@ -48,16 +58,19 @@ namespace Hawkeye.Engine.Services.Arena
         private bool showing;
         private bool shownByMatch;   // switched on by a match loading: switched off again when you leave the arena
 
-        /// <summary>The World PvP mode is on (set by the app from <c>PvpTracker.Active</c>).</summary>
-        public Func<bool>? WorldPvpOn { get; set; }
+        /// <summary>
+        /// Enemy Defiance is tracked only in an arena match, never in a battlefield (owner, 2026-11-27: "ensure
+        /// defiance only works in arena and not in battlefield as I don't wanna see defiance for 12 other people").
+        /// A battlefield loads with the same roster message as an arena match; it is told apart by how many players
+        /// cast skills in it (<see cref="BattlefieldCasters"/>). Until v0.2.42 it also needed PvP mode on (v0.2.36).
+        /// </summary>
+        public bool DefianceTracked => Match is { Won: null, IsBattlefield: false };
 
         /// <summary>
-        /// Enemy Defiance is tracked only while YOU have PvP mode on: the World tab, or the Arena tab picked by hand
-        /// (owner, 2026-11-26: "WHEN IM DOINg battlefield it tracks everyone's defiance - instead if pvp mode is off
-        /// dont track defiance"). A battlefield loads with the same roster message as an arena match, so a match
-        /// switching the view on by itself does not count.
+        /// More different players than this casting skills in one match makes it a battlefield. The owner's 17
+        /// recorded 1v1 matches saw 3 to 8 casters each (you, the opponent, summons); a battlefield has dozens.
         /// </summary>
-        public bool DefianceTracked => (showing && !shownByMatch) || (WorldPvpOn?.Invoke() ?? false);
+        public const int BattlefieldCasters = 20;
 
         public DateTime StartedAt { get; private set; }
         public int Wins { get; private set; }
@@ -179,6 +192,7 @@ namespace Hawkeye.Engine.Services.Arena
                 bool won = m.RatingBefore is { } before ? newRating > before : m.OurKills > m.TheirKills;
                 Settle(m, won, newRating);
             }
+            RaiseEnded();
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -205,11 +219,14 @@ namespace Hawkeye.Engine.Services.Arena
                     if (shownByMatch) { showing = false; shownByMatch = false; }
                 }
             }
+            RaiseEnded();
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
         private void Settle(ArenaMatch m, bool won, int newRating)
         {
+            // A battlefield is not an arena match: not counted in wins, losses or the arena history.
+            if (m.IsBattlefield) { Match = null; return; }
             // Their class, for the Wins / Losses list (the game announced them as players when the match loaded).
             foreach (var e in m.Enemies)
             {
@@ -224,35 +241,46 @@ namespace Hawkeye.Engine.Services.Arena
             if (m.RatingBefore is { } before) RatingChange += newRating - before;
             Rating = newRating;
             matches.Add(m);
+            justEnded = m;
             logger?.LogInformation("[ARENA] {Result} {Ours}-{Theirs}, rating {Before} to {After}", won ? "won" : "lost",
                 m.OurKills, m.TheirKills, m.RatingBefore, newRating);
         }
 
-        /// <summary>Any skill cast (0x3802). Only an enemy's Defiance matters.</summary>
+        /// <summary>Any skill cast (0x3802). Counts the casters (a battlefield has many); only an enemy's Defiance shows.</summary>
         public void OnSkillCast(int entityId, string skillName, TimeSpan cooldown)
         {
-            if (skillName != DefianceName || entities.IsCurrentPlayer(entityId) || !DefianceTracked) return;
+            if (entities.IsCurrentPlayer(entityId)) return;
+            bool changed = false;
             lock (gate)
             {
                 // Only during a match: in the open Abyss other players' Defiance is cast too (seen in the recording).
                 if (Match is not { Won: null } m) return;
+                if (!m.IsBattlefield && m.Casters.Add(entityId) && m.Casters.Count > BattlefieldCasters)
+                {
+                    m.IsBattlefield = changed = true;
+                    foreach (var e in m.Enemies) e.DefianceAt = null;
+                    if (shownByMatch) { showing = false; shownByMatch = false; }
+                    logger?.LogInformation("[ARENA] {Count} players cast skills: a battlefield, not an arena match (no Defiance)", m.Casters.Count);
+                }
+                if (skillName != DefianceName || m.IsBattlefield) goto done;
+                if (entities.IsFriendly(entityId)) goto done;
                 string name = entities.GetPlayerEntity(entityId)?.Name ?? "";
-                if (m.Allies.Any(a => a.Name == name && name != "")) return;
+                if (m.Allies.Any(a => a.Name == name && name != "")) goto done;
                 var cd = cooldown >= TimeSpan.FromSeconds(10) && cooldown <= TimeSpan.FromMinutes(5) ? cooldown : DefaultDefianceCooldown;
+                // Only players on the match's enemy list: strangers are never added (until v0.2.42 they were, so a
+                // battlefield filled up with everyone who cast Defiance).
                 var foe = m.Enemies.FirstOrDefault(e => e.EntityId == entityId)
                           ?? m.Enemies.FirstOrDefault(e => e.Name == name && name != "")
-                          ?? (m.Enemies.Count == 1 && m.Enemies[0].EntityId == 0 ? m.Enemies[0] : null);
-                if (foe is null)
-                {
-                    foe = new ArenaFoe(0, name == "" ? "Enemy" : name, 0, 0);
-                    m.Enemies.Add(foe);
-                }
+                          ?? (name == "" && m.Enemies.Count(e => e.EntityId == 0) == 1 ? m.Enemies.First(e => e.EntityId == 0) : null);
+                if (foe is null) goto done;
                 foe.EntityId = entityId;
                 foe.DefianceAt = now();
                 foe.DefianceCooldown = cd;
                 logger?.LogInformation("[ARENA] {Name} used Defiance (cooldown {Cd:0.0} s)", foe.Name, cd.TotalSeconds);
+                changed = true;
             }
-            Changed?.Invoke(this, EventArgs.Empty);
+            done:
+            if (changed) Changed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>How long until this enemy's Defiance is back; zero when it is ready (or never used).</summary>
@@ -278,6 +306,10 @@ namespace Hawkeye.Engine.Services.Arena
         public List<ArenaFoe> Enemies { get; } = new();
         public List<ArenaParser.Player> Allies { get; } = new();
         internal HashSet<ulong> OurKeys { get; } = new();
+        /// <summary>Different players (not you) who cast a skill since the match loaded.</summary>
+        internal HashSet<int> Casters { get; } = new();
+        /// <summary>Too many casters for an arena (<see cref="ArenaTracker.BattlefieldCasters"/>): not kept as a match.</summary>
+        public bool IsBattlefield { get; set; }
     }
 
     public sealed class ArenaFoe(ulong key, string name, int server, int rating)
