@@ -493,6 +493,16 @@ namespace Hawkeye.App.ViewModels
         public void BeginResize(string edge) => OverlayManager.TryResize(Application.Current.MainWindow, edge);
         public void OpenSettings() => overlays.OpenSettings();
         /// <summary>Quit after the current click has finished drawing (same reason as OverlayManager.CloseSettings).</summary>
+        /// <summary>
+        /// The minimise button next to the X (owner, 2026-11-27): the meter goes to the taskbar; Hawkeye keeps running
+        /// and the tracker icons and alert boxes stay. Click Hawkeye on the taskbar to bring it back.
+        /// </summary>
+        public void Minimize() =>
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                if (Application.Current.MainWindow is { } w) w.WindowState = WindowState.Minimized;
+            });
+
         public void Close() =>
             Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,
                 () => Application.Current.Shutdown());

@@ -3,6 +3,14 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.40 (2026-11-27)
+
+Added (owner: "can we add a minimise button next to X please"):
+- **Minimise button** on the meter, between Settings and the X. The meter goes to the taskbar; click Hawkeye there
+  to bring it back, in the same place. Hawkeye keeps running: tracker icons and alert boxes stay on screen. While
+  minimised the meter is left off the stream page too. Checked on a test copy: minimised, restored, and the meter
+  drew normally with the fight timer still running.
+170 tests.
 ## v0.2.39 (2026-11-27)
 
 Changed (owner: "can debuff on you be classified? instead of just debuff"):

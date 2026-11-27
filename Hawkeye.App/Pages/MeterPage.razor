@@ -80,6 +80,10 @@
             <span class="meter-timer @(vm.ShowingHistory ? "is-last" : "")" title="@(vm.ShowingHistory ? "Your last fight (from history)" : "Fight time")">@(vm.DummyWaiting ? "ready" : vm.Duration)</span>
             <button type="button" class="meter-btn meter-btn--settings" title="Settings"
                     @onclick="() => vm.OpenSettings()" @onmousedown:stopPropagation="true">⚙</button>
+            <button type="button" class="meter-btn meter-btn--min" title="Minimise (click Hawkeye on the taskbar to bring it back)"
+                    @onclick="() => vm.Minimize()" @onmousedown:stopPropagation="true">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 11.5h9" /></svg>
+            </button>
             <button type="button" class="meter-btn meter-btn--close" title="Close Hawkeye"
                     @onclick="() => vm.Close()" @onmousedown:stopPropagation="true">✕</button>
         </div>

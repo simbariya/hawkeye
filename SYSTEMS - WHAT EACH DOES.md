@@ -77,7 +77,8 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
   show them (auto height: a CSS min-height the measure pass picks up; manual: `GrowTo`), clicking
   again folds them (v0.2.14; `hawkeyeSideSlots` / `hawkeyeSideNeed` in index.html, `SideSlots`,
   `SideExpanded`, `SideVisible` in MeterViewModel). Header: boss name (blood red, one line), dummy START/STOP (Start/Stop mode only), fight
-  timer ("ready" while waiting for your first hit), Settings, Close. Optional status line AT THE
+  timer ("ready" while waiting for your first hit), Settings, Minimise (v0.2.40: `MeterViewModel.Minimize`, to the taskbar;
+  the stream page leaves the meter out while it is minimised), Close. Optional status line AT THE
   BOTTOM (v0.1.3). (The fight total / deaths summary line was removed in v0.1.4.) One row per player, sorted by damage, bar relative to the top
   player, eased so it glides; optional skull + deaths and total damage. Hover a row for exact damage,
   share and deaths.

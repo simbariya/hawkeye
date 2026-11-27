@@ -363,3 +363,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   release\0.2.38-github, which the owner had started Hawkeye from at 11:40; restored at once from the 0.2.39
   package (29 files, wwwroot/GameData unchanged since 0.2.38), no errors in his log. He runs
   release\0.2.38-github\full\Hawkeye (public, will update itself to 0.2.39 on restart). Spare: 0.2.39-github\full.
+- 0.2.40 (2026-11-27): minimise button on the meter header (owner: "can we add a minimise button next to X").
+  `MeterViewModel.Minimize` sets the main window Minimized (it has a taskbar button: WS_EX_APPWINDOW); stream page
+  omits the meter while minimised. Checked: test copy minimised and restored from outside (ShowWindow), screenshot
+  after restore drew normally (scratchpad min_after.png); UI Automation cannot reach buttons inside the web view, so
+  the click itself was not scripted. 170 tests.

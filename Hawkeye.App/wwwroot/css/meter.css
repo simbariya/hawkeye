@@ -75,6 +75,7 @@
 }
 
     .meter-btn:hover { background: rgba(255, 255, 255, 0.08); }
+    .meter-btn svg { width: 14px; height: 14px; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 1.6; }
 
 .meter-side {
     position: absolute;

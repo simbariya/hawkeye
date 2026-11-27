@@ -254,7 +254,8 @@ namespace Hawkeye.App.Services.Streaming
                     screen = new { width = SystemParameters.PrimaryScreenWidth, height = SystemParameters.PrimaryScreenHeight },
                     version = Branding.Version,
                     instance = Instance,
-                    meter = !s.StreamShowMeter || main is null ? null : new
+                    // Minimised (v0.2.40): off the screen, so off the stream page too.
+                    meter = !s.StreamShowMeter || main is null || main.WindowState == WindowState.Minimized ? null : new
                     {
                         left = main.Left,
                         top = main.Top,
