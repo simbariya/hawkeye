@@ -99,7 +99,8 @@ clean up GitHub so just the latest release is available").** The release folder 
   and delete the new zips and the `small` folder locally (they are on GitHub). **Find the running folder from
   the newest "Content root" line across ALL of today's logs, matched to `Get-Process Hawkeye` start time**
   (its path is hidden because it runs elevated). Never assume it from earlier in the session: on 2026-11-23
-  the owner had switched to a spare folder and the cleanup deleted its files (I17);
+  and again on 2026-11-27 the owner had switched to a spare folder and the cleanup deleted its files (I17). Do the
+  check INSIDE the delete command (read the newest Content root, skip that folder), not in a step before;
 - the owner's install updates IN PLACE (the updater copies the new files over the running folder), so his
   folder keeps its old name (2026-11-23: he ran `release\0.2.21-github\full\Hawkeye`, which became 0.2.22 on
   update; by 0.2.24 he ran `0.2.23-github`). Never delete the folder Hawkeye runs from; the freshly published `full` folder is only a spare once

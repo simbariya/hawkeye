@@ -29,7 +29,7 @@ description: >
 | I14 | Misread I15 as a WebView2 timing race; shipped a fix for the wrong cause | WRONG DIAGNOSIS, see I15 |
 | I15 | 0.2.9 and 0.2.10 never showed a window: PvpTracker had two constructors DI could fill | FIXED in v0.2.11 |
 | I16 | After a character switch the capture locked onto port 443 (web) and the meter stayed blank | FIXED v0.2.24, awaiting in-game proof |
-| I17 | Release cleanup deleted the files of the folder the owner's Hawkeye was running from | RESTORED same minute; rule tightened |
+| I17 | Release cleanup deleted the files of the folder the owner's Hawkeye was running from (twice: 0.2.26 and 0.2.39) | RESTORED same minute; rule tightened twice |
 
 ## The incidents in full
 
@@ -248,3 +248,9 @@ Next free number: **I18**.
 - Rule (build-and-run section 4): before deleting ANY release folder, read the Content root of the NEWEST log
   across all of today's log files, and match it to the running process's start time. Never go by memory of where
   it ran earlier: the owner starts Hawkeye from whichever folder he likes.
+- AGAIN 2026-11-27 (0.2.39): the cleanup deleted `release\0.2.38-github` going by the session's memory that the
+  owner ran a different folder; he had started Hawkeye from the 0.2.38 spare at 11:40 that morning. Everything but
+  the locked Hawkeye.exe was deleted. Restored within two minutes from the 0.2.39 package (wwwroot and GameData
+  unchanged since 0.2.38 per git diff; 29 files); the running copy logged no errors.
+- Rule, made mechanical: the delete command itself must first read the newest Content root and REFUSE to delete
+  that folder or anything above it, in the same command. Reading it in an earlier step is not enough.

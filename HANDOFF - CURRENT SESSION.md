@@ -358,3 +358,8 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   Smoke Bomb Blind 5 s = 5000 ms, Shadowstrike Stun 3 s = 3000 ms). 10000080 = Silence is the one LIKELY guess
   (Shadowstrike's Seal 5 s). pvp-run replay: 0 "Debuff" tiles left (26 now Stun/Root/Knockdown/Slow/Blind/Silence).
   Rides with the local add-on hook above. 170 tests.
+- 0.2.39 released 2026-11-27 12:02 UTC (smoke start clean: LOCKED, SYNCHRONIZED, no UI errors; public exe checked
+  free of local add-on classes); GitHub v0.2.38 deleted. I17 HAPPENED AGAIN: the cleanup deleted
+  release\0.2.38-github, which the owner had started Hawkeye from at 11:40; restored at once from the 0.2.39
+  package (29 files, wwwroot/GameData unchanged since 0.2.38), no errors in his log. He runs
+  release\0.2.38-github\full\Hawkeye (public, will update itself to 0.2.39 on restart). Spare: 0.2.39-github\full.
