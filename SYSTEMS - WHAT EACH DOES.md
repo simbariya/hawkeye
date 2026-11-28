@@ -311,7 +311,10 @@ Settings live in `%AppData%\Hawkeye\settings.json`, shape defined in
     anyone named in a group list since start, their summons) goes to `OnStatus`. Since v0.2.42 only if the caster is
     fighting you: a hit (not a heal) between you and them in the last 10 min (`TheostoneAlerts.OnFight`, fed from
     every 0x3804 header by `DamagePacketProcessor`, `FoeFor`); buffs from your own side outside your group showed as
-    debuffs in sieges before. (1 s to 2 min; `Status` tiles,
+    debuffs in sieges before. Since v0.2.43 a player's skill on you counts only if its header carries damage (mask
+    low bits 4 to 7): chanter mantras and cleric buffs come as hits with no damage (mask 0) and made the chanter a
+    "foe" (`OnFight(..., hurt)`); anything you do to someone, and a monster's skill (below 11,000,000) on you, still
+    count without damage. (1 s to 2 min; `Status` tiles,
     named after the skill; the game's unnamed general effects by what they do, `StatusKinds` (v0.2.39: Stun, Root,
     Knockdown, Knockback, Blind, Slow, Silence; other unnamed ones "Debuff")). Same instance or same name updates the tile. Setting
     `DebuffAlerts`.

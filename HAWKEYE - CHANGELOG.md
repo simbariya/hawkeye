@@ -3,6 +3,19 @@
 Add a new top entry for every batch of changes. Do not edit past entries except to correct a factual
 error. Format and rules: `hawkeye-docs-and-writing` section 3.
 
+## v0.2.43 (2026-11-28)
+
+Fixed (owner: "sometimes you seem to get a debuff pop up when there's no debuff on you, and also sometimes it counts
+chanter mantra buffs as debuffs"):
+- **Buffs from your side no longer show as debuffs.** A chanter's mantras (Undefeated Mantra, Sprint Mantra,
+  Protection Circle, Power of the Storm) and a cleric's buffs (Light of Protection, Light of Regeneration, Earth
+  Punishment) reach you as a "hit" with no damage in it. Since v0.2.42 any hit between you and a player made them
+  "someone fighting you", so those buffs showed as debuffs. Now a player's skill on you only counts as fighting if it
+  does damage. What you do to someone still counts (a miss too), and so does a monster's skill on you. Replayed on the
+  owner's recordings: arena 102 tiles down to 0 (all mantras and cleric buffs), Odyle 134 down to 90 (Light of
+  Protection, Light of Regeneration, Earth Punishment gone, monsters' debuffs kept), the 30-minute PvP recording the
+  same 196 tiles as before.
+186 tests (3 new).
 ## v0.2.42 (2026-11-27)
 
 Added (owner: "Add Arena history, that autosaves into a separate tab, so after a version update I do not lose my

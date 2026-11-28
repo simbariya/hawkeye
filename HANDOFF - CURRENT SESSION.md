@@ -382,3 +382,10 @@ resumed from here. The CHECKPOINT block at the END is the live state; everything
   ignore the boss-fight rule (`PopUp.OnScreen`), "Show" line per tracked skill; (5) Settings tabs. Render:
   scratchpad meterpreview/ui42.html. NOT verified in game: a battlefield (no recording has one; the 20-caster line is
   a guess from 1v1 numbers, a 3v3 may come closer), a siege, pop-up icons live. 183 tests.
+- 0.2.43 (2026-11-28): mantras and cleric buffs showed as debuffs: they are 0x3804 with mask 0 from the chanter, and
+  0.2.42's OnFight took any non-heal hit as a fight. Now a player's skill on you needs mask 4 to 7 (`hurt`); yours and
+  monsters' count always. Checked with scratchpad mantra_scan.py, foe_rule.py, debuffreplay (old vs new build):
+  pvp-run 196 = 196, arena-1123 102 to 0, odyle-spend 134 to 90. Header, not Parse: Parse throws on some real hits
+  (pvp-run 19:25:35 Poach, mask 0x36). Owner's "debuff pop up when there's no debuff": most likely the same (ally buffs
+  named "Earth Punishment" etc.); not confirmed. Still shown and unverified: a monster effect with no name in the game
+  data (Odyle, id 1606870, 5 to 20 s) as "Debuff". 186 tests.

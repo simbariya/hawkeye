@@ -35,9 +35,12 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         public void Process(Packet packet)
         {
             // Who fights whom, for "debuffs on you" (v0.2.42): only someone who hit you or whom you hit can debuff you.
-            // Read from the header, so hits the damage layout below refuses still count. A heal is not a fight.
+            // Read from the header, so hits the damage layout below refuses still count (PvP recording: a Poach hit
+            // with damage that Parse throws on). A heal is not a fight. A player's skill on you counts only if it
+            // carries damage (v0.2.43; mask 4 to 7, as every attack in the recordings): with none it is a buff, like a
+            // chanter's mantra (TheostoneAlerts.OnFight).
             if (theostones is not null && Header(packet.Data) is { } fight && !gameData.IsHealingSkill(fight.Code))
-                theostones.OnFight(fight.Actor, fight.Target);
+                theostones.OnFight(fight.Actor, fight.Target, hurt: !IsClassSkill(fight.Code) || (fight.Mask & 0x0F) is >= 4 and <= 7);
 
             if (theostones is not null && NoDamageTheostone(packet.Data) is { } proc)
             {
@@ -173,6 +176,9 @@ namespace Hawkeye.Engine.PacketProcessing.Processors
         /// </summary>
         private (int Actor, int Target, int Code)? NoDamageTheostone(byte[] packet) =>
             Header(packet) is { } h && (h.Mask & 0x0F) == 0 && gameData.IsTheostone(h.Code) ? (h.Actor, h.Target, h.Code) : null;
+
+        /// <summary>A player class's skill (11,000,000 to 19,999,999); monsters' skills and Theostones are below.</summary>
+        private static bool IsClassSkill(int code) => code >= 11_000_000 && code < 20_000_000;
 
         /// <summary>[len][op][target varint][mask varint][flag varint][actor varint][u32 skill], or null.</summary>
         private static (int Actor, int Target, int Code, long Mask)? Header(byte[] packet)

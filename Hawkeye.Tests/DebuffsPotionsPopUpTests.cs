@@ -197,6 +197,55 @@ public sealed class DebuffsPotionsPopUpTests : IDisposable
     }
 
     [Fact]
+    public void AChantersMantra_IsNotADebuff()
+    {
+        // Owner 2026-11-28: "sometimes it counts chanter mantra buffs as debuffs". A mantra comes as a hit with no damage
+        // (Undefeated Mantra, 18190041, mask 0); that must not make the chanter someone fighting you.
+        var w = World(12526);
+        var damage = new DamagePacketProcessor(w.Entities, w.Sessions, NullLogger<DamagePacketProcessor>.Instance, w.Alerts);
+        var reader = Buffs(w.Sessions, w.Alerts);
+        damage.Process(Msg("130438EE6100018C34" + "D98E1501" + "0000000000"));
+        reader.Process(Msg(DefenseBreak));                  // an effect on you from that player
+        Assert.Empty(w.Alerts.Showing);
+
+        // A real hit with damage from them (PvP recording: 6668's skill 13770008 on the owner) does count.
+        damage.Process(Msg("230438EE6106008C34181DD2007E020000016B5D135201000000F578B9010100"));
+        reader.Process(Msg(DefenseBreak));
+        Assert.Single(w.Alerts.Showing);
+    }
+
+    [Fact]
+    public void AHitWithDamage_TheReaderCannotRead_StillCounts()
+    {
+        // PvP recording 19:25:35: 14047's Poach hit (mask 0x36, damage) that the damage layout throws on, then his Poach
+        // on the owner (5 s). The fight is read from the header, so the debuff still shows.
+        var w = World(12526);
+        var damage = new DamagePacketProcessor(w.Entities, w.Sessions, NullLogger<DamagePacketProcessor>.Instance, w.Alerts);
+        try { damage.Process(Msg("280438EE613600DF6DC017B900C802A0FE01021BF14C4801000000DD7AFA09037F7F7F0100")); } catch (Exception) { }
+        Buffs(w.Sessions, w.Alerts).Process(Msg("342A38EE6101139509EAE43A078813000000000000554692FFA1010000DF6D01C017B90000CA6DD2C52F9EC2C500F11E47"));
+        Assert.Equal("Poach", Assert.Single(w.Alerts.Showing).Word);
+    }
+
+    [Fact]
+    public void YourMiss_AndAMonstersNoDamageSkill_StillCount()
+    {
+        // You hitting someone counts with or without damage; so does a monster's skill on you (Odyle recording: a
+        // monster's effect lands before you have hurt it).
+        var w = World(12526);
+        var damage = new DamagePacketProcessor(w.Entities, w.Sessions, NullLogger<DamagePacketProcessor>.Instance, w.Alerts);
+        var reader = Buffs(w.Sessions, w.Alerts);
+        damage.Process(Msg("1304388C340001EE61" + "D98E1501" + "0000000000"));   // you (12526) on 6668, no damage
+        reader.Process(Msg(DefenseBreak));
+        Assert.Single(w.Alerts.Showing);
+
+        var w2 = World(12526);
+        new DamagePacketProcessor(w2.Entities, w2.Sessions, NullLogger<DamagePacketProcessor>.Instance, w2.Alerts)
+            .Process(Msg("130438EE6100018C34" + "D7841800" + "0000000000"));      // 6668 on you, monster skill 1606871
+        Buffs(w2.Sessions, w2.Alerts).Process(Msg(DefenseBreak));
+        Assert.Single(w2.Alerts.Showing);
+    }
+
+    [Fact]
     public void DebuffsOnYou_CanBeSwitchedOff()
     {
         settings.Update(s => s.DebuffAlerts = false);

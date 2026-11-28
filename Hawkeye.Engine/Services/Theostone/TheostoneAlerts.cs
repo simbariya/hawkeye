@@ -83,10 +83,18 @@ namespace Hawkeye.Engine.Services.Theostone
         /// group put their buffs (Light of Protection, Recuperation...) on you, and every effect from someone outside
         /// your group was taken for a debuff. Checked on the owner's 30-minute PvP recording: all 124 real debuffs on
         /// him came from someone who had hit him, or whom he had hit, before or in the same moment.
+        ///
+        /// <paramref name="hurt"/> (v0.2.43): false for a player's skill on you that carries no damage. Those are buffs
+        /// (owner, 2026-11-28: "sometimes it counts chanter mantra buffs as debuffs"): a chanter's Undefeated Mantra,
+        /// Sprint Mantra, Protection Circle, a cleric's Light of Protection all come to you as a hit with no damage, so
+        /// until v0.2.43 they made the chanter "someone fighting you" and the mantra a debuff (the owner's Odyle
+        /// recording: 415 Undefeated Mantra tiles). Such a hit on you no longer counts; anything you do to someone still
+        /// does (a miss too), and so does a monster's skill on you with no damage (Odyle: a monster's 5 to 20 s effect
+        /// that lands before you have hurt it).
         /// </summary>
-        public void OnFight(int actorId, int targetId)
+        public void OnFight(int actorId, int targetId, bool hurt = true)
         {
-            int other = entities.IsCurrentPlayer(actorId) ? targetId : entities.IsCurrentPlayer(targetId) ? actorId : 0;
+            int other = entities.IsCurrentPlayer(actorId) ? targetId : entities.IsCurrentPlayer(targetId) && hurt ? actorId : 0;
             if (other == 0) return;
             lock (gate) foes[other] = Clock();
         }
